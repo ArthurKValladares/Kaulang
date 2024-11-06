@@ -1,7 +1,5 @@
 @echo off
 setlocal
 
-cd build
-cd Debug
-
-.\kaulang.exe
+.\build\Debug\kaulang test.kau
+.\build\Debug\kaulang.exe
