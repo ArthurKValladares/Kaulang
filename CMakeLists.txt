@@ -5,6 +5,7 @@ add_definitions(-DDEBUG=1)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/tokens.cpp
     src/scanner.cpp
 )
 

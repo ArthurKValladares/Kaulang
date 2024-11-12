@@ -29,11 +29,13 @@ struct KauCompiler {
     }
 
     int run(char* program, int size) {
-        debug_log(program);
-
         Scanner scanner = Scanner(program, size);
         scanner.scan_tokens();
         
+#ifdef DEBUG
+        scanner.print_tokens();
+#endif
+
         return 0;
     }
 
@@ -93,17 +95,13 @@ struct KauCompiler {
 
 int main(int argc, char **argv) {
     KauCompiler kau;
-    //kau.run_file("../test.kau");
+    kau.run_file("../test.kau");
     switch (argc) {
         case 1: {
-            debug_log("PROMPT");
-
             kau.run_prompt();
             break;
         }
         case 2: {
-            debug_log("FILE");
-
             kau.run_file(argv[1]);
             break;
         }

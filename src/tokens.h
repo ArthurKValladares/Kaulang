@@ -28,3 +28,5 @@ struct Token {
     std::string_view m_lexeme;
     int m_line;
 };
+
+const char* token_type_to_string(TokenType ty);

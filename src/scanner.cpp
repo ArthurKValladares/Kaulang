@@ -242,3 +242,12 @@ void Scanner::scan_tokens() {
         m_current_line,
     });
 }
+
+#ifdef DEBUG
+void Scanner::print_tokens() {
+    for (const Token& token: m_tokens) {
+        fprintf(stdout, "%s ", token_type_to_string(token.m_type));
+    }
+    fprintf(stdout, "\n");
+}
+#endif

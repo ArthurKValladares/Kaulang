@@ -12,6 +12,9 @@ struct Scanner {
 
     void scan_tokens();
 
+#ifdef DEBUG
+    void print_tokens();
+#endif
 private:
     void scan_token();
 
