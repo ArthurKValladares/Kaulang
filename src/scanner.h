@@ -11,15 +11,26 @@ struct Scanner {
     {}
 
     void scan_tokens();
+
+private:
     void scan_token();
 
     bool is_at_end() const;
 
     char peek() const;
+    char peek_next() const;
+
     char advance();
     bool match(char c);
 
+    std::string_view get_substring(int start_offset, int end_offset) const;
+
+    void string();
+    void number();
+    void identifier();
+
     void add_token(TokenType token_type);
+    void add_token(TokenType token_type, std::string_view substr);
 
     char* m_source;
     int m_source_len;

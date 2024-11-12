@@ -72,12 +72,16 @@ struct KauCompiler {
 
         // NOTE: Making it null-terminated for convenience, probably don't need to do it.
         char* byte_buffer = (char*)malloc(file_size_bytes + 1);
+        if (byte_buffer == NULL) {
+            fprintf(stderr, "Could not allocate byte buffer to store file data.\n");
+            return -1;
+        }
         const int end = fread(byte_buffer, 1, file_size_bytes, script_file);
         byte_buffer[end] = '\0';
 
         fclose(script_file);
 
-        run(byte_buffer, file_size_bytes - 1);
+        run(byte_buffer, end);
 
         if (m_had_error) {
             return -1;
@@ -89,6 +93,7 @@ struct KauCompiler {
 
 int main(int argc, char **argv) {
     KauCompiler kau;
+    //kau.run_file("../test.kau");
     switch (argc) {
         case 1: {
             debug_log("PROMPT");
