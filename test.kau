@@ -1,2 +1,3 @@
-var language = "kau";
-var author = "arhur";
+// Comment test
+(( )){} // Grouping (and comment) test
+!*+-/

@@ -1,4 +1,6 @@
-#include <string>
+#pragma once
+
+#include <string_view>
 
 enum class TokenType {
     // Single-Character tokens
@@ -21,9 +23,8 @@ enum class TokenType {
     _EOF
 };
 
-class Token {
+struct Token {
     TokenType m_type;
-    std::string m_lexeme;
-    std::string m_literal;
+    std::string_view m_lexeme;
     int m_line;
 };

@@ -1,5 +1,7 @@
 #include "defs.h"
 
+#include "scanner.h"
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <iostream>
@@ -26,11 +28,15 @@ struct KauCompiler {
         m_had_error = true;
     }
 
-    int run(char* program) {
+    int run(char* program, int size) {
         debug_log(program);
 
+        Scanner scanner = Scanner(program, size);
+        scanner.scan_tokens();
+        
         return 0;
     }
+
     int run_prompt() {
         constexpr long max_line_size = 1024;
         char line_char_buffer[max_line_size];
@@ -39,11 +45,12 @@ struct KauCompiler {
             fprintf(stdout, "> ");
 
             std::cin.getline(line_char_buffer, max_line_size);
-            if (strlen(line_char_buffer) == 0) {
+            const int line_size = strlen(line_char_buffer);
+            if (line_size == 0) {
                 break;
             }
 
-            run(line_char_buffer);
+            run(line_char_buffer, line_size);
 
             if (m_had_error) {
                 // TODO: Do I do anything here?
@@ -53,7 +60,8 @@ struct KauCompiler {
 
         return 0;
     }
-    int run_file(char* file_path) {
+
+    int run_file(const char* file_path) {
         FILE* script_file;
         script_file = fopen(file_path, "r");
         if (script_file == NULL) {
@@ -62,14 +70,14 @@ struct KauCompiler {
         }
         const long file_size_bytes = get_file_size(script_file);
 
-        char* byte_buffer;
-        byte_buffer = (char*) malloc(file_size_bytes + 1);
+        // NOTE: Making it null-terminated for convenience, probably don't need to do it.
+        char* byte_buffer = (char*)malloc(file_size_bytes + 1);
         const int end = fread(byte_buffer, 1, file_size_bytes, script_file);
         byte_buffer[end] = '\0';
 
         fclose(script_file);
 
-        run(byte_buffer);
+        run(byte_buffer, file_size_bytes - 1);
 
         if (m_had_error) {
             return -1;
@@ -81,7 +89,6 @@ struct KauCompiler {
 
 int main(int argc, char **argv) {
     KauCompiler kau;
-
     switch (argc) {
         case 1: {
             debug_log("PROMPT");
