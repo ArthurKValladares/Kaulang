@@ -31,7 +31,8 @@ private:
     void string();
     void number();
     void identifier();
-
+    void block_comment();
+    
     void add_token(TokenType token_type);
     void add_token(TokenType token_type, std::string_view substr);
 

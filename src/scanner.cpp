@@ -124,6 +124,24 @@ void Scanner::identifier() {
     }
 }
 
+void Scanner::block_comment() {
+    while(!is_at_end() && !(peek() == '*' && peek_next() == '/')) {
+        if (peek() == '\n') {
+            ++m_current_line;
+        }
+        advance();
+    }
+
+    if (is_at_end()) {
+        // TODO: Hook-up the error stuff
+        fprintf(stderr, "Error, unterminated block-comment.\n");
+        return;
+    }
+
+    advance();
+    advance();
+}
+
 void Scanner::scan_token() {
     const char c = advance();
     switch(c) {
@@ -193,21 +211,7 @@ void Scanner::scan_token() {
                     advance();
                 }
             } else if (match('*')) {
-                while(!is_at_end() && !(peek() == '*' && peek_next() == '/')) {
-                    if (peek() == '\n') {
-                        ++m_current_line;
-                    }
-                    advance();
-                }
-
-                if (is_at_end()) {
-                    // TODO: Hook-up the error stuff
-                    fprintf(stderr, "Error, unterminated block-comment.\n");
-                    return;
-                }
-
-                advance();
-                advance();
+                block_comment();
             } else {
                 add_token(TokenType::SLASH);
             }
