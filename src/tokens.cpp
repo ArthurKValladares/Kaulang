@@ -54,10 +54,10 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::GREATER_EQUAL: {
         return ">=";
     }
-    case TokenType::LESS: {
+    case TokenType::LESSER: {
         return "<";
     }
-    case TokenType::LESS_EQUAL: {
+    case TokenType::LESSER_EQUAL: {
         return "<=";
     }
     case TokenType::IDENTIFIER: {

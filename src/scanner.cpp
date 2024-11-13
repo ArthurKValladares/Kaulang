@@ -200,7 +200,7 @@ void Scanner::scan_token() {
             break;
         }
         case '<': {
-            add_token(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+            add_token(match('=') ? TokenType::LESSER_EQUAL : TokenType::LESSER);
             break;
         }
         // Special-case
