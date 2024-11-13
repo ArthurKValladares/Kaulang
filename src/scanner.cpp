@@ -192,6 +192,22 @@ void Scanner::scan_token() {
                 while(!is_at_end() && peek() != '\n') {
                     advance();
                 }
+            } else if (match('*')) {
+                while(!is_at_end() && !(peek() == '*' && peek_next() == '/')) {
+                    if (peek() == '\n') {
+                        ++m_current_line;
+                    }
+                    advance();
+                }
+
+                if (is_at_end()) {
+                    // TODO: Hook-up the error stuff
+                    fprintf(stderr, "Error, unterminated block-comment.\n");
+                    return;
+                }
+
+                advance();
+                advance();
             } else {
                 add_token(TokenType::SLASH);
             }

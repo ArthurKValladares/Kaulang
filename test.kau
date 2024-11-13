@@ -23,3 +23,8 @@ class or {
 }
 
 print(1 + 2 + 3 * (5 - 1))
+
+/* block comment test single line */
+/* block comment test multi
+line
+test*/
