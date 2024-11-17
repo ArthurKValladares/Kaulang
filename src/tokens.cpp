@@ -125,3 +125,21 @@ const char* token_type_to_string(TokenType ty) {
     }
     }
 }
+
+TokenData TokenData::new_float(float val) {
+    TokenData data = {};
+    data.ty = TokenData::Type::FLOAT;
+    data.data = TokenData::InnerData {
+        .f = val
+    };
+    return data;
+}
+
+TokenData TokenData::new_string(std::string_view val) {
+    TokenData data = {};
+    data.ty = TokenData::Type::STRING;
+    data.data = TokenData::InnerData {
+        .string = val
+    };
+    return data;
+}

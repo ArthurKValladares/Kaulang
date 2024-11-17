@@ -33,8 +33,8 @@ private:
     void identifier();
     void block_comment();
     
-    void add_token(TokenType token_type);
-    void add_token(TokenType token_type, std::string_view substr);
+    void add_token(TokenType token_type, TokenData data = {});
+    void add_token(TokenType token_type, std::string_view substr, TokenData data = {});
 
     char* m_source;
     int m_source_len;

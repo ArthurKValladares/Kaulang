@@ -57,17 +57,18 @@ std::string_view Scanner::get_substring(int start_offset, int end_offset) const 
     return std::string_view(start_char, substr_len);
 }
 
-void Scanner::add_token(TokenType token_type) {
+void Scanner::add_token(TokenType token_type, TokenData data) {
     const std::string_view substr = get_substring(m_start_char_offset, m_current_char_offset);
 
-    add_token(token_type, substr);
+    add_token(token_type, substr, data);
 }
 
-void Scanner::add_token(TokenType token_type, std::string_view substr) {
+void Scanner::add_token(TokenType token_type, std::string_view substr, TokenData data) {
     m_tokens.push_back(Token{
         token_type,
         substr,
-        m_current_line, 
+        m_current_line,
+        data
     });
 }
 
@@ -106,8 +107,7 @@ void Scanner::number() {
     // TODO: For now its all floats, will add more types later
     const float fractional = atof(m_source + m_start_char_offset);
 
-    // TODO: add the float above to the token in an enum.
-    add_token(TokenType::NUMBER);
+    add_token(TokenType::NUMBER, TokenData::new_float(fractional));
 }
 
 void Scanner::identifier() {
@@ -267,6 +267,18 @@ void Scanner::scan_tokens() {
 void Scanner::print_tokens() {
     for (const Token& token: m_tokens) {
         fprintf(stdout, "%s ", token_type_to_string(token.m_type));
+        switch (token.data.ty) {
+            case TokenData::Type::FLOAT: {
+                fprintf(stdout, "%f ", token.data.data.f);
+                break;
+            }
+            case TokenData::Type::STRING: {
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
     fprintf(stdout, "\n");
 }

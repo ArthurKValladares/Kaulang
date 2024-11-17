@@ -23,10 +23,28 @@ enum class TokenType {
     _EOF
 };
 
+struct TokenData {
+    enum class Type {
+        NIL,
+        FLOAT,
+        STRING
+    };
+
+    Type ty;
+    union InnerData {
+        float f;
+        std::string_view string;
+    } data;
+
+    static TokenData new_float(float val);
+    static TokenData new_string(std::string_view val);
+};
+
 struct Token {
     TokenType m_type;
     std::string_view m_lexeme;
     int m_line;
+    TokenData data;
 };
 
 const char* token_type_to_string(TokenType ty);
