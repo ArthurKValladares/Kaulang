@@ -33,11 +33,9 @@ struct TokenData {
     Type ty;
     union InnerData {
         float f;
-        std::string_view string;
     } data;
 
     static TokenData new_float(float val);
-    static TokenData new_string(std::string_view val);
 };
 
 struct Token {

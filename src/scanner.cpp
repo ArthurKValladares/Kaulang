@@ -2,6 +2,8 @@
 
 #include <ctype.h>
 
+//  TODO: Better printing later that can natively handle string_views
+#include <iostream>
 // TODO: better way to do this lookup table
 #include <unordered_map>
 const std::unordered_map<std::string_view, TokenType> keywords = {
@@ -267,12 +269,12 @@ void Scanner::scan_tokens() {
 void Scanner::print_tokens() {
     for (const Token& token: m_tokens) {
         fprintf(stdout, "%s ", token_type_to_string(token.m_type));
+        if (token.m_type == TokenType::STRING) {
+            std::cout << "\"" << token.m_lexeme << "\" ";
+        }
         switch (token.data.ty) {
             case TokenData::Type::FLOAT: {
                 fprintf(stdout, "%f ", token.data.data.f);
-                break;
-            }
-            case TokenData::Type::STRING: {
                 break;
             }
             default: {

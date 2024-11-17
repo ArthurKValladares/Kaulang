@@ -134,12 +134,3 @@ TokenData TokenData::new_float(float val) {
     };
     return data;
 }
-
-TokenData TokenData::new_string(std::string_view val) {
-    TokenData data = {};
-    data.ty = TokenData::Type::STRING;
-    data.data = TokenData::InnerData {
-        .string = val
-    };
-    return data;
-}
