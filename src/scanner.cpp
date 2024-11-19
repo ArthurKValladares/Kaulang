@@ -74,7 +74,7 @@ void Scanner::add_token(TokenType token_type, std::string_view substr, TokenData
     });
 }
 
-void Scanner::string() {
+void Scanner::string(KauCompiler& compiler) {
     while(!is_at_end() && peek() != '"') {
         if (peek() == '\n') {
             ++m_current_line;
@@ -82,8 +82,7 @@ void Scanner::string() {
         advance();
     }
     if (is_at_end()) {
-        // TODO: Hook-up the error stuff
-        std::println(stderr, "Error, unterminated string.\n");
+        compiler.error(m_current_line, "unterminated string");
         return;
     }
 
@@ -126,7 +125,7 @@ void Scanner::identifier() {
     }
 }
 
-void Scanner::block_comment() {
+void Scanner::block_comment(KauCompiler& compiler) {
     while(!is_at_end() && !(peek() == '*' && peek_next() == '/')) {
         if (peek() == '\n') {
             ++m_current_line;
@@ -135,8 +134,7 @@ void Scanner::block_comment() {
     }
 
     if (is_at_end()) {
-        // TODO: Hook-up the error stuff
-        std::println(stderr, "Error, unterminated block-comment.\n");
+        compiler.error(m_current_line, "unterminated block-comment");
         return;
     }
 
@@ -144,7 +142,7 @@ void Scanner::block_comment() {
     advance();
 }
 
-void Scanner::scan_token() {
+void Scanner::scan_token(KauCompiler& compiler) {
     const char c = advance();
     switch(c) {
         // Single-character
@@ -213,7 +211,7 @@ void Scanner::scan_token() {
                     advance();
                 }
             } else if (match('*')) {
-                block_comment();
+                block_comment(compiler);
             } else {
                 add_token(TokenType::SLASH);
             }
@@ -232,7 +230,7 @@ void Scanner::scan_token() {
         }
         // String literals
         case '"': {
-            string();
+            string(compiler);
             break;
         }
         case '\0': {
@@ -244,18 +242,18 @@ void Scanner::scan_token() {
             } else if (isalpha(c)) {
                 identifier();
             } else {
-                // TODO: Hook-up the error stuff
-                std::println(stderr, "Error, unexpected character: %c\n", c);
+                // TODO: variadic?
+                compiler.error(m_current_line, "unexpected character {}");
             }
             break;
         }
     }
 }
 
-void Scanner::scan_tokens() {
+void Scanner::scan_tokens(KauCompiler& compiler) {
     while (!is_at_end()) {
         m_start_char_offset = m_current_char_offset;
-        scan_token();
+        scan_token(compiler);
     }
 
     m_tokens.push_back(Token{

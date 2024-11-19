@@ -29,7 +29,8 @@ void KauCompiler::report(int line, const char* where, const char* message) {
 
 int KauCompiler::run(char* program, int size) {
     Scanner scanner = Scanner(program, size);
-    scanner.scan_tokens();
+    // TODO: fix this kinda circular dependency thing later
+    scanner.scan_tokens(*this);
     
 #ifdef DEBUG
     scanner.print_tokens();
