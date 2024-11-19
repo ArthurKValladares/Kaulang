@@ -2,8 +2,8 @@
 
 #include <ctype.h>
 
-//  TODO: Better printing later that can natively handle string_views
-#include <iostream>
+#include <print>
+
 // TODO: better way to do this lookup table
 #include <unordered_map>
 const std::unordered_map<std::string_view, TokenType> keywords = {
@@ -83,7 +83,7 @@ void Scanner::string() {
     }
     if (is_at_end()) {
         // TODO: Hook-up the error stuff
-        fprintf(stderr, "Error, unterminated string.\n");
+        std::println(stderr, "Error, unterminated string.\n");
         return;
     }
 
@@ -136,7 +136,7 @@ void Scanner::block_comment() {
 
     if (is_at_end()) {
         // TODO: Hook-up the error stuff
-        fprintf(stderr, "Error, unterminated block-comment.\n");
+        std::println(stderr, "Error, unterminated block-comment.\n");
         return;
     }
 
@@ -245,7 +245,7 @@ void Scanner::scan_token() {
                 identifier();
             } else {
                 // TODO: Hook-up the error stuff
-                fprintf(stderr, "Error, unexpected character: %c\n", c);
+                std::println(stderr, "Error, unexpected character: %c\n", c);
             }
             break;
         }
@@ -268,13 +268,13 @@ void Scanner::scan_tokens() {
 #ifdef DEBUG
 void Scanner::print_tokens() {
     for (const Token& token: m_tokens) {
-        fprintf(stdout, "%s ", token_type_to_string(token.m_type));
+        std::print("{} ", token_type_to_string(token.m_type));
         if (token.m_type == TokenType::STRING) {
-            std::cout << "\"" << token.m_lexeme << "\" ";
+            std::print("\"{}\" ", token.m_lexeme);
         }
         switch (token.data.ty) {
             case TokenData::Type::FLOAT: {
-                fprintf(stdout, "%f ", token.data.data.f);
+                std::print("{} ", token.data.data.f);
                 break;
             }
             default: {
@@ -282,6 +282,6 @@ void Scanner::print_tokens() {
             }
         }
     }
-    fprintf(stdout, "\n");
+    std::println("");
 }
 #endif

@@ -2,7 +2,7 @@
 
 #include "compiler.h"
 
-#include <stdio.h>
+#include <print>
 
 int main(int argc, char **argv) {
     KauCompiler kau;
@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
             break;
         }
         default: {
-            fprintf(stderr, "Usage: kau <path-to-script>");
+            std::println(stderr, "Usage: kau <path-to-script>");
             return -1;
         }
     }

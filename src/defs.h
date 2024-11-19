@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #ifdef DEBUG
-#include <stdio.h>
+#include <print>
 #endif
 
 typedef uint8_t u8;
@@ -17,6 +17,6 @@ typedef int64_t i64;
 
 void debug_log(const char* message) {
 #ifdef DEBUG
-    fprintf(stdout, "LOG: %s\n", message);
+    std::println("LOG: %s", message);
 #endif
 }
