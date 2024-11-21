@@ -1,5 +1,6 @@
 #include "tokens.h"
 
+// NOTE: reserved keywords in lowercase, user-defines data in uppercase
 const char* token_type_to_string(TokenType ty) {
     switch (ty)
     {
@@ -61,16 +62,13 @@ const char* token_type_to_string(TokenType ty) {
         return "<=";
     }
     case TokenType::IDENTIFIER: {
-        // user-defined
-        return "";
+        return "IDENTIFIER";
     }
     case TokenType::STRING: {
-        // User-defined
-        return "";
+        return "STRING";
     }
     case TokenType::NUMBER: {
-        // User-defined
-        return "";
+        return "NUMBER";
     }
     case TokenType::AND: {
         return "and";

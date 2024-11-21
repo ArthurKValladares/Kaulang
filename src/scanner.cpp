@@ -60,15 +60,23 @@ std::string_view Scanner::get_substring(int start_offset, int end_offset) const 
 }
 
 void Scanner::add_token(TokenType token_type, TokenData data) {
-    const std::string_view substr = get_substring(m_start_char_offset, m_current_char_offset);
-
-    add_token(token_type, substr, data);
+    m_tokens.push_back(Token{
+        token_type,
+        std::string_view(),
+        m_current_line,
+        data
+    });
 }
 
 void Scanner::add_token(TokenType token_type, std::string_view substr, TokenData data) {
+    std::string_view lexeme = substr;
+    if (substr.empty()) {
+        lexeme = get_substring(m_start_char_offset, m_current_char_offset);
+    }
+
     m_tokens.push_back(Token{
         token_type,
-        substr,
+        lexeme,
         m_current_line,
         data
     });
@@ -121,7 +129,7 @@ void Scanner::identifier() {
     if (keywords.contains(id)) {
         add_token(keywords.at(id));
     } else {
-        add_token(TokenType::IDENTIFIER);
+        add_token(TokenType::IDENTIFIER, std::string_view());
     }
 }
 
@@ -266,20 +274,20 @@ void Scanner::scan_tokens(KauCompiler& compiler) {
 #ifdef DEBUG
 void Scanner::print_tokens() {
     for (const Token& token: m_tokens) {
-        std::print("{} ", token_type_to_string(token.m_type));
-        if (token.m_type == TokenType::STRING) {
-            std::print("\"{}\" ", token.m_lexeme);
+        std::print("{}", token_type_to_string(token.m_type));
+        if (!token.m_lexeme.empty()) {
+            std::print(" -> {}", token.m_lexeme);
         }
         switch (token.data.ty) {
             case TokenData::Type::FLOAT: {
-                std::print("{} ", token.data.data.f);
+                std::print(" -> {}", token.data.data.f);
                 break;
             }
             default: {
                 break;
             }
         }
+        std::println("");
     }
-    std::println("");
 }
 #endif

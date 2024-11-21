@@ -2,6 +2,7 @@
     "files.associations": {
         "istream": "cpp",
         "system_error": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "vector": "cpp"
     }
 }
