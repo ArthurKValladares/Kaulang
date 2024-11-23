@@ -6,6 +6,7 @@
 #include <vector>
 #include <span>
 
+// TODO: Probably makes sense to make a lot of this stuff const
 struct Parser {
     // TODO: Just pass in a span instead?
     Parser(std::vector<Token> tokens)
@@ -17,14 +18,17 @@ private:
     Expr* equality();
     Expr* comparison();
     Expr* term();
+    Expr* factor();
+    Expr* unary();
+    Expr* primary();
 
     bool match(std::span<const TokenType> types);
-    Token advance();
+    Token* advance();
 
-    bool check(TokenType ty) const;
-    bool is_at_end() const;
-    Token peek() const;
-    Token previous() const;
+    bool check(TokenType ty);
+    bool is_at_end();
+    Token* peek();
+    Token* previous();
 
     std::vector<Token> m_tokens;
     int m_current = 0;

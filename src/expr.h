@@ -7,15 +7,13 @@ struct LiteralExpr;
 struct GroupingExpr;
 struct UnaryExpr;
 struct BinaryExpr;
-struct OperatorExpr;
 
-union RulePayload {
+union ExprPayload {
     Expr* expression;
     LiteralExpr* literal;
     GroupingExpr* grouping;
     UnaryExpr* unary;
     BinaryExpr* binary;
-    OperatorExpr* op;
 };
 
 struct Expr {
@@ -27,7 +25,7 @@ struct Expr {
     };
 
     Type ty;
-    RulePayload* expr;
+    ExprPayload expr;
 };
 
 struct LiteralExpr {
@@ -67,17 +65,6 @@ struct UnaryExpr {
 
 struct BinaryExpr {
     Expr* left;
-    OperatorExpr* op;
+    Token* op;
     Expr* right;
-};
-
-struct OperatorExpr {
-    enum class Type {
-        EQUAL_EQUAL, BANG_EQUAL,
-        LESSER, LESSER_EQUAL,
-        GREATER, GREATER_EQUAL,
-        PLUS, MINUS, STAR, SLASH
-    };
-
-    Type ty;
 };
