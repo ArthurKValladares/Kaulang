@@ -1,4 +1,7 @@
+#pragma once
+
 #include <stdint.h>
+#include <cassert>
 
 #ifdef DEBUG
 #include <print>
@@ -15,7 +18,7 @@ typedef int64_t i64;
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-void debug_log(const char* message) {
+inline void debug_log(const char* message) {
 #ifdef DEBUG
     std::println("LOG: %s", message);
 #endif

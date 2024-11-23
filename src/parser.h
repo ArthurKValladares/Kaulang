@@ -29,6 +29,7 @@ private:
     bool is_at_end();
     Token* peek();
     Token* previous();
+    Token* consume(TokenType ty, std::string_view message);
 
     std::vector<Token> m_tokens;
     int m_current = 0;

@@ -29,38 +29,16 @@ struct Expr {
 };
 
 struct LiteralExpr {
-    enum class Type {
-        LITERAL_NUMBER,
-        LITERAL_STRING,
-        LITERAL_TRUE,
-        LITERAL_FALSE,
-        LITERAL_NIL,
-    };
-
-    Type ty;
-    union {
-        float number;
-        std::string_view string;
-    } data;
+    Token* val;
 };
 
 struct GroupingExpr {
-    enum class Type {
-        PARENS
-    };
-
-    Type ty;
     Expr* expr;
 };
 
 struct UnaryExpr {
-    enum class Type {
-        UNARY_MINUS,
-        UNARY_BANG,
-    };
-
-    Type ty;
-    Expr* expr;
+    Token* op;
+    Expr* right;
 };
 
 struct BinaryExpr {
