@@ -3,6 +3,7 @@
         "istream": "cpp",
         "system_error": "cpp",
         "unordered_map": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "span": "cpp"
     }
 }

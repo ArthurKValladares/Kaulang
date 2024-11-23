@@ -2,23 +2,23 @@
 
 #include "tokens.h"
 
-struct ExpressionPayload;
-struct LiteralPayload;
-struct GroupingPayload;
-struct UnaryPayload;
-struct BinaryPayload;
-struct OperatorPayload;
+struct Expr;
+struct LiteralExpr;
+struct GroupingExpr;
+struct UnaryExpr;
+struct BinaryExpr;
+struct OperatorExpr;
 
 union RulePayload {
-    ExpressionPayload* expression;
-    LiteralPayload* literal;
-    GroupingPayload* grouping;
-    UnaryPayload* unary;
-    BinaryPayload* binary;
-    OperatorPayload* op;
+    Expr* expression;
+    LiteralExpr* literal;
+    GroupingExpr* grouping;
+    UnaryExpr* unary;
+    BinaryExpr* binary;
+    OperatorExpr* op;
 };
 
-struct ExpressionPayload {
+struct Expr {
     enum class Type {
         LITERAL,
         UNARY,
@@ -30,7 +30,7 @@ struct ExpressionPayload {
     RulePayload* expr;
 };
 
-struct LiteralPayload {
+struct LiteralExpr {
     enum class Type {
         LITERAL_NUMBER,
         LITERAL_STRING,
@@ -46,32 +46,32 @@ struct LiteralPayload {
     } data;
 };
 
-struct GroupingPayload {
+struct GroupingExpr {
     enum class Type {
         PARENS
     };
 
     Type ty;
-    ExpressionPayload* expr;
+    Expr* expr;
 };
 
-struct UnaryPayload {
+struct UnaryExpr {
     enum class Type {
         UNARY_MINUS,
         UNARY_BANG,
     };
 
     Type ty;
-    ExpressionPayload* expr;
+    Expr* expr;
 };
 
-struct BinaryPayload {
-    ExpressionPayload* left;
-    OperatorPayload* op;
-    ExpressionPayload* right;
+struct BinaryExpr {
+    Expr* left;
+    OperatorExpr* op;
+    Expr* right;
 };
 
-struct OperatorPayload {
+struct OperatorExpr {
     enum class Type {
         EQUAL_EQUAL, BANG_EQUAL,
         LESSER, LESSER_EQUAL,

@@ -8,6 +8,7 @@ add_executable(${PROJECT_NAME}
     src/tokens.cpp
     src/scanner.cpp
     src/compiler.cpp
+    src/parser.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
