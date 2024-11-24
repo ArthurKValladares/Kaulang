@@ -2,10 +2,7 @@
 
 #include <stdint.h>
 #include <cassert>
-
-#ifdef DEBUG
 #include <print>
-#endif
 
 typedef uint8_t u8;
 typedef uint16_t u16;

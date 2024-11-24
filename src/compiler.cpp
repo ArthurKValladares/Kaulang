@@ -1,6 +1,7 @@
 #include "compiler.h"
 
 #include "scanner.h"
+#include "parser.h"
 
 #include <iostream>
 #include <print>
@@ -31,10 +32,8 @@ int KauCompiler::run(char* program, int size) {
     Scanner scanner = Scanner(program, size);
     // TODO: fix this kinda circular dependency thing later
     scanner.scan_tokens(*this);
-    
-#ifdef DEBUG
-    scanner.print_tokens();
-#endif
+
+    Parser parser(std::move(scanner));
 
     return 0;
 }

@@ -60,7 +60,22 @@ namespace {
 
         return expr;
     }
+
+    // TODO: Will need to set some sort of ParserError state here to syncronyze later
+    void error(Token* token, std::string_view message) {
+        if (token->m_type == TokenType::_EOF) {
+            std::println(stderr, "Parser Error: {} at end.", message);
+        } else {
+            std::println(stderr, "Parser Error: {} of token: {} at {}.", message,
+                    token->m_lexeme, token->m_line);
+        }
+    }
 };
+
+Expr* Parser::parse() {
+    //TODO: error-handling and syncronization here later
+    return expression();
+}
 
 Expr* Parser::expression() {
     return equality();
@@ -135,13 +150,12 @@ Expr* Parser::primary() {
 
     if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
         Expr* expr = expression();
-        consume(TokenType::RIGHT_PAREN, "Expect ')' after expression");
+        consume(TokenType::RIGHT_PAREN, "Expected ')' after expression");
         return new_grouping(expr);
     }
 
-    // TODO: properly hook-up error stuff
-    debug_log("Error: could not resolve primary expression.");
-    assert(false);
+    error(peek(), "Expected expression.");
+
     return nullptr;
 }
 
@@ -191,8 +205,31 @@ Token* Parser::consume(TokenType ty, std::string_view message) {
         return advance();
     }
 
-    // TODO: properly hook-up error stuff
-    debug_log("Error: Expected ) after expression.");
-    assert(false);
+    error(peek(), message);
+
     return nullptr;
+}
+
+void Parser::syncronize() {
+    advance();
+    while (!is_at_end()) {
+        if (previous()->m_type == TokenType::SEMICOLON) {
+            return;
+        }
+
+        switch (peek()->m_type)
+        {
+            case TokenType::CLASS:
+            case TokenType::FN:
+            case TokenType::VAR:
+            case TokenType::FOR:
+            case TokenType::IF:
+            case TokenType::WHILE:
+            case TokenType::PRINT:
+            case TokenType::RETURN:
+                return;
+        }
+
+        advance();
+    }
 }

@@ -46,4 +46,6 @@ private:
     int m_current_line = 1;
 
     std::vector<Token> m_tokens;
+
+    friend class Parser;
 };
