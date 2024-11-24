@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
     src/scanner.cpp
     src/compiler.cpp
     src/parser.cpp
+    src/expr.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

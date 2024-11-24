@@ -43,6 +43,8 @@ struct Token {
     std::string_view m_lexeme;
     int m_line;
     TokenData data;
+
+    void print() const;
 };
 
 const char* token_type_to_string(TokenType ty);

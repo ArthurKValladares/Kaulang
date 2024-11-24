@@ -34,7 +34,11 @@ int KauCompiler::run(char* program, int size) {
     scanner.scan_tokens(*this);
 
     Parser parser(std::move(scanner));
+    Expr* expr = parser.parse();
 
+    expr->print();
+    std::println();
+    
     return 0;
 }
 

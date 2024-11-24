@@ -9,7 +9,6 @@ struct UnaryExpr;
 struct BinaryExpr;
 
 union ExprPayload {
-    Expr* expression;
     LiteralExpr* literal;
     GroupingExpr* grouping;
     UnaryExpr* unary;
@@ -26,6 +25,8 @@ struct Expr {
 
     Type ty;
     ExprPayload expr;
+
+    void print();
 };
 
 struct LiteralExpr {

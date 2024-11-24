@@ -1,5 +1,7 @@
 #include "tokens.h"
 
+#include "defs.h"
+
 // NOTE: reserved keywords in lowercase, user-defines data in uppercase
 const char* token_type_to_string(TokenType ty) {
     switch (ty)
@@ -121,6 +123,22 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::_EOF: {
         return "EOF";
     }
+    }
+}
+
+void Token::print() const {
+    std::print("{}", token_type_to_string(m_type));
+    if (!m_lexeme.empty()) {
+        std::print(" -> {}", m_lexeme);
+    }
+    switch (data.ty) {
+        case TokenData::Type::FLOAT: {
+            std::print(" -> {}", data.data.f);
+            break;
+        }
+        default: {
+            break;
+        }
     }
 }
 

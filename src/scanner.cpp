@@ -274,19 +274,7 @@ void Scanner::scan_tokens(KauCompiler& compiler) {
 #ifdef DEBUG
 void Scanner::print_tokens() {
     for (const Token& token: m_tokens) {
-        std::print("{}", token_type_to_string(token.m_type));
-        if (!token.m_lexeme.empty()) {
-            std::print(" -> {}", token.m_lexeme);
-        }
-        switch (token.data.ty) {
-            case TokenData::Type::FLOAT: {
-                std::print(" -> {}", token.data.data.f);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+        token.print();
         std::println("");
     }
 }
