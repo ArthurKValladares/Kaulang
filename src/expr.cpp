@@ -44,6 +44,19 @@ void Expr::print() {
             comma->left->print();
             std::print(" , ");
             comma->right->print();
+
+            break;
+        }
+        case Type::TERNARY: {
+            TernaryExpr* ternary = expr.ternary;
+
+            ternary->left->print();
+            std::print(" ? ");
+            ternary->middle->print();
+            std::print(" : ");
+            ternary->right->print();
+
+            break;
         }
     }
 }

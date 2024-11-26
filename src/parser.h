@@ -23,6 +23,8 @@ struct Parser {
 
 private:
     Expr* expression();
+    Expr* comma();
+    Expr* ternary();
     Expr* equality();
     Expr* comparison();
     Expr* term();

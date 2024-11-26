@@ -74,6 +74,20 @@ namespace {
         return expr;
     }
 
+    Expr* new_ternary(Expr* left, Expr* middle, Expr* right) {
+        TernaryExpr* ternary = (TernaryExpr*) malloc(sizeof(TernaryExpr));
+        ternary->left = left;
+        ternary->middle = middle;
+        ternary->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::TERNARY,
+            ExprPayload{.ternary = ternary}
+        );
+
+        return expr;
+    }
+
     // TODO: Will need to set some sort of ParserError state here to syncronyze later
     void error(Token* token, std::string_view message) {
         if (token->m_type == TokenType::_EOF) {
@@ -87,10 +101,18 @@ namespace {
 
 Expr* Parser::parse() {
     //TODO: error-handling and syncronization here later
-    Expr* expr = expression();
+    return expression();
+}
+
+Expr* Parser::expression() {
+    return comma();
+}
+
+Expr* Parser::comma() {
+    Expr* expr = ternary();
 
     while (match(std::initializer_list<TokenType>{TokenType::COMMA})) {
-        Expr* right = expression();
+        Expr* right = comma();
         Expr* comma = new_comma(expr, right);
         expr = comma;
     }
@@ -98,8 +120,23 @@ Expr* Parser::parse() {
     return expr;
 }
 
-Expr* Parser::expression() {
-    return equality();
+Expr* Parser::ternary() {
+    Expr* expr = equality();
+
+    if (match(std::initializer_list<TokenType>{TokenType::QUESTION_MARK})) {
+        Expr* middle = ternary();
+
+        if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+            Expr* right = ternary();
+            return new_ternary(expr, middle, right);
+        }
+
+        error(peek(), "ternary operator expected `:`.");
+
+        return nullptr;
+    } else {
+        return expr;
+    }
 }
 
 Expr* Parser::equality() {
@@ -210,6 +247,7 @@ bool Parser::check(TokenType ty) {
     if (is_at_end()) {
         return false;
     }
+    const auto test = peek()->m_type;
     return peek()->m_type == ty;
 }
 

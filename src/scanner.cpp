@@ -190,8 +190,16 @@ void Scanner::scan_token(KauCompiler& compiler) {
             add_token(TokenType::SEMICOLON);
             break;
         }
+        case ':': {
+            add_token(TokenType::COLON);
+            break;
+        }
         case '*': {
             add_token(TokenType::STAR);
+            break;
+        }
+        case '?': {
+            add_token(TokenType::QUESTION_MARK);
             break;
         }
         // One or two character tokens

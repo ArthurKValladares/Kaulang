@@ -33,11 +33,17 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::SEMICOLON: {
         return ";";
     }
+    case TokenType::COLON: {
+        return ":";
+    }
     case TokenType::SLASH: {
         return "/";
     }
     case TokenType::STAR: {
         return "*";
+    }
+    case TokenType::QUESTION_MARK: {
+        return "?";
     }
     case TokenType::BANG: {
         return "!";

@@ -8,6 +8,7 @@ struct GroupingExpr;
 struct UnaryExpr;
 struct BinaryExpr;
 struct CommaExpr;
+struct TernaryExpr;
 
 union ExprPayload {
     LiteralExpr* literal;
@@ -15,6 +16,7 @@ union ExprPayload {
     UnaryExpr* unary;
     BinaryExpr* binary;
     CommaExpr* comma;
+    TernaryExpr* ternary;
 };
 
 struct Expr {
@@ -24,6 +26,7 @@ struct Expr {
         BINARY,
         GROUPING,
         COMMA,
+        TERNARY,
     };
 
     Type ty;
@@ -53,5 +56,11 @@ struct BinaryExpr {
 
 struct CommaExpr {
     Expr* left;
+    Expr* right;
+};
+
+struct TernaryExpr {
+    Expr* left;
+    Expr* middle;
     Expr* right;
 };
