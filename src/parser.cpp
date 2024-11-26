@@ -61,6 +61,19 @@ namespace {
         return expr;
     }
 
+    Expr* new_comma(Expr* left, Expr* right) {
+        CommaExpr* comma = (CommaExpr*) malloc(sizeof(CommaExpr));
+        comma->left = left;
+        comma->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::COMMA,
+            ExprPayload{.comma = comma}
+        );
+
+        return expr;
+    }
+
     // TODO: Will need to set some sort of ParserError state here to syncronyze later
     void error(Token* token, std::string_view message) {
         if (token->m_type == TokenType::_EOF) {
@@ -74,7 +87,15 @@ namespace {
 
 Expr* Parser::parse() {
     //TODO: error-handling and syncronization here later
-    return expression();
+    Expr* expr = expression();
+
+    while (match(std::initializer_list<TokenType>{TokenType::COMMA})) {
+        Expr* right = expression();
+        Expr* comma = new_comma(expr, right);
+        expr = comma;
+    }
+
+    return expr;
 }
 
 Expr* Parser::expression() {

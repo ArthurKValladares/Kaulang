@@ -38,5 +38,12 @@ void Expr::print() {
 
             break;
         }
+        case Type::COMMA: {
+            CommaExpr* comma = expr.comma;
+
+            comma->left->print();
+            std::print(" , ");
+            comma->right->print();
+        }
     }
 }
