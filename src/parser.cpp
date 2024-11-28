@@ -140,9 +140,18 @@ Expr* Parser::ternary() {
 }
 
 Expr* Parser::equality() {
+    constexpr TokenType TOKEN_TYPES[2] = {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL};
+
+    if (match(TOKEN_TYPES)) {
+        Token* op = previous();
+        Expr* right = term();
+        error(peek(), "equality operator without right-hand side expression.");
+        return nullptr;
+    }
+
     Expr* expr = comparison();
 
-    while (match(std::initializer_list<TokenType>{TokenType::BANG, TokenType::BANG_EQUAL})) {
+    while (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
         Expr* binary = new_binary(expr, op, right);
@@ -153,9 +162,18 @@ Expr* Parser::equality() {
 }
 
 Expr* Parser::comparison() {
+    constexpr TokenType TOKEN_TYPES[4] = {TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESSER, TokenType::LESSER_EQUAL};
+
+    if (match(TOKEN_TYPES)) {
+        Token* op = previous();
+        Expr* right = term();
+        error(peek(), "comparison operator without right-hand side expression.");
+        return nullptr;
+    }
+
     Expr* expr = term();
 
-    while (match(std::initializer_list<TokenType>{TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESSER, TokenType::LESSER_EQUAL})) {
+    while (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
         Expr* binary = new_binary(expr, op, right);
@@ -166,9 +184,18 @@ Expr* Parser::comparison() {
 }
 
 Expr* Parser::term() {
+    constexpr TokenType TOKEN_TYPES[2] = {TokenType::MINUS, TokenType::PLUS};
+
+    if (match(TOKEN_TYPES)) {
+        Token* op = previous();
+        Expr* right = term();
+        error(peek(), "term operator without right-hand side expression.");
+        return nullptr;
+    }
+
     Expr* expr = factor();
 
-    while (match(std::initializer_list<TokenType>{TokenType::MINUS, TokenType::PLUS})) {
+    while (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = factor();
         Expr* binary = new_binary(expr, op, right);
@@ -179,9 +206,18 @@ Expr* Parser::term() {
 }
 
 Expr* Parser::factor() {
+    constexpr TokenType TOKEN_TYPES[2] = {TokenType::SLASH, TokenType::STAR};
+
+    if (match(TOKEN_TYPES)) {
+        Token* op = previous();
+        Expr* right = term();
+        error(peek(), "factor operator without right-hand side expression.");
+        return nullptr;
+    }
+
     Expr* expr = unary();
 
-    while (match(std::initializer_list<TokenType>{TokenType::SLASH, TokenType::STAR})) {
+    while (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = unary();
         Expr* binary = new_binary(expr, op, right);
