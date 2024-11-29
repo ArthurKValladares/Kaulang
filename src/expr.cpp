@@ -60,3 +60,57 @@ void Expr::print() {
         }
     }
 }
+
+Value Expr::evaluate() {
+    switch (ty)
+    {
+        case Type::LITERAL: {
+            LiteralExpr* literal = expr.literal;
+
+            return Value{};
+        }
+        case Type::UNARY: {
+            UnaryExpr* unary = expr.unary;
+
+            Value right_result = unary->right->evaluate();
+
+            switch (unary->op->m_type)
+            {
+                case TokenType::BANG: {
+                    // TODO: Error reporting
+                    assert(right_result.ty == Value::Type::BOOL);
+                    right_result.b = !right_result.b;
+                    break;
+                }
+                case TokenType::MINUS: {
+                    // TODO: Error reporting
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    right_result.f = -right_result.f;
+                    break;
+                }
+            }
+
+            return right_result;
+        }
+        case Type::BINARY: {
+            BinaryExpr* binary = expr.binary;
+
+            return Value{};
+        }
+        case Type::GROUPING: {
+            GroupingExpr* grouping = expr.grouping;
+
+            return Value{};
+        }
+        case Type::COMMA: {
+            CommaExpr* comma = expr.comma;
+
+            return Value{};
+        }
+        case Type::TERNARY: {
+            TernaryExpr* ternary = expr.ternary;
+
+            return Value{};
+        }
+    }
+}

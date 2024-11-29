@@ -27,6 +27,7 @@ enum class TokenType {
 struct TokenData {
     enum class Type {
         NIL,
+        // TODO: Support other number types
         FLOAT,
         STRING
     };

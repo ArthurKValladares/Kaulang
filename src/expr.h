@@ -19,6 +19,23 @@ union ExprPayload {
     TernaryExpr* ternary;
 };
 
+struct Value {
+    enum class Type {
+        NIL,
+        BOOL,
+        // TODO: Support other number types
+        FLOAT,
+        STRING,
+    };
+
+    Type ty;
+    union {
+        bool b;
+        float f;
+        std::string_view str;
+    };
+};
+
 struct Expr {
     enum class Type {
         LITERAL,
@@ -33,6 +50,7 @@ struct Expr {
     ExprPayload expr;
 
     void print();
+    Value evaluate();
 };
 
 struct LiteralExpr {
