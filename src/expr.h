@@ -2,6 +2,8 @@
 
 #include "tokens.h"
 
+#include <string>
+
 struct Expr;
 struct LiteralExpr;
 struct GroupingExpr;

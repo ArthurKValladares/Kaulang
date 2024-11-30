@@ -62,6 +62,7 @@ void Expr::print() {
 }
 
 Value Expr::evaluate() {
+    // TODO: error reporting
     switch (ty)
     {
         case Type::LITERAL: {
@@ -88,6 +89,10 @@ Value Expr::evaluate() {
                     right_result.f = -right_result.f;
                     break;
                 }
+                default: {
+                    assert(false);
+                    return Value{};
+                }
             }
 
             return right_result;
@@ -95,7 +100,104 @@ Value Expr::evaluate() {
         case Type::BINARY: {
             BinaryExpr* binary = expr.binary;
 
-            return Value{};
+            Value left_result = binary->left->evaluate();
+            Value right_result = binary->right->evaluate();
+
+            switch (binary->op->m_type)
+            {
+                case TokenType::PLUS: {
+                    if (left_result.ty == Value::Type::STRING && right_result.ty == Value::Type::STRING) {
+                        // TODO: do this right later once I use my own string stuff};
+                        return Value {
+                            .ty = Value::Type::STRING,
+                            .str = left_result.str
+                        };
+                    } else {
+                        assert(left_result.ty == Value::Type::FLOAT);
+                        assert(right_result.ty == Value::Type::FLOAT);
+                        return Value {
+                            .ty = Value::Type::FLOAT,
+                            .f = left_result.f + right_result.f
+                        };
+                    }
+                }
+                case TokenType::MINUS: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::FLOAT,
+                        .f = left_result.f - right_result.f
+                    };
+                }
+                case TokenType::SLASH: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::FLOAT,
+                        .f = left_result.f / right_result.f
+                    };
+                }
+                case TokenType::STAR: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::FLOAT,
+                        .f = left_result.f * right_result.f
+                    };
+                }
+                case TokenType::GREATER: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f > right_result.f
+                    };
+                }
+                case TokenType::GREATER_EQUAL: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f >= right_result.f
+                    };
+                }
+                case TokenType::LESSER: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f < right_result.f
+                    };
+                }
+                case TokenType::LESSER_EQUAL: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f <= right_result.f
+                    };
+                }
+                case TokenType::BANG_EQUAL: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f != right_result.f
+                    };
+                }
+                case TokenType::EQUAL_EQUAL: {
+                    assert(left_result.ty == Value::Type::FLOAT);
+                    assert(right_result.ty == Value::Type::FLOAT);
+                    return Value {
+                        .ty = Value::Type::BOOL,
+                        .b = left_result.f == right_result.f
+                    };
+                }
+                default: {
+                    assert(false);
+                    return Value{};
+                }
+            }
         }
         case Type::GROUPING: {
             GroupingExpr* grouping = expr.grouping;
