@@ -38,7 +38,14 @@ int KauCompiler::run(char* program, int size) {
 
     expr->print();
     std::println();
-    
+
+    Value expr_val = {};
+    RuntimeError expr_err = expr->evaluate(expr_val);
+    if (!expr_err.is_ok()) {
+        // TODO: Figure this out correctly
+        //error(0, expr_err.message);
+    }
+
     return 0;
 }
 

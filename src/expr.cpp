@@ -1,6 +1,56 @@
 #include "expr.h"
 #include "defs.h"
 
+RuntimeError RuntimeError::ok() {
+    return RuntimeError {
+        .ty = Type::Ok
+    };
+}
+
+RuntimeError RuntimeError::unsupported_binary_op(Token* token) {
+    return RuntimeError {
+        .ty = Type::UNSUPPORTED_OPERATOR,
+        .token = token,
+        .message = "Unsupported binary operation"
+    };
+}
+
+RuntimeError RuntimeError::unsupported_unary_op(Token* token) {
+    return RuntimeError {
+        .ty = Type::UNSUPPORTED_OPERATOR,
+        .token = token,
+        .message = "Unsupported unary operation"
+    };
+}
+
+RuntimeError RuntimeError::operands_must_be_floats(Token* token) {
+    return RuntimeError {
+        .ty = Type::WRONG_OPERANDS,
+        .token = token,
+        .message = "Operands must be floats"
+    };
+}
+
+RuntimeError RuntimeError::operand_must_be_float(Token* token) {
+    return RuntimeError {
+        .ty = Type::WRONG_OPERANDS,
+        .token = token,
+        .message = "Operand must be float"
+    };
+}
+
+RuntimeError RuntimeError::operand_must_be_bool(Token* token) {
+    return RuntimeError {
+        .ty = Type::WRONG_OPERANDS,
+        .token = token,
+        .message = "Operand must be bool"
+    };
+}
+
+bool RuntimeError::is_ok() const {
+    return ty == Type::Ok;
+}
+
 void Expr::print() {
     switch (ty)
     {
@@ -61,158 +111,192 @@ void Expr::print() {
     }
 }
 
-Value Expr::evaluate() {
+RuntimeError Expr::evaluate(Value& in_value) {
     // TODO: error reporting
     switch (ty)
     {
         case Type::LITERAL: {
             LiteralExpr* literal = expr.literal;
 
-            return Value{};
+            return RuntimeError::ok();
         }
         case Type::UNARY: {
             UnaryExpr* unary = expr.unary;
 
-            Value right_result = unary->right->evaluate();
+            Value right_val = {};
+            RuntimeError right_err = unary->right->evaluate(right_val);
+            if (!right_err.is_ok()) {
+                return right_err;
+            }
 
             switch (unary->op->m_type)
             {
                 case TokenType::BANG: {
-                    // TODO: Error reporting
-                    assert(right_result.ty == Value::Type::BOOL);
-                    right_result.b = !right_result.b;
+                    if(right_val.ty != Value::Type::BOOL) {
+                        return RuntimeError::operand_must_be_bool(unary->op);
+                    }
+                    right_val.b = !right_val.b;
                     break;
                 }
                 case TokenType::MINUS: {
-                    // TODO: Error reporting
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    right_result.f = -right_result.f;
+                    if(right_val.ty == Value::Type::FLOAT) {
+                        return RuntimeError::operand_must_be_float(unary->op);
+                    }
+                    right_val.f = -right_val.f;
                     break;
                 }
                 default: {
-                    assert(false);
-                    return Value{};
+                    return RuntimeError::unsupported_unary_op(unary->op);
                 }
             }
 
-            return right_result;
+            in_value = right_val;
+            return RuntimeError::ok();
         }
         case Type::BINARY: {
             BinaryExpr* binary = expr.binary;
 
-            Value left_result = binary->left->evaluate();
-            Value right_result = binary->right->evaluate();
+            Value left_val = {};
+            RuntimeError left_err = binary->left->evaluate(left_val);
+            if (!left_err.is_ok()) {
+                return left_err;
+            }
+
+            Value right_val = {};
+            RuntimeError right_err = binary->right->evaluate(right_val);
+            if (!right_err.is_ok()) {
+                return right_err;
+            }
 
             switch (binary->op->m_type)
             {
                 case TokenType::PLUS: {
-                    if (left_result.ty == Value::Type::STRING && right_result.ty == Value::Type::STRING) {
-                        // TODO: do this right later once I use my own string stuff};
-                        return Value {
+                    if (left_val.ty == Value::Type::STRING && right_val.ty == Value::Type::STRING) {
+                        // TODO: do this right later once I use my own string stuff
+                        in_value = Value {
                             .ty = Value::Type::STRING,
-                            .str = left_result.str
+                            .str = left_val.str
                         };
                     } else {
-                        assert(left_result.ty == Value::Type::FLOAT);
-                        assert(right_result.ty == Value::Type::FLOAT);
-                        return Value {
+                        if (left_val.ty != Value::Type::FLOAT ||
+                            right_val.ty != Value::Type::FLOAT) {
+                                return RuntimeError::operand_must_be_float(binary->op);
+                        }
+                        in_value = Value {
                             .ty = Value::Type::FLOAT,
-                            .f = left_result.f + right_result.f
+                            .f = left_val.f + right_val.f
                         };
                     }
                 }
                 case TokenType::MINUS: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::FLOAT,
-                        .f = left_result.f - right_result.f
+                        .f = left_val.f - right_val.f
                     };
                 }
                 case TokenType::SLASH: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::FLOAT,
-                        .f = left_result.f / right_result.f
+                        .f = left_val.f / right_val.f
                     };
                 }
                 case TokenType::STAR: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::FLOAT,
-                        .f = left_result.f * right_result.f
+                        .f = left_val.f * right_val.f
                     };
                 }
                 case TokenType::GREATER: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f > right_result.f
+                        .b = left_val.f > right_val.f
                     };
                 }
                 case TokenType::GREATER_EQUAL: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f >= right_result.f
+                        .b = left_val.f >= right_val.f
                     };
                 }
                 case TokenType::LESSER: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f < right_result.f
+                        .b = left_val.f < right_val.f
                     };
                 }
                 case TokenType::LESSER_EQUAL: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f <= right_result.f
+                        .b = left_val.f <= right_val.f
                     };
                 }
                 case TokenType::BANG_EQUAL: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f != right_result.f
+                        .b = left_val.f != right_val.f
                     };
                 }
                 case TokenType::EQUAL_EQUAL: {
-                    assert(left_result.ty == Value::Type::FLOAT);
-                    assert(right_result.ty == Value::Type::FLOAT);
-                    return Value {
+                    if (left_val.ty != Value::Type::FLOAT ||
+                        right_val.ty != Value::Type::FLOAT) {
+                            return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .b = left_result.f == right_result.f
+                        .b = left_val.f == right_val.f
                     };
                 }
                 default: {
-                    assert(false);
-                    return Value{};
+                    return RuntimeError::unsupported_binary_op(binary->op);
                 }
             }
         }
         case Type::GROUPING: {
             GroupingExpr* grouping = expr.grouping;
 
-            return Value{};
+            return RuntimeError::ok();
         }
         case Type::COMMA: {
             CommaExpr* comma = expr.comma;
 
-            return Value{};
+            return RuntimeError::ok();
         }
         case Type::TERNARY: {
             TernaryExpr* ternary = expr.ternary;
 
-            return Value{};
+            return RuntimeError::ok();
         }
     }
 }

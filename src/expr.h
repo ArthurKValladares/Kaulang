@@ -21,6 +21,27 @@ union ExprPayload {
     TernaryExpr* ternary;
 };
 
+struct RuntimeError {
+    static RuntimeError ok();
+    static RuntimeError unsupported_binary_op(Token* token);
+    static RuntimeError unsupported_unary_op(Token* token);
+    static RuntimeError operands_must_be_floats(Token* token);
+    static RuntimeError operand_must_be_float(Token* token);
+    static RuntimeError operand_must_be_bool(Token* token);
+
+    bool is_ok() const;
+
+    enum class Type {
+        Ok,
+        UNSUPPORTED_OPERATOR,
+        WRONG_OPERANDS,
+    };
+
+    Type ty;
+    Token* token;
+    std::string_view message;
+};
+
 struct Value {
     enum class Type {
         NIL,
@@ -52,7 +73,7 @@ struct Expr {
     ExprPayload expr;
 
     void print();
-    Value evaluate();
+    RuntimeError evaluate(Value& in_value);
 };
 
 struct LiteralExpr {
