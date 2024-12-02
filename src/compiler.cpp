@@ -19,13 +19,14 @@ long get_file_size(FILE* file) {
 }
 };
 
-void KauCompiler::error(int line, const char* message) {
-    report(line, "", message);
+void KauCompiler::error(int line, std::string_view message) {
+    std::println(stderr, "[Line {}] Error: {}", line, message);
+    m_had_error = true;
 }
 
-void KauCompiler::report(int line, const char* where, const char* message) {
-    std::println(stderr, "[Line {}] Error {}: {}", line, where, message);
-    m_had_error = true;
+void KauCompiler::runtime_error(int line, std::string_view message) {
+    std::println(stderr, "[Line {}] Runtime Error: {}", line, message);
+    m_had_runtime_error = true;
 }
 
 int KauCompiler::run(char* program, int size) {
@@ -42,8 +43,7 @@ int KauCompiler::run(char* program, int size) {
     Value expr_val = {};
     RuntimeError expr_err = expr->evaluate(expr_val);
     if (!expr_err.is_ok()) {
-        // TODO: Figure this out correctly
-        //error(0, expr_err.message);
+        runtime_error(expr_err.token->m_line, expr_err.message);
     }
 
     return 0;
@@ -97,6 +97,9 @@ int KauCompiler::run_file(const char* file_path) {
 
     if (m_had_error) {
         return -1;
+    }
+    if (m_had_runtime_error) {
+        return -2;
     }
 
     return 0;
