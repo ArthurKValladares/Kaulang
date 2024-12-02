@@ -59,7 +59,7 @@ bool RuntimeError::is_ok() const {
     return ty == Type::Ok;
 }
 
-void Expr::print() {
+void Expr::print() const {
     switch (ty)
     {
         case Type::LITERAL: {
@@ -355,6 +355,28 @@ RuntimeError Expr::evaluate(Value& in_value) {
             TernaryExpr* ternary = expr.ternary;
 
             return RuntimeError::ok();
+        }
+    }
+}
+
+void Value::print() const {
+    switch (ty)
+    {
+        case Type::NIL: {
+            std::println("nil");
+            break;
+        }
+        case Type::BOOL: {
+            std::println("{}", b);
+            break;
+        }
+        case Type::FLOAT: {
+            std::println("{}", f);
+            break;
+        }
+        case Type::STRING: {
+            std::println("{}", str);
+            break;
         }
     }
 }

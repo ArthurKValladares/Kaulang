@@ -45,7 +45,8 @@ int KauCompiler::run(char* program, int size) {
     if (!expr_err.is_ok()) {
         runtime_error(expr_err.token->m_line, expr_err.message);
     }
-
+    expr_val.print();
+    
     return 0;
 }
 

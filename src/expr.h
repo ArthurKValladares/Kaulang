@@ -59,6 +59,8 @@ struct Value {
         float f;
         std::string_view str;
     };
+
+    void print() const;
 };
 
 struct Expr {
@@ -74,7 +76,7 @@ struct Expr {
     Type ty;
     ExprPayload expr;
 
-    void print();
+    void print() const;
     RuntimeError evaluate(Value& in_value);
 };
 
