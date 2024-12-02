@@ -7,6 +7,14 @@ RuntimeError RuntimeError::ok() {
     };
 }
 
+RuntimeError RuntimeError::unsupported_literal(Token* token) {
+    return RuntimeError {
+        .ty = Type::UNSUPPORTED_LITERAL,
+        .token = token,
+        .message = "Unsupported literal"
+    };
+}
+
 RuntimeError RuntimeError::unsupported_binary_op(Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
@@ -117,6 +125,46 @@ RuntimeError Expr::evaluate(Value& in_value) {
     {
         case Type::LITERAL: {
             LiteralExpr* literal = expr.literal;
+            switch (literal->val->m_type)
+            {
+                case TokenType::FALSE: {
+                    in_value = Value {
+                        .ty = Value::Type::BOOL,
+                        .f = false
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::TRUE: {
+                    in_value = Value {
+                        .ty = Value::Type::BOOL,
+                        .f = true
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::NIL: {
+                    in_value = Value {
+                        .ty = Value::Type::NIL,
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::NUMBER: {
+                    in_value = Value {
+                        .ty = Value::Type::FLOAT,
+                        .f = literal->val->data.data.f
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::STRING: {
+                    in_value = Value {
+                        .ty = Value::Type::STRING,
+                        .str = literal->val->m_lexeme
+                    };
+                    return RuntimeError::ok();
+                }
+                default:  {
+                    return RuntimeError::unsupported_literal(literal->val);
+                }
+            }
 
             return RuntimeError::ok();
         }
@@ -187,6 +235,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .f = left_val.f + right_val.f
                         };
                     }
+                    return RuntimeError::ok();
                 }
                 case TokenType::MINUS: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -197,6 +246,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::FLOAT,
                         .f = left_val.f - right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::SLASH: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -207,6 +257,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::FLOAT,
                         .f = left_val.f / right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::STAR: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -217,6 +268,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::FLOAT,
                         .f = left_val.f * right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::GREATER: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -227,6 +279,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f > right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::GREATER_EQUAL: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -237,6 +290,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f >= right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::LESSER: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -247,6 +301,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f < right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::LESSER_EQUAL: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -257,6 +312,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f <= right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::BANG_EQUAL: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -267,6 +323,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f != right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 case TokenType::EQUAL_EQUAL: {
                     if (left_val.ty != Value::Type::FLOAT ||
@@ -277,6 +334,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                         .ty = Value::Type::BOOL,
                         .b = left_val.f == right_val.f
                     };
+                    return RuntimeError::ok();
                 }
                 default: {
                     return RuntimeError::unsupported_binary_op(binary->op);

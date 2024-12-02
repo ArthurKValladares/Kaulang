@@ -22,3 +22,8 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
+// TODO:Literal tokens a bit hard to work with
+// maybe add specific literal type to enum case, i.e,
+// TokenType::FALSE, TokenType::TRUE, TokenType::NIL, TokenType::NUMBER, TokenType::STRING
+// LITERAL_FALSE, LITERAL_TRUE, ...

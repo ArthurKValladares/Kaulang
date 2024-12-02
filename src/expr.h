@@ -23,6 +23,7 @@ union ExprPayload {
 
 struct RuntimeError {
     static RuntimeError ok();
+    static RuntimeError unsupported_literal(Token* token);
     static RuntimeError unsupported_binary_op(Token* token);
     static RuntimeError unsupported_unary_op(Token* token);
     static RuntimeError operands_must_be_floats(Token* token);
@@ -33,6 +34,7 @@ struct RuntimeError {
 
     enum class Type {
         Ok,
+        UNSUPPORTED_LITERAL,
         UNSUPPORTED_OPERATOR,
         WRONG_OPERANDS,
     };
