@@ -55,7 +55,7 @@ RuntimeError RuntimeError::operand_must_be_bool(Token* token) {
     };
 }
 
-static RuntimeError divide_by_zero(Token* token) {
+RuntimeError RuntimeError::divide_by_zero(Token* token) {
     return RuntimeError {
         .ty = Type::DIVIDE_BY_ZERO,
         .token = token,
