@@ -19,9 +19,13 @@ struct Parser {
         : m_tokens(std::move(scanner.m_tokens))
     {}
 
-    Expr* parse();
+    std::vector<Stmt> parse();
 
 private:
+    std::vector<Stmt> program();
+    Stmt statement();
+    Stmt expr_statement();
+    Stmt print_statement();
     Expr* expression();
     Expr* comma();
     Expr* ternary();

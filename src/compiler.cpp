@@ -35,18 +35,23 @@ int KauCompiler::run(char* program, int size) {
     scanner.scan_tokens(*this);
 
     Parser parser(std::move(scanner));
-    Expr* expr = parser.parse();
+    std::vector<Stmt> stmts = parser.parse();
 
-    expr->print();
-    std::println();
+    // TODO: Will need something smarter soon
+    for (Stmt stmt : stmts) {
+        Expr* expr = stmt.expr;
 
-    Value expr_val = {};
-    RuntimeError expr_err = expr->evaluate(expr_val);
-    if (!expr_err.is_ok()) {
-        runtime_error(expr_err.token->m_line, expr_err.message);
+        expr->print();
+        std::println();
+
+        Value expr_val = {};
+        RuntimeError expr_err = expr->evaluate(expr_val);
+        if (!expr_err.is_ok()) {
+            runtime_error(expr_err.token->m_line, expr_err.message);
+        }
+        expr_val.print();
     }
-    expr_val.print();
-    
+
     return 0;
 }
 

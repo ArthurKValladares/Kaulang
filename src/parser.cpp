@@ -88,6 +88,20 @@ namespace {
         return expr;
     }
 
+    Stmt new_print_stmt(Expr* val) {
+        return Stmt {
+            .ty = Stmt::Type::PRINT,
+            .expr = val
+        };
+    }
+
+    Stmt new_expr_stmt(Expr* expr) {
+        return Stmt {
+            .ty = Stmt::Type::EXPR,
+            .expr = expr
+        };
+    }
+
     // TODO: Will need to set some sort of ParserError state here to syncronyze later
     void error(Token* token, std::string_view message) {
         if (token->m_type == TokenType::_EOF) {
@@ -99,9 +113,37 @@ namespace {
     }
 };
 
-Expr* Parser::parse() {
+std::vector<Stmt> Parser::parse() {
     //TODO: error-handling and syncronization here later
-    return expression();
+    return program();
+}
+
+std::vector<Stmt> Parser::program() {
+    std::vector<Stmt> statements = {};
+    while (!is_at_end()) {
+        statements.emplace_back(statement());
+    }
+    return statements;
+}
+
+Stmt Parser::statement() {
+    if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
+        return print_statement();
+    } else {
+        return expr_statement();
+    }
+}
+
+Stmt Parser::expr_statement() {
+    Expr* val = expression();
+    consume(TokenType::SEMICOLON, "Expected ';' after expression");
+    return new_expr_stmt(val);
+}
+
+Stmt Parser::print_statement() {
+    Expr* val = expression();
+    consume(TokenType::SEMICOLON, "Expected ';' after value");
+    return new_print_stmt(val);
 }
 
 Expr* Parser::expression() {

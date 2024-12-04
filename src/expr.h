@@ -11,6 +11,7 @@ struct UnaryExpr;
 struct BinaryExpr;
 struct CommaExpr;
 struct TernaryExpr;
+struct PrintExpr;
 
 union ExprPayload {
     LiteralExpr* literal;
@@ -19,6 +20,7 @@ union ExprPayload {
     BinaryExpr* binary;
     CommaExpr* comma;
     TernaryExpr* ternary;
+    PrintExpr* print;
 };
 
 struct RuntimeError {
@@ -66,6 +68,17 @@ struct Value {
     };
 
     void print() const;
+};
+
+// TODO: Probably needs to be Stmt at some point soon
+struct Stmt {
+    enum class Type {
+        PRINT,
+        EXPR,
+    };
+
+    Type ty;
+    Expr* expr;
 };
 
 struct Expr {
