@@ -29,6 +29,7 @@ struct RuntimeError {
     static RuntimeError operands_must_be_floats(Token* token);
     static RuntimeError operand_must_be_float(Token* token);
     static RuntimeError operand_must_be_bool(Token* token);
+    static RuntimeError divide_by_zero(Token* token);
 
     bool is_ok() const;
 
@@ -37,6 +38,7 @@ struct RuntimeError {
         UNSUPPORTED_LITERAL,
         UNSUPPORTED_OPERATOR,
         WRONG_OPERANDS,
+        DIVIDE_BY_ZERO,
     };
 
     Type ty;

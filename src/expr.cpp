@@ -55,6 +55,14 @@ RuntimeError RuntimeError::operand_must_be_bool(Token* token) {
     };
 }
 
+static RuntimeError divide_by_zero(Token* token) {
+    return RuntimeError {
+        .ty = Type::DIVIDE_BY_ZERO,
+        .token = token,
+        .message = "Divide by zero"
+    };
+}
+
 bool RuntimeError::is_ok() const {
     return ty == Type::Ok;
 }
@@ -252,6 +260,9 @@ RuntimeError Expr::evaluate(Value& in_value) {
                     if (left_val.ty != Value::Type::FLOAT ||
                         right_val.ty != Value::Type::FLOAT) {
                             return RuntimeError::operand_must_be_float(binary->op);
+                    }
+                    if (right_val.f == 0.0) {
+                        return RuntimeError::divide_by_zero();
                     }
                     in_value = Value {
                         .ty = Value::Type::FLOAT,
