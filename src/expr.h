@@ -26,10 +26,13 @@ struct RuntimeError {
     static RuntimeError unsupported_literal(Token* token);
     static RuntimeError unsupported_binary_op(Token* token);
     static RuntimeError unsupported_unary_op(Token* token);
+    static RuntimeError operands_must_be_equal(Token* token);
     static RuntimeError operands_must_be_floats(Token* token);
+    static RuntimeError operands_must_be_strings(Token* token);
     static RuntimeError operand_must_be_float(Token* token);
     static RuntimeError operand_must_be_bool(Token* token);
     static RuntimeError divide_by_zero(Token* token);
+    static RuntimeError operands_do_not_support_operator(Token* token);
 
     bool is_ok() const;
 
