@@ -55,15 +55,18 @@ struct Value {
     enum class Type {
         NIL,
         BOOL,
-        // TODO: Support other number types
         FLOAT,
+        DOUBLE,
+        INT,
         STRING,
     };
 
     Type ty;
     union {
         bool b;
+        int i;
         float f;
+        double d;
         std::string_view str;
     };
 

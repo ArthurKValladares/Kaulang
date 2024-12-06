@@ -280,7 +280,11 @@ Expr* Parser::unary() {
 }
 
 Expr* Parser::primary() {
-    if (match(std::initializer_list<TokenType>{TokenType::FALSE, TokenType::TRUE, TokenType::NIL, TokenType::NUMBER, TokenType::STRING})) {
+    if (match(std::initializer_list<TokenType>{
+        TokenType::FALSE, TokenType::TRUE, TokenType::NIL, 
+        TokenType::NUMBER_INT, TokenType::NUMBER_FLOAT, TokenType::NUMBER_DOUBLE,
+        TokenType::STRING
+    })) {
         return new_literal(previous());
     }
 

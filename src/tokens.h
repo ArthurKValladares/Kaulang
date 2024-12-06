@@ -15,7 +15,8 @@ enum class TokenType {
     LESSER, LESSER_EQUAL,
 
     // Literals
-    IDENTIFIER, STRING, NUMBER,
+    IDENTIFIER, STRING,
+    NUMBER_INT, NUMBER_FLOAT, NUMBER_DOUBLE,
 
     // Keywords
     AND, CLASS, ELSE, FALSE, FN, FOR, IF, NIL, OR,
@@ -27,17 +28,22 @@ enum class TokenType {
 struct TokenData {
     enum class Type {
         NIL,
-        // TODO: Support other number types
         FLOAT,
+        DOUBLE,
+        INT,
         STRING
     };
 
     Type ty;
     union InnerData {
         float f;
+        double d;
+        int i;
     } data;
 
     static TokenData new_float(float val);
+    static TokenData new_double(double val);
+    static TokenData new_int(int val);
 };
 
 struct Token {

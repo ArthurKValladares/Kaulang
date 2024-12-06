@@ -105,6 +105,8 @@ void Scanner::number() {
         advance();
     }
 
+    TokenData::Type ty = TokenData::Type::INT;
+
     if (peek() == '.' && isdigit(peek_next())) {
         advance(); // skip over '.'
 
@@ -113,10 +115,26 @@ void Scanner::number() {
         }
     }
 
-    // TODO: For now its all floats, will add more types later
-    const float fractional = atof(m_source + m_start_char_offset);
+    if (peek() == 'f') {
+        advance();
+        ty = TokenData::Type::FLOAT;
+    } else if (peek() == 'd') {
+        advance();
+        ty = TokenData::Type::DOUBLE;
+    }
 
-    add_token(TokenType::NUMBER, TokenData::new_float(fractional));
+    if (ty == TokenData::Type::INT) {
+        const int integer = atoi(m_source + m_start_char_offset);
+        add_token(TokenType::NUMBER_INT, TokenData::new_int(integer));
+    } else if (ty == TokenData::Type::FLOAT) {
+        const float fractional = atof(m_source + m_start_char_offset);
+        add_token(TokenType::NUMBER_FLOAT, TokenData::new_float(fractional));
+    } else {
+        char* err;
+        const double fractional = strtod(m_source + m_start_char_offset, &err);
+        // TODO: Probably some error checking on err
+        add_token(TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
+    }
 }
 
 void Scanner::identifier() {

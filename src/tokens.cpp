@@ -75,8 +75,14 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::STRING: {
         return "STRING";
     }
-    case TokenType::NUMBER: {
-        return "NUMBER";
+    case TokenType::NUMBER_INT: {
+        return "INT";
+    }
+    case TokenType::NUMBER_FLOAT: {
+        return "FLOAT";
+    }
+    case TokenType::NUMBER_DOUBLE: {
+        return "DOUBLE";
     }
     case TokenType::AND: {
         return "and";
@@ -142,6 +148,14 @@ void Token::print() const {
             std::print(" -> {}", data.data.f);
             break;
         }
+        case TokenData::Type::DOUBLE: {
+            std::print(" -> {}", data.data.d);
+            break;
+        }
+        case TokenData::Type::INT: {
+            std::print(" -> {}", data.data.i);
+            break;
+        }
         default: {
             break;
         }
@@ -153,6 +167,24 @@ TokenData TokenData::new_float(float val) {
     data.ty = TokenData::Type::FLOAT;
     data.data = TokenData::InnerData {
         .f = val
+    };
+    return data;
+}
+
+TokenData TokenData::new_double(double val) {
+    TokenData data = {};
+    data.ty = TokenData::Type::DOUBLE;
+    data.data = TokenData::InnerData {
+        .d = val
+    };
+    return data;
+}
+
+TokenData TokenData::new_int(int val) {
+    TokenData data = {};
+    data.ty = TokenData::Type::INT;
+    data.data = TokenData::InnerData {
+        .i = val
     };
     return data;
 }

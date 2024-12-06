@@ -152,7 +152,6 @@ void Expr::print() const {
 }
 
 RuntimeError Expr::evaluate(Value& in_value) {
-    // TODO: error reporting
     switch (ty)
     {
         case Type::LITERAL: {
@@ -179,10 +178,24 @@ RuntimeError Expr::evaluate(Value& in_value) {
                     };
                     return RuntimeError::ok();
                 }
-                case TokenType::NUMBER: {
+                case TokenType::NUMBER_INT: {
+                    in_value = Value {
+                        .ty = Value::Type::INT,
+                        .i = literal->val->data.data.i
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::NUMBER_FLOAT: {
                     in_value = Value {
                         .ty = Value::Type::FLOAT,
                         .f = literal->val->data.data.f
+                    };
+                    return RuntimeError::ok();
+                }
+                case TokenType::NUMBER_DOUBLE: {
+                    in_value = Value {
+                        .ty = Value::Type::DOUBLE,
+                        .d = literal->val->data.data.d
                     };
                     return RuntimeError::ok();
                 }
@@ -250,6 +263,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
 
             switch (binary->op->m_type)
             {
+                // TODO: This needs to be made more generic so it works with all number types
                 case TokenType::PLUS: {
                     if (left_val.ty == Value::Type::STRING && right_val.ty == Value::Type::STRING) {
                         // TODO: do this right later once I use my own string stuff
@@ -306,6 +320,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                     return RuntimeError::ok();
                 }
                 // TODO: Tons of repetition in comparators, clean up later
+                // also needs to handle all number types
                 case TokenType::GREATER: {
                     if (left_val.ty != right_val.ty) {
                             return RuntimeError::operands_must_be_equal(binary->op);
