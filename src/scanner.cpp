@@ -107,8 +107,9 @@ void Scanner::number() {
 
     TokenData::Type ty = TokenData::Type::INT;
 
-    if (peek() == '.' && isdigit(peek_next())) {
+    if (peek() == '.') {
         advance(); // skip over '.'
+        ty = TokenData::Type::FLOAT;
 
         while(isdigit(peek())) {
             advance();

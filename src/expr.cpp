@@ -263,64 +263,152 @@ RuntimeError Expr::evaluate(Value& in_value) {
 
             switch (binary->op->m_type)
             {
-                // TODO: This needs to be made more generic so it works with all number types
+                // TODO: Tons of repetition, clean up later
                 case TokenType::PLUS: {
-                    if (left_val.ty == Value::Type::STRING && right_val.ty == Value::Type::STRING) {
-                        // TODO: do this right later once I use my own string stuff
-                        in_value = Value {
-                            .ty = Value::Type::STRING,
-                            .str = left_val.str
-                        };
-                    } else {
-                        if (left_val.ty != Value::Type::FLOAT ||
-                            right_val.ty != Value::Type::FLOAT) {
-                                return RuntimeError::operand_must_be_float(binary->op);
-                        }
+                    if (left_val.ty != right_val.ty) {
+                            return RuntimeError::operands_must_be_equal(binary->op);
+                    }
+
+                    if (left_val.ty == Value::Type::FLOAT) {
                         in_value = Value {
                             .ty = Value::Type::FLOAT,
                             .f = left_val.f + right_val.f
                         };
+                        return RuntimeError::ok();
                     }
-                    return RuntimeError::ok();
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::DOUBLE,
+                            .d = left_val.d + right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::INT,
+                            .i = left_val.i + right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::STRING) {
+                        // TODO: Correctly handle later when i have better string support
+                        in_value = Value {
+                            .ty = Value::Type::STRING,
+                            .str = left_val.str
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::MINUS: {
-                    if (left_val.ty != Value::Type::FLOAT ||
-                        right_val.ty != Value::Type::FLOAT) {
-                            return RuntimeError::operand_must_be_float(binary->op);
+                    if (left_val.ty != right_val.ty) {
+                            return RuntimeError::operands_must_be_equal(binary->op);
                     }
-                    in_value = Value {
-                        .ty = Value::Type::FLOAT,
-                        .f = left_val.f - right_val.f
-                    };
-                    return RuntimeError::ok();
+
+                    if (left_val.ty == Value::Type::FLOAT) {
+                        in_value = Value {
+                            .ty = Value::Type::FLOAT,
+                            .f = left_val.f - right_val.f
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::DOUBLE,
+                            .d = left_val.d - right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::INT,
+                            .i = left_val.i - right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::SLASH: {
-                    if (left_val.ty != Value::Type::FLOAT ||
-                        right_val.ty != Value::Type::FLOAT) {
-                            return RuntimeError::operand_must_be_float(binary->op);
+                    if (left_val.ty != right_val.ty) {
+                            return RuntimeError::operands_must_be_equal(binary->op);
                     }
-                    if (right_val.f == 0.0) {
-                        return RuntimeError::divide_by_zero(binary->op);
+
+                    if (left_val.ty == Value::Type::FLOAT) {
+                        if (right_val.f == 0.0) {
+                            return RuntimeError::divide_by_zero(binary->op);
+                        }
+
+                        in_value = Value {
+                            .ty = Value::Type::FLOAT,
+                            .f = left_val.f / right_val.f
+                        };
+                        return RuntimeError::ok();
                     }
-                    in_value = Value {
-                        .ty = Value::Type::FLOAT,
-                        .f = left_val.f / right_val.f
-                    };
-                    return RuntimeError::ok();
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        if (right_val.d == 0.0) {
+                            return RuntimeError::divide_by_zero(binary->op);
+                        }
+
+                        in_value = Value {
+                            .ty = Value::Type::DOUBLE,
+                            .d = left_val.d / right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        if (right_val.i == 0) {
+                            return RuntimeError::divide_by_zero(binary->op);
+                        }
+                        
+                        in_value = Value {
+                            .ty = Value::Type::INT,
+                            .i = left_val.i / right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::STAR: {
-                    if (left_val.ty != Value::Type::FLOAT ||
-                        right_val.ty != Value::Type::FLOAT) {
-                            return RuntimeError::operand_must_be_float(binary->op);
+                    if (left_val.ty != right_val.ty) {
+                            return RuntimeError::operands_must_be_equal(binary->op);
                     }
-                    in_value = Value {
-                        .ty = Value::Type::FLOAT,
-                        .f = left_val.f * right_val.f
-                    };
-                    return RuntimeError::ok();
+
+                    if (left_val.ty == Value::Type::FLOAT) {
+                        in_value = Value {
+                            .ty = Value::Type::FLOAT,
+                            .f = left_val.f * right_val.f
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::DOUBLE,
+                            .d = left_val.d * right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::INT,
+                            .i = left_val.i * right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
-                // TODO: Tons of repetition in comparators, clean up later
-                // also needs to handle all number types
                 case TokenType::GREATER: {
                     if (left_val.ty != right_val.ty) {
                             return RuntimeError::operands_must_be_equal(binary->op);
@@ -332,15 +420,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f > right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d > right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i > right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str > right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::GREATER_EQUAL: {
                     if (left_val.ty != right_val.ty) {
@@ -353,15 +459,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f >= right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d >= right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i >= right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+                    
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str >= right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::LESSER: {
                     if (left_val.ty != right_val.ty) {
@@ -374,15 +498,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f < right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d < right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i < right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+                    
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str < right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::LESSER_EQUAL: {
                     if (left_val.ty != right_val.ty) {
@@ -395,15 +537,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f <= right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d <= right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i <= right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+                    
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str <= right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::BANG_EQUAL: {
                     if (left_val.ty != right_val.ty) {
@@ -416,15 +576,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f != right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d != right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i != right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+                    
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str != right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 case TokenType::EQUAL_EQUAL: {
                     if (left_val.ty != right_val.ty) {
@@ -437,15 +615,33 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             .b = left_val.f == right_val.f
                         };
                         return RuntimeError::ok();
-                    } else if (left_val.ty == Value::Type::STRING) {
+                    }
+                    
+                    if (left_val.ty == Value::Type::DOUBLE) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.d == right_val.d
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::INT) {
+                        in_value = Value {
+                            .ty = Value::Type::BOOL,
+                            .b = left_val.i == right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::STRING) {
                         in_value = Value {
                             .ty = Value::Type::BOOL,
                             .b = left_val.str == right_val.str
                         };
                         return RuntimeError::ok();
-                    } else {
-                        return RuntimeError::operands_do_not_support_operator(binary->op);
                     }
+
+                    return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
                 default: {
                     return RuntimeError::unsupported_binary_op(binary->op);
@@ -483,6 +679,14 @@ void Value::print() const {
         }
         case Type::FLOAT: {
             std::println("{}", f);
+            break;
+        }
+        case Type::DOUBLE: {
+            std::println("{}", d);
+            break;
+        }
+        case Type::INT: {
+            std::println("{}", i);
             break;
         }
         case Type::STRING: {
