@@ -1,6 +1,16 @@
 #include "expr.h"
 #include "defs.h"
 
+#define TEST_BINARY_OP(VALUE_IN_TYPE, VALUE_IN_FIELD, VALUE_OUT_TYPE, VALUE_OUT_FIELD, OPERATOR) {\
+    if (left_val.ty == Value::Type::VALUE_IN_TYPE) {\
+        in_value = Value {\
+            .ty = Value::Type::VALUE_OUT_TYPE,\
+            .VALUE_OUT_FIELD = left_val.VALUE_IN_FIELD OPERATOR right_val.VALUE_IN_FIELD\
+        };\
+        return RuntimeError::ok();\
+    }\
+}
+
 RuntimeError RuntimeError::ok() {
     return RuntimeError {
         .ty = Type::Ok
@@ -269,29 +279,9 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::FLOAT,
-                            .f = left_val.f + right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::DOUBLE,
-                            .d = left_val.d + right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::INT,
-                            .i = left_val.i + right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, FLOAT, f, +);
+                    TEST_BINARY_OP(DOUBLE, d, DOUBLE, d, +);
+                    TEST_BINARY_OP(INT, i, INT, i, +);
 
                     if (left_val.ty == Value::Type::STRING) {
                         // TODO: Correctly handle later when i have better string support
@@ -309,29 +299,9 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::FLOAT,
-                            .f = left_val.f - right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::DOUBLE,
-                            .d = left_val.d - right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::INT,
-                            .i = left_val.i - right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, FLOAT, f, -);
+                    TEST_BINARY_OP(DOUBLE, d, DOUBLE, d, -);
+                    TEST_BINARY_OP(INT, i, INT, i, -);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -383,29 +353,9 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::FLOAT,
-                            .f = left_val.f * right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::DOUBLE,
-                            .d = left_val.d * right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::INT,
-                            .i = left_val.i * right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, FLOAT, f, *);
+                    TEST_BINARY_OP(DOUBLE, d, DOUBLE, d, *);
+                    TEST_BINARY_OP(INT, i, INT, i, *);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -414,37 +364,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f > right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d > right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i > right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str > right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, >);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, >);
+                    TEST_BINARY_OP(INT, i, BOOL, b, >);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, >);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -453,37 +376,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f >= right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d >= right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i >= right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-                    
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str >= right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, >=);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, >=);
+                    TEST_BINARY_OP(INT, i, BOOL, b, >=);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, >=);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -492,37 +388,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f < right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d < right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i < right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-                    
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str < right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, <);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, <);
+                    TEST_BINARY_OP(INT, i, BOOL, b, <);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, <);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -531,37 +400,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f <= right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d <= right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i <= right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-                    
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str <= right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, <=);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, <=);
+                    TEST_BINARY_OP(INT, i, BOOL, b, <=);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, <=);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -570,37 +412,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f != right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d != right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i != right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-                    
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str != right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, !=);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, !=);
+                    TEST_BINARY_OP(INT, i, BOOL, b, !=);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, !=);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
@@ -609,37 +424,10 @@ RuntimeError Expr::evaluate(Value& in_value) {
                             return RuntimeError::operands_must_be_equal(binary->op);
                     }
 
-                    if (left_val.ty == Value::Type::FLOAT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.f == right_val.f
-                        };
-                        return RuntimeError::ok();
-                    }
-                    
-                    if (left_val.ty == Value::Type::DOUBLE) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.d == right_val.d
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::INT) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.i == right_val.i
-                        };
-                        return RuntimeError::ok();
-                    }
-
-                    if (left_val.ty == Value::Type::STRING) {
-                        in_value = Value {
-                            .ty = Value::Type::BOOL,
-                            .b = left_val.str == right_val.str
-                        };
-                        return RuntimeError::ok();
-                    }
+                    TEST_BINARY_OP(FLOAT, f, BOOL, b, ==);
+                    TEST_BINARY_OP(DOUBLE, d, BOOL, b, ==);
+                    TEST_BINARY_OP(INT, i, BOOL, b, ==);
+                    TEST_BINARY_OP(STRING, str, BOOL, b, ==);
 
                     return RuntimeError::operands_do_not_support_operator(binary->op);
                 }
