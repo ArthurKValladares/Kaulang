@@ -449,6 +449,38 @@ RuntimeError Expr::evaluate(Value& in_value) {
         case Type::TERNARY: {
             TernaryExpr* ternary = expr.ternary;
 
+            Value left_val = {};
+            RuntimeError left_err = ternary->left->evaluate(left_val);
+            if (!left_err.is_ok()) {
+                return left_err;
+            }
+
+            if (left_val.ty != Value::Type::BOOL) {
+                return RuntimeError::operand_must_be_bool(ternary->left_op);
+            }
+
+            if (left_val.b) {
+                Value middle_val = {};
+                RuntimeError middle_err = ternary->middle->evaluate(middle_val);
+                if (!middle_err.is_ok()) {
+                    return middle_err;
+                }
+
+                in_value = middle_val;
+
+                return RuntimeError::ok();
+            } else {
+                Value right_val = {};
+                RuntimeError right_err = ternary->right->evaluate(right_val);
+                if (!right_err.is_ok()) {
+                    return right_err;
+                }
+
+                in_value = right_val;
+                
+                return RuntimeError::ok();
+            }
+
             return RuntimeError::ok();
         }
     }

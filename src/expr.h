@@ -101,6 +101,7 @@ struct Expr {
     RuntimeError evaluate(Value& in_value);
 };
 
+// TODO: review these Token*'s later
 struct LiteralExpr {
     Token* val;
 };
@@ -127,6 +128,8 @@ struct CommaExpr {
 
 struct TernaryExpr {
     Expr* left;
+    Token* left_op;
     Expr* middle;
+    Token* right_op;
     Expr* right;
 };

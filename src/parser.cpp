@@ -74,10 +74,12 @@ namespace {
         return expr;
     }
 
-    Expr* new_ternary(Expr* left, Expr* middle, Expr* right) {
+    Expr* new_ternary(Expr* left, Token* left_op, Expr* middle, Token* right_op, Expr* right) {
         TernaryExpr* ternary = (TernaryExpr*) malloc(sizeof(TernaryExpr));
         ternary->left = left;
+        ternary->left_op = left_op;
         ternary->middle = middle;
+        ternary->right_op = right_op;
         ternary->right = right;
 
         Expr* expr = new_expr(
@@ -166,11 +168,13 @@ Expr* Parser::ternary() {
     Expr* expr = equality();
 
     if (match(std::initializer_list<TokenType>{TokenType::QUESTION_MARK})) {
+        Token* left_op = previous();
         Expr* middle = ternary();
 
         if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+            Token* right_op = previous();
             Expr* right = ternary();
-            return new_ternary(expr, middle, right);
+            return new_ternary(expr, left_op, middle, right_op, right);
         }
 
         error(peek(), "ternary operator expected `:`.");
