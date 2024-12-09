@@ -123,6 +123,7 @@ struct BinaryExpr {
 
 struct CommaExpr {
     Expr* left;
+    Token* op;
     Expr* right;
 };
 

@@ -61,9 +61,10 @@ namespace {
         return expr;
     }
 
-    Expr* new_comma(Expr* left, Expr* right) {
+    Expr* new_comma(Expr* left, Token* op, Expr* right) {
         CommaExpr* comma = (CommaExpr*) malloc(sizeof(CommaExpr));
         comma->left = left;
+        comma->op = op;
         comma->right = right;
 
         Expr* expr = new_expr(
@@ -156,8 +157,9 @@ Expr* Parser::comma() {
     Expr* expr = ternary();
 
     while (match(std::initializer_list<TokenType>{TokenType::COMMA})) {
+        Token* op = previous();
         Expr* right = comma();
-        Expr* comma = new_comma(expr, right);
+        Expr* comma = new_comma(expr, op, right);
         expr = comma;
     }
 

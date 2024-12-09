@@ -444,6 +444,20 @@ RuntimeError Expr::evaluate(Value& in_value) {
         case Type::COMMA: {
             CommaExpr* comma = expr.comma;
 
+            Value left_val = {};
+            RuntimeError left_err = comma->left->evaluate(left_val);
+            if (!left_err.is_ok()) {
+                return left_err;
+            }
+
+            Value right_val = {};
+            RuntimeError right_err = comma->right->evaluate(right_val);
+            if (!right_err.is_ok()) {
+                return right_err;
+            }
+
+            in_value = right_val;
+
             return RuntimeError::ok();
         }
         case Type::TERNARY: {
