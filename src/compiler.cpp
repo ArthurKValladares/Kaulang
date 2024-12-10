@@ -39,13 +39,10 @@ int KauCompiler::run(char* program, int size) {
 
     // TODO: Will need something smarter soon
     for (Stmt stmt : stmts) {
-        Expr* expr = stmt.expr;
-
-        expr->print();
-        std::println();
+        stmt.print();
 
         Value expr_val = {};
-        RuntimeError expr_err = expr->evaluate(expr_val);
+        RuntimeError expr_err = stmt.expr->evaluate(expr_val);
         if (!expr_err.is_ok()) {
             runtime_error(expr_err.token->m_line, expr_err.message);
         }

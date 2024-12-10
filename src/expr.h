@@ -76,12 +76,16 @@ struct Value {
 // TODO: Probably needs to be Stmt at some point soon
 struct Stmt {
     enum class Type {
+        ERR,
         PRINT,
         EXPR,
+        VAR_DECL,
     };
 
     Type ty;
     Expr* expr;
+
+    void print();
 };
 
 struct Expr {

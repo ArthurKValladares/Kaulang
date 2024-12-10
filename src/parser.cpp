@@ -105,28 +105,67 @@ namespace {
         };
     }
 
-    // TODO: Will need to set some sort of ParserError state here to syncronyze later
-    void error(Token* token, std::string_view message) {
-        if (token->m_type == TokenType::_EOF) {
-            std::println(stderr, "Parser Error: {} at end.", message);
-        } else {
-            std::println(stderr, "Parser Error: {} of token: {} at {}.", message,
-                    token->m_lexeme, token->m_line);
-        }
+    Stmt new_var_decl(Expr* expr) {
+        return Stmt {
+            .ty = Stmt::Type::VAR_DECL,
+            .expr = expr
+        };
+    }
+
+    Stmt new_err_stmt() {
+        return Stmt {
+            .ty = Stmt::Type::ERR,
+        };
     }
 };
 
+void Parser::error(Token* token, std::string_view message) {
+    if (token->m_type == TokenType::_EOF) {
+        std::println(stderr, "Parser Error: {} at end.", message);
+    } else {
+        std::println(stderr, "Parser Error: {} of token: {} at {}.", message,
+                token->m_lexeme, token->m_line);
+    }
+    m_had_error = true;
+}
+
 std::vector<Stmt> Parser::parse() {
-    //TODO: error-handling and syncronization here later
     return program();
 }
 
 std::vector<Stmt> Parser::program() {
     std::vector<Stmt> statements = {};
     while (!is_at_end()) {
-        statements.emplace_back(statement());
+        statements.emplace_back(declaration());
     }
     return statements;
+}
+
+Stmt Parser::declaration() {
+    Stmt ret;
+    if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+        ret = var_declaration();
+    } else {
+        ret = statement();
+    }
+
+    if (ret.ty == Stmt::Type::ERR) {
+        syncronize();
+    }
+
+    return ret;
+}
+
+Stmt Parser::var_declaration() {
+    Token* name = consume(TokenType::IDENTIFIER, "Expected variable name");
+
+    Expr* initializer = nullptr;
+    if (match(std::initializer_list<TokenType>{TokenType::EQUAL})) {
+        initializer = expression();
+    }
+
+    consume(TokenType::SEMICOLON, "Expected ';' after variable declaration");
+    return new_var_decl(initializer);
 }
 
 Stmt Parser::statement() {
@@ -139,12 +178,23 @@ Stmt Parser::statement() {
 
 Stmt Parser::expr_statement() {
     Expr* val = expression();
+
+    if (m_had_error) {
+        return new_err_stmt();
+    }
+
+    // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after expression");
     return new_expr_stmt(val);
 }
 
 Stmt Parser::print_statement() {
     Expr* val = expression();
+    if (val == nullptr) {
+        return new_err_stmt();
+    }
+
+    // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after value");
     return new_print_stmt(val);
 }
@@ -193,7 +243,9 @@ Expr* Parser::equality() {
     if (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
+
         error(peek(), "equality operator without right-hand side expression.");
+
         return nullptr;
     }
 
@@ -215,7 +267,9 @@ Expr* Parser::comparison() {
     if (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
+
         error(peek(), "comparison operator without right-hand side expression.");
+
         return nullptr;
     }
 
@@ -237,7 +291,10 @@ Expr* Parser::term() {
     if (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
+
         error(peek(), "term operator without right-hand side expression.");
+
+        m_had_error = true;
         return nullptr;
     }
 
@@ -259,7 +316,9 @@ Expr* Parser::factor() {
     if (match(TOKEN_TYPES)) {
         Token* op = previous();
         Expr* right = term();
+
         error(peek(), "factor operator without right-hand side expression.");
+
         return nullptr;
     }
 
@@ -292,6 +351,11 @@ Expr* Parser::primary() {
         TokenType::STRING
     })) {
         return new_literal(previous());
+    }
+
+    if (match(std::initializer_list<TokenType>{TokenType::IDENTIFIER})) {
+        Token* id = previous();
+        return new_literal(id);
     }
 
     if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
@@ -379,4 +443,6 @@ void Parser::syncronize() {
 
         advance();
     }
+
+    m_had_error = false;
 }

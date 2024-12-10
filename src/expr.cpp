@@ -529,3 +529,30 @@ void Value::print() const {
         }
     }
 }
+
+void Stmt::print() {
+    
+    switch (ty)
+    {
+        case Type::VAR_DECL: {
+            std::print("VAR DECL: ");
+            break;
+        }
+        case Type::PRINT: {
+            std::print("PRINT: ");
+            break;
+        }
+        case Type::EXPR: {
+            std::print("EXPR: ");
+            break;
+        }
+        //
+        case Type::ERR: {
+            std::println("ERR");
+            return;
+        }
+    }
+
+    expr->print();
+    std::println();
+}

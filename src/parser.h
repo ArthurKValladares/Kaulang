@@ -22,7 +22,11 @@ struct Parser {
     std::vector<Stmt> parse();
 
 private:
+    void error(Token* token, std::string_view message);
+
     std::vector<Stmt> program();
+    Stmt declaration();
+    Stmt var_declaration();
     Stmt statement();
     Stmt expr_statement();
     Stmt print_statement();
@@ -50,4 +54,6 @@ private:
 
     std::vector<Token> m_tokens;
     int m_current = 0;
+
+    bool m_had_error = false;
 };
