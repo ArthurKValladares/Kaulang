@@ -35,6 +35,7 @@ struct RuntimeError {
     static RuntimeError operand_must_be_bool(Token* token);
     static RuntimeError divide_by_zero(Token* token);
     static RuntimeError operands_do_not_support_operator(Token* token);
+    static RuntimeError undefined_variable(Token* token);
 
     bool is_ok() const;
 
@@ -44,6 +45,7 @@ struct RuntimeError {
         UNSUPPORTED_OPERATOR,
         WRONG_OPERANDS,
         DIVIDE_BY_ZERO,
+        UNDEFINED_VARIABLE,
     };
 
     Type ty;
@@ -67,7 +69,7 @@ struct Value {
         int i;
         float f;
         double d;
-        std::string_view str;
+        std::string_view str = {};
     };
 
     void print() const;

@@ -97,6 +97,14 @@ RuntimeError RuntimeError::operands_do_not_support_operator(Token* token) {
     };
 }
 
+RuntimeError RuntimeError::undefined_variable(Token* token) {
+    return RuntimeError {
+        .ty = Type::UNDEFINED_VARIABLE,
+        .token = token,
+        .message = "Undefined variable"
+    };
+}
+
 bool RuntimeError::is_ok() const {
     return ty == Type::Ok;
 }
