@@ -439,6 +439,12 @@ RuntimeError Expr::evaluate(Value& in_value) {
         case Type::GROUPING: {
             GroupingExpr* grouping = expr.grouping;
 
+            Value val = {};
+            RuntimeError err = grouping->expr->evaluate(val);
+            if (!err.is_ok()) {
+                return err;
+            }
+
             return RuntimeError::ok();
         }
         case Type::COMMA: {
