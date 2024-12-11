@@ -75,7 +75,8 @@ struct Value {
     void print() const;
 };
 
-// TODO: Probably needs to be Stmt at some point soon
+// This struct is a bit sloppy with weird distinction between the data
+// for each type, make better later
 struct Stmt {
     enum class Type {
         ERR,
@@ -85,11 +86,13 @@ struct Stmt {
     };
 
     Type ty;
+    Token* name;
     Expr* expr;
 
     void print();
 };
 
+struct Environment;
 struct Expr {
     enum class Type {
         LITERAL,
@@ -104,7 +107,7 @@ struct Expr {
     ExprPayload expr;
 
     void print() const;
-    RuntimeError evaluate(Value& in_value);
+    RuntimeError evaluate(Environment& env, Value& in_value);
 };
 
 // TODO: review these Token*'s later

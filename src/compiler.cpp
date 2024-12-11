@@ -37,15 +37,24 @@ int KauCompiler::run(char* program, int size) {
     Parser parser(std::move(scanner));
     std::vector<Stmt> stmts = parser.parse();
 
-    // TODO: Will need something smarter soon
     for (Stmt stmt : stmts) {
         stmt.print();
 
+        // For now a variable declaration, like `var a;` has no expr.
+        // Maybe it should have a no-op one instead, or just some sort of 
+        // expr that evaluates to a default val.
         Value expr_val = {};
-        RuntimeError expr_err = stmt.expr->evaluate(expr_val);
-        if (!expr_err.is_ok()) {
-            runtime_error(expr_err.token->m_line, expr_err.message);
+        if (stmt.expr != nullptr) {
+            RuntimeError expr_err = stmt.expr->evaluate(global_env, expr_val);
+            if (!expr_err.is_ok()) {
+                runtime_error(expr_err.token->m_line, expr_err.message);
+            }
         }
+
+        if (stmt.ty == Stmt::Type::VAR_DECL) {
+            global_env.define(stmt.name, expr_val);
+        }
+
         expr_val.print();
     }
 

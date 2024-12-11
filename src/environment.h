@@ -4,8 +4,9 @@
 #include <unordered_map>
 
 struct Environment {
-    void define(std::string_view name, Value value);
+    void define(Token* token, Value value);
     RuntimeError get(Token* token, Value& in_value);
 
-    std::unordered_map<std::string_view, Value> values;
+    // TODO: Annoying that im using an allocated string here
+    std::unordered_map<std::string, Value> values;
 };

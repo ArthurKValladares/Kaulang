@@ -1,5 +1,6 @@
 #include "expr.h"
 #include "defs.h"
+#include "environment.h"
 
 #define TEST_BINARY_OP(VALUE_IN_TYPE, VALUE_IN_FIELD, VALUE_OUT_TYPE, VALUE_OUT_FIELD, OPERATOR) {\
     if (left_val.ty == Value::Type::VALUE_IN_TYPE) {\
@@ -169,7 +170,7 @@ void Expr::print() const {
     }
 }
 
-RuntimeError Expr::evaluate(Value& in_value) {
+RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
     switch (ty)
     {
         case Type::LITERAL: {
@@ -224,6 +225,9 @@ RuntimeError Expr::evaluate(Value& in_value) {
                     };
                     return RuntimeError::ok();
                 }
+                case TokenType::IDENTIFIER: {
+                    return env.get(literal->val, in_value);
+                }
                 default:  {
                     return RuntimeError::unsupported_literal(literal->val);
                 }
@@ -235,7 +239,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
             UnaryExpr* unary = expr.unary;
 
             Value right_val = {};
-            RuntimeError right_err = unary->right->evaluate(right_val);
+            RuntimeError right_err = unary->right->evaluate(env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -268,13 +272,13 @@ RuntimeError Expr::evaluate(Value& in_value) {
             BinaryExpr* binary = expr.binary;
 
             Value left_val = {};
-            RuntimeError left_err = binary->left->evaluate(left_val);
+            RuntimeError left_err = binary->left->evaluate(env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
 
             Value right_val = {};
-            RuntimeError right_err = binary->right->evaluate(right_val);
+            RuntimeError right_err = binary->right->evaluate(env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -448,7 +452,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
             GroupingExpr* grouping = expr.grouping;
 
             Value val = {};
-            RuntimeError err = grouping->expr->evaluate(val);
+            RuntimeError err = grouping->expr->evaluate(env, val);
             if (!err.is_ok()) {
                 return err;
             }
@@ -459,13 +463,13 @@ RuntimeError Expr::evaluate(Value& in_value) {
             CommaExpr* comma = expr.comma;
 
             Value left_val = {};
-            RuntimeError left_err = comma->left->evaluate(left_val);
+            RuntimeError left_err = comma->left->evaluate(env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
 
             Value right_val = {};
-            RuntimeError right_err = comma->right->evaluate(right_val);
+            RuntimeError right_err = comma->right->evaluate(env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -478,7 +482,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
             TernaryExpr* ternary = expr.ternary;
 
             Value left_val = {};
-            RuntimeError left_err = ternary->left->evaluate(left_val);
+            RuntimeError left_err = ternary->left->evaluate(env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -489,7 +493,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
 
             if (left_val.b) {
                 Value middle_val = {};
-                RuntimeError middle_err = ternary->middle->evaluate(middle_val);
+                RuntimeError middle_err = ternary->middle->evaluate(env, middle_val);
                 if (!middle_err.is_ok()) {
                     return middle_err;
                 }
@@ -499,7 +503,7 @@ RuntimeError Expr::evaluate(Value& in_value) {
                 return RuntimeError::ok();
             } else {
                 Value right_val = {};
-                RuntimeError right_err = ternary->right->evaluate(right_val);
+                RuntimeError right_err = ternary->right->evaluate(env, right_val);
                 if (!right_err.is_ok()) {
                     return right_err;
                 }
@@ -550,14 +554,24 @@ void Stmt::print() {
     {
         case Type::VAR_DECL: {
             std::print("VAR DECL: ");
+            std::print("{}", name->m_lexeme);
+            if (expr != nullptr) {
+                std::print(" = ");
+                expr->print();
+            }
+            std::println("");
             break;
         }
         case Type::PRINT: {
             std::print("PRINT: ");
+            expr->print();
+            std::println("");
             break;
         }
         case Type::EXPR: {
             std::print("EXPR: ");
+            expr->print();
+            std::println("");
             break;
         }
         //
@@ -566,7 +580,4 @@ void Stmt::print() {
             return;
         }
     }
-
-    expr->print();
-    std::println();
 }

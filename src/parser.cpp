@@ -105,9 +105,10 @@ namespace {
         };
     }
 
-    Stmt new_var_decl(Expr* expr) {
+    Stmt new_var_decl(Token* name, Expr* expr) {
         return Stmt {
             .ty = Stmt::Type::VAR_DECL,
+            .name = name,
             .expr = expr
         };
     }
@@ -165,7 +166,7 @@ Stmt Parser::var_declaration() {
     }
 
     consume(TokenType::SEMICOLON, "Expected ';' after variable declaration");
-    return new_var_decl(initializer);
+    return new_var_decl(name, initializer);
 }
 
 Stmt Parser::statement() {
