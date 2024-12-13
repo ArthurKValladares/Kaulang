@@ -167,6 +167,15 @@ void Expr::print() const {
 
             break;
         }
+        case Type::ASSIGNMENT: {
+            AssignmentExpr* assingment = expr.assignment;
+
+            assingment->id->print();
+            std::print(" = ");
+            assingment->right->print();
+
+            break;
+        }
     }
 }
 
@@ -512,6 +521,20 @@ RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
                 
                 return RuntimeError::ok();
             }
+
+            return RuntimeError::ok();
+        }
+        case Type::ASSIGNMENT: {
+            AssignmentExpr* assignment = expr.assignment;
+
+            Value right_val = {};
+            RuntimeError right_err = assignment->right->evaluate(env, right_val);
+            if (!right_err.is_ok()) {
+                return right_err;
+            }
+
+            in_value = right_val;
+            env.define(assignment->id, right_val);
 
             return RuntimeError::ok();
         }

@@ -31,6 +31,7 @@ private:
     Stmt expr_statement();
     Stmt print_statement();
     Expr* expression();
+    Expr* assignment();
     Expr* comma();
     Expr* ternary();
     Expr* equality();

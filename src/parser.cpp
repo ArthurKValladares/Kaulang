@@ -91,6 +91,19 @@ namespace {
         return expr;
     }
 
+    Expr* new_assignment(Token* id, Expr* right) {
+        AssignmentExpr* assignment = (AssignmentExpr*) malloc(sizeof(AssignmentExpr));
+        assignment->id = id;
+        assignment->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::ASSIGNMENT,
+            ExprPayload{.assignment = assignment}
+        );
+
+        return expr;
+    }
+
     Stmt new_print_stmt(Expr* val) {
         return Stmt {
             .ty = Stmt::Type::PRINT,
@@ -201,7 +214,26 @@ Stmt Parser::print_statement() {
 }
 
 Expr* Parser::expression() {
-    return comma();
+    return assignment();
+}
+
+Expr* Parser::assignment() {
+    Expr* expr = comma();
+
+    if (match(std::initializer_list<TokenType>{TokenType::EQUAL})) {
+        Token* equals = previous();
+        Expr* right = assignment();
+
+        if (expr->ty == Expr::Type::LITERAL && expr->expr.literal->val->m_type == TokenType::IDENTIFIER) {
+            Token* id = expr->expr.literal->val;
+            return new_assignment(id, right);
+        } else {
+            error(peek(), "invalid assignment target.");
+            return nullptr;
+        }
+    }
+
+    return expr;
 }
 
 Expr* Parser::comma() {

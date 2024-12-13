@@ -12,6 +12,7 @@ struct BinaryExpr;
 struct CommaExpr;
 struct TernaryExpr;
 struct PrintExpr;
+struct AssignmentExpr;
 
 union ExprPayload {
     LiteralExpr* literal;
@@ -21,6 +22,7 @@ union ExprPayload {
     CommaExpr* comma;
     TernaryExpr* ternary;
     PrintExpr* print;
+    AssignmentExpr* assignment;
 };
 
 struct RuntimeError {
@@ -101,6 +103,7 @@ struct Expr {
         GROUPING,
         COMMA,
         TERNARY,
+        ASSIGNMENT,
     };
 
     Type ty;
@@ -141,5 +144,10 @@ struct TernaryExpr {
     Token* left_op;
     Expr* middle;
     Token* right_op;
+    Expr* right;
+};
+
+struct AssignmentExpr {
+    Token* id;
     Expr* right;
 };
