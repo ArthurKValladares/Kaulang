@@ -534,7 +534,13 @@ RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
             }
 
             in_value = right_val;
-            env.define(assignment->id, right_val);
+
+            if (env.contains(assignment->id)) {
+                env.define(assignment->id, right_val);
+            } else {
+                return RuntimeError::undefined_variable(assignment->id);
+            }
+            
 
             return RuntimeError::ok();
         }
