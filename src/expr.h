@@ -79,7 +79,9 @@ struct Value {
 };
 
 // This struct is a bit sloppy with weird distinction between the data
-// for each type, make better later
+// for each type, make better later. Also these two foward-declares
+struct KauCompiler;
+struct Environment;
 struct Stmt {
     enum class Type {
         ERR,
@@ -95,10 +97,10 @@ struct Stmt {
     Expr* expr;
     std::vector<Stmt> stmts;
 
+    void evaluate(KauCompiler* compiler, Environment* env);
     void print();
 };
 
-struct Environment;
 struct Expr {
     enum class Type {
         LITERAL,
@@ -114,7 +116,7 @@ struct Expr {
     ExprPayload expr;
 
     void print() const;
-    RuntimeError evaluate(Environment& env, Value& in_value);
+    RuntimeError evaluate(Environment* env, Value& in_value);
 };
 
 // TODO: review these Token*'s later

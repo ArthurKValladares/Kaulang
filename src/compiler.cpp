@@ -38,24 +38,10 @@ int KauCompiler::run(char* program, int size) {
     std::vector<Stmt> stmts = parser.parse();
 
     for (Stmt stmt : stmts) {
+#ifdef DEBUG_PRINT
         stmt.print();
-
-        // For now a variable declaration, like `var a;` has no expr.
-        // Maybe it should have a no-op one instead, or just some sort of 
-        // expr that evaluates to a default val.
-        Value expr_val = {};
-        if (stmt.expr != nullptr) {
-            RuntimeError expr_err = stmt.expr->evaluate(global_env, expr_val);
-            if (!expr_err.is_ok()) {
-                runtime_error(expr_err.token->m_line, expr_err.message);
-            }
-        }
-
-        if (stmt.ty == Stmt::Type::VAR_DECL) {
-            global_env.define(stmt.name, expr_val);
-        }
-
-        expr_val.print();
+#endif
+        stmt.evaluate(this, &global_env);
     }
 
     return 0;

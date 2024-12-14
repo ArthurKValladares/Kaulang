@@ -1,6 +1,7 @@
 #include "expr.h"
 #include "defs.h"
 #include "environment.h"
+#include "compiler.h"
 
 #define TEST_BINARY_OP(VALUE_IN_TYPE, VALUE_IN_FIELD, VALUE_OUT_TYPE, VALUE_OUT_FIELD, OPERATOR) {\
     if (left_val.ty == Value::Type::VALUE_IN_TYPE) {\
@@ -179,7 +180,7 @@ void Expr::print() const {
     }
 }
 
-RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
+RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
     switch (ty)
     {
         case Type::LITERAL: {
@@ -235,7 +236,7 @@ RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
                     return RuntimeError::ok();
                 }
                 case TokenType::IDENTIFIER: {
-                    return env.get(literal->val, in_value);
+                    return env->get(literal->val, in_value);
                 }
                 default:  {
                     return RuntimeError::unsupported_literal(literal->val);
@@ -535,8 +536,8 @@ RuntimeError Expr::evaluate(Environment& env, Value& in_value) {
 
             in_value = right_val;
 
-            if (env.contains(assignment->id)) {
-                env.define(assignment->id, right_val);
+            if (env->contains(assignment->id)) {
+                env->define(assignment->id, right_val);
             } else {
                 return RuntimeError::undefined_variable(assignment->id);
             }
@@ -574,6 +575,35 @@ void Value::print() const {
             std::println("{}", str);
             break;
         }
+    }
+}
+
+void Stmt::evaluate(KauCompiler* compiler, Environment* env) {
+    if (ty == Stmt::Type::BLOCK) {
+        Environment new_env = {};
+        new_env.enclosing = env;
+        for (Stmt& stmt : stmts) {
+            stmt.evaluate(compiler, &new_env);
+        }
+        return;
+    }
+
+    // For now a variable declaration, like `var a;` has no expr.
+    // Maybe it should have a no-op one instead, or just some sort of 
+    // expr that evaluates to a default val.
+    Value expr_val = {};
+    if (expr != nullptr) {
+        RuntimeError expr_err = expr->evaluate(env, expr_val);
+        if (!expr_err.is_ok()) {
+            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+        }
+    }
+
+    if (ty == Stmt::Type::VAR_DECL) {
+        env->define(name, expr_val);
+    }
+    if (ty == Type::PRINT) {
+        expr_val.print();
     }
 }
 
