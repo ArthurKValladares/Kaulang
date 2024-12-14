@@ -111,6 +111,13 @@ namespace {
         };
     }
 
+    Stmt new_block_stmt(std::vector<Stmt> stmts) {
+        return Stmt {
+            .ty = Stmt::Type::BLOCK,
+            .stmts = stmts
+        };
+    }
+
     Stmt new_expr_stmt(Expr* expr) {
         return Stmt {
             .ty = Stmt::Type::EXPR,
@@ -185,9 +192,11 @@ Stmt Parser::var_declaration() {
 Stmt Parser::statement() {
     if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
         return print_statement();
-    } else {
-        return expr_statement();
     }
+    if (match(std::initializer_list<TokenType>{TokenType::LEFT_BRACE})) {
+        return block_statement();
+    }
+    return expr_statement();
 }
 
 Stmt Parser::expr_statement() {
@@ -200,6 +209,17 @@ Stmt Parser::expr_statement() {
     // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after expression");
     return new_expr_stmt(val);
+}
+
+Stmt Parser::block_statement() {
+    std::vector<Stmt> stmts = {};
+
+    while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
+        stmts.push_back(declaration());
+    }
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after block");
+
+    return new_block_stmt(stmts);
 }
 
 Stmt Parser::print_statement() {

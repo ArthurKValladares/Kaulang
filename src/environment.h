@@ -10,4 +10,5 @@ struct Environment {
 
     // TODO: Annoying that im using an allocated string here
     std::unordered_map<std::string, Value> values;
+    Environment* enclosing = nullptr;
 };

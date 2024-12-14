@@ -29,6 +29,7 @@ private:
     Stmt var_declaration();
     Stmt statement();
     Stmt expr_statement();
+    Stmt block_statement();
     Stmt print_statement();
     Expr* expression();
     Expr* assignment();

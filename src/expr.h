@@ -3,6 +3,7 @@
 #include "tokens.h"
 
 #include <string>
+#include <vector>
 
 struct Expr;
 struct LiteralExpr;
@@ -85,11 +86,14 @@ struct Stmt {
         PRINT,
         EXPR,
         VAR_DECL,
+        BLOCK,
     };
 
     Type ty;
+
     Token* name;
     Expr* expr;
+    std::vector<Stmt> stmts;
 
     void print();
 };

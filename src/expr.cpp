@@ -603,6 +603,12 @@ void Stmt::print() {
             std::println("");
             break;
         }
+        case Type::BLOCK: {
+            std::print("BLOCK: ");
+            for (Stmt& stmt : stmts) {
+                stmt.print();
+            }
+        }
         //
         case Type::ERR: {
             std::println("ERR");
