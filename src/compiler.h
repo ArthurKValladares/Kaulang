@@ -12,7 +12,7 @@ struct KauCompiler {
     void error(int line, std::string_view message);
     void runtime_error(int line, std::string_view message);
 
-    int run(char* program, int size);
+    int run(char* program, int size, bool from_prompt);
 
     int run_prompt();
 

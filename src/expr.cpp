@@ -578,14 +578,15 @@ void Value::print() const {
     }
 }
 
-void Stmt::evaluate(KauCompiler* compiler, Environment* env) {
+Value Stmt::evaluate(KauCompiler* compiler, Environment* env) {
     if (ty == Stmt::Type::BLOCK) {
+        Value expr_val = {};
         Environment new_env = {};
         new_env.enclosing = env;
         for (Stmt& stmt : stmts) {
-            stmt.evaluate(compiler, &new_env);
+            expr_val = stmt.evaluate(compiler, &new_env);
         }
-        return;
+        return expr_val;
     }
 
     // For now a variable declaration, like `var a;` has no expr.
@@ -602,9 +603,8 @@ void Stmt::evaluate(KauCompiler* compiler, Environment* env) {
     if (ty == Stmt::Type::VAR_DECL) {
         env->define(name, expr_val);
     }
-    if (ty == Type::PRINT) {
-        expr_val.print();
-    }
+
+    return expr_val;
 }
 
 void Stmt::print() {

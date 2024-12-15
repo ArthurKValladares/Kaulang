@@ -97,7 +97,7 @@ struct Stmt {
     Expr* expr;
     std::vector<Stmt> stmts;
 
-    void evaluate(KauCompiler* compiler, Environment* env);
+    Value evaluate(KauCompiler* compiler, Environment* env);
     void print();
 };
 

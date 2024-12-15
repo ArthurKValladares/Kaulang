@@ -29,7 +29,7 @@ void KauCompiler::runtime_error(int line, std::string_view message) {
     m_had_runtime_error = true;
 }
 
-int KauCompiler::run(char* program, int size) {
+int KauCompiler::run(char* program, int size, bool from_prompt) {
     Scanner scanner = Scanner(program, size);
     // TODO: fix this kinda circular dependency thing later
     scanner.scan_tokens(*this);
@@ -41,7 +41,11 @@ int KauCompiler::run(char* program, int size) {
 #ifdef DEBUG_PRINT
         stmt.print();
 #endif
-        stmt.evaluate(this, &global_env);
+        Value val = stmt.evaluate(this, &global_env);
+
+        if (stmt.ty == Stmt::Type::PRINT || from_prompt) {
+            val.print();
+        }
     }
 
     return 0;
@@ -60,7 +64,7 @@ int KauCompiler::run_prompt() {
             break;
         }
 
-        run(line_char_buffer, line_size);
+        run(line_char_buffer, line_size, true);
 
         if (m_had_error) {
             // TODO: Do I do anything here?
@@ -91,7 +95,7 @@ int KauCompiler::run_file(const char* file_path) {
 
     fclose(script_file);
 
-    run(byte_buffer, end);
+    run(byte_buffer, end, false);
 
     if (m_had_error) {
         return -1;
