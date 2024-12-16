@@ -20,6 +20,7 @@ const std::unordered_map<std::string_view, TokenType> keywords = {
     {"super", TokenType::SUPER},
     {"this", TokenType::THIS},
     {"true", TokenType::TRUE},
+    {"false", TokenType::FALSE},
     {"var", TokenType::VAR},
     {"while", TokenType::WHILE},
 };

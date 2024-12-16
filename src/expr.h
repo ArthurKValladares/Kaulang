@@ -90,6 +90,7 @@ struct Stmt {
         EXPR,
         VAR_DECL,
         BLOCK,
+        IF,
     };
 
     Type ty;

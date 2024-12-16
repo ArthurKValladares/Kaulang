@@ -133,6 +133,17 @@ namespace {
         };
     }
 
+    Stmt new_if_stmt(Expr* expr, Stmt if_stmt, Stmt else_stmt) {
+        std::vector<Stmt> stmts;
+        stmts.emplace_back(if_stmt);
+        stmts.emplace_back(else_stmt);
+        return Stmt {
+            .ty = Stmt::Type::IF,
+            .expr = expr,
+            .stmts = std::move(stmts)
+        };
+    }
+
     Stmt new_err_stmt() {
         return Stmt {
             .ty = Stmt::Type::ERR,
@@ -190,6 +201,9 @@ Stmt Parser::var_declaration() {
 }
 
 Stmt Parser::statement() {
+    if (match(std::initializer_list<TokenType>{TokenType::IF})) {
+        return if_statement();
+    }
     if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
         return print_statement();
     }
@@ -231,6 +245,25 @@ Stmt Parser::print_statement() {
     // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after value");
     return new_print_stmt(val);
+}
+
+Stmt Parser::if_statement() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'if'");
+    Expr* expr = expression();
+    consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in if statement");
+
+    consume(TokenType::LEFT_BRACE, "Expected '{' after if stament");
+    Stmt if_stmt = statement();
+    consume(TokenType::RIGHT_BRACE, "Unterminated brace in if block");
+
+    Stmt else_stmt = {};
+    if (match(std::initializer_list<TokenType>{TokenType::ELSE})) {
+        consume(TokenType::LEFT_BRACE, "Expected '{' after else stament");
+        else_stmt = statement();
+        consume(TokenType::RIGHT_BRACE, "Unterminated brace in else block");
+    }
+
+    return new_if_stmt(expr, if_stmt, else_stmt);
 }
 
 Expr* Parser::expression() {

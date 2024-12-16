@@ -31,6 +31,7 @@ private:
     Stmt expr_statement();
     Stmt block_statement();
     Stmt print_statement();
+    Stmt if_statement();
     Expr* expression();
     Expr* assignment();
     Expr* comma();

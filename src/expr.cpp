@@ -198,14 +198,14 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                 case TokenType::FALSE: {
                     in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .f = false
+                        .b = false
                     };
                     return RuntimeError::ok();
                 }
                 case TokenType::TRUE: {
                     in_value = Value {
                         .ty = Value::Type::BOOL,
-                        .f = true
+                        .b = true
                     };
                     return RuntimeError::ok();
                 }
@@ -597,6 +597,29 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env) {
         return expr_val;
     }
 
+    if (ty == Stmt::Type::IF) {
+        Value test_expr_val = {};
+        RuntimeError expr_err = expr->evaluate(env, test_expr_val);
+        if (!expr_err.is_ok()) {
+            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+        }
+        if (test_expr_val.ty != Value::Type::BOOL) {
+            compiler->runtime_error(expr_err.token->m_line, "if test expression must evaluate to bool");
+        }
+        bool if_result = test_expr_val.b;
+
+        Value expr_val = {};
+        Environment new_env = {};
+        new_env.enclosing = env;
+        if (if_result) {
+            expr_val = stmts[0].evaluate(compiler, &new_env);
+        } else if (stmts[1].ty != Stmt::Type::ERR) {
+            expr_val = stmts[1].evaluate(compiler, &new_env);
+        }
+
+        return expr_val;
+    }
+
     // For now a variable declaration, like `var a;` has no expr.
     // Maybe it should have a no-op one instead, or just some sort of 
     // expr that evaluates to a default val.
@@ -646,6 +669,15 @@ void Stmt::print() {
             for (Stmt& stmt : stmts) {
                 stmt.print();
             }
+            break;
+        }
+        case Type::IF: {
+            std::print("IF: ");
+            stmts[0].print();
+            if (stmts[1].ty != Stmt::Type::ERR) {
+                stmts[1].print();
+            }
+            break;
         }
         //
         case Type::ERR: {
