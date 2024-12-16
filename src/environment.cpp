@@ -23,12 +23,15 @@ RuntimeError Environment::get(Token* token, Value& in_value) {
 
     if (values.contains(str_name)) {
         in_value = values.at(str_name);
+        if (in_value.ty == Value::Type::NIL) {
+            return RuntimeError::undefined_variable(token);
+        }
         return RuntimeError::ok();
     } else {
         if (enclosing != nullptr) {
             return enclosing->get(token, in_value);
         }
 
-        return RuntimeError::undefined_variable(token);
+        return RuntimeError::undeclared_variable(token);
     }
 }

@@ -38,6 +38,7 @@ struct RuntimeError {
     static RuntimeError operand_must_be_bool(Token* token);
     static RuntimeError divide_by_zero(Token* token);
     static RuntimeError operands_do_not_support_operator(Token* token);
+    static RuntimeError undeclared_variable(Token* token);
     static RuntimeError undefined_variable(Token* token);
 
     bool is_ok() const;

@@ -99,6 +99,14 @@ RuntimeError RuntimeError::operands_do_not_support_operator(Token* token) {
     };
 }
 
+RuntimeError RuntimeError::undeclared_variable(Token* token) {
+    return RuntimeError {
+        .ty = Type::UNDEFINED_VARIABLE,
+        .token = token,
+        .message = "Undeclared variable"
+    };
+}
+
 RuntimeError RuntimeError::undefined_variable(Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
