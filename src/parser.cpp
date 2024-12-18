@@ -104,6 +104,36 @@ namespace {
         return expr;
     }
 
+    Expr* new_and(Expr* left, Token* op, Expr* right) {
+        AndExpr* logical_and = (AndExpr*) malloc(sizeof(AndExpr));
+        assert(logical_and != nullptr);
+        logical_and->left = left;
+        logical_and->op = op;
+        logical_and->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::AND,
+            ExprPayload{.logical_and = logical_and}
+        );
+
+        return expr;
+    }
+
+    Expr* new_or(Expr* left, Token* op, Expr* right) {
+        OrExpr* logical_or = (OrExpr*) malloc(sizeof(OrExpr));
+        assert(logical_or != nullptr);
+        logical_or->left = left;
+        logical_or->op = op;
+        logical_or->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::OR,
+            ExprPayload{.logical_or = logical_or}
+        );
+
+        return expr;
+    }
+
     Stmt new_print_stmt(Expr* val) {
         return Stmt {
             .ty = Stmt::Type::PRINT,
@@ -271,7 +301,7 @@ Expr* Parser::expression() {
 }
 
 Expr* Parser::assignment() {
-    Expr* expr = comma();
+    Expr* expr = logic_or();
 
     if (match(std::initializer_list<TokenType>{TokenType::EQUAL})) {
         Token* equals = previous();
@@ -284,6 +314,30 @@ Expr* Parser::assignment() {
             error(peek(), "invalid assignment target.");
             return nullptr;
         }
+    }
+
+    return expr;
+}
+
+Expr* Parser::logic_or() {
+    Expr* expr = logic_and();
+
+    while (match(std::initializer_list<TokenType>{TokenType::OR})) {
+        Token* op = previous();
+        Expr* right = logic_and();
+        return new_or(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr* Parser::logic_and() {
+    Expr* expr = comma();
+
+    while (match(std::initializer_list<TokenType>{TokenType::AND})) {
+        Token* op = previous();
+        Expr* right = comma();
+        return new_and(expr, op, right);
     }
 
     return expr;

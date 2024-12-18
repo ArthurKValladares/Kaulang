@@ -34,6 +34,8 @@ private:
     Stmt if_statement();
     Expr* expression();
     Expr* assignment();
+    Expr* logic_or();
+    Expr* logic_and();
     Expr* comma();
     Expr* ternary();
     Expr* equality();

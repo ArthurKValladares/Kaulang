@@ -185,6 +185,24 @@ void Expr::print() const {
 
             break;
         }
+        case Type::AND: {
+            AndExpr* logical_and = expr.logical_and;
+
+            logical_and->left->print();
+            std::print(" and ");
+            logical_and->right->print();
+
+            break;
+        }
+        case Type::OR: {
+            OrExpr* logical_or = expr.logical_or;
+
+            logical_or->left->print();
+            std::print(" or ");
+            logical_or->right->print();
+
+            break;
+        }
     }
 }
 
@@ -550,6 +568,64 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                 return RuntimeError::undefined_variable(assignment->id);
             }
             
+
+            return RuntimeError::ok();
+        }
+        case Type::AND: {
+            AndExpr* logical_and = expr.logical_and;
+
+            Value left_val = {};
+            RuntimeError left_err = logical_and->left->evaluate(env, left_val);
+            if (!left_err.is_ok()) {
+                return left_err;
+            }
+            if (left_val.ty != Value::Type::BOOL) {
+                return RuntimeError::operand_must_be_bool(logical_and->op);
+            }
+
+            in_value = left_val;
+            // TODO: so far this allow the right-side expression to evaluate to sommething other
+            // than bool in the case the left-side is false. Think about that.
+            if (left_val.b == true) {
+                Value right_val = {};
+                RuntimeError right_err = logical_and->right->evaluate(env, right_val);
+                if (!right_err.is_ok()) {
+                    return right_err;
+                }
+                if (right_val.ty != Value::Type::BOOL) {
+                    return RuntimeError::operand_must_be_bool(logical_and->op);
+                }
+
+                in_value = right_val;
+            }
+
+            return RuntimeError::ok();
+        }
+        case Type::OR: {
+            OrExpr* logical_or = expr.logical_or;
+
+            Value left_val = {};
+            RuntimeError left_err = logical_or->left->evaluate(env, left_val);
+            if (!left_err.is_ok()) {
+                return left_err;
+            }
+            if (left_val.ty != Value::Type::BOOL) {
+                return RuntimeError::operand_must_be_bool(logical_or->op);
+            }
+
+            Value right_val = {};
+            RuntimeError right_err = logical_or->right->evaluate(env, right_val);
+            if (!right_err.is_ok()) {
+                return right_err;
+            }
+            if (right_val.ty != Value::Type::BOOL) {
+                return RuntimeError::operand_must_be_bool(logical_or->op);
+            }
+
+            in_value = Value {
+                .ty = Value::Type::BOOL,
+                .b = left_val.b || right_val.b
+            };
 
             return RuntimeError::ok();
         }
