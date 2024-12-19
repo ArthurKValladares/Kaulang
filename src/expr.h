@@ -95,6 +95,7 @@ struct Stmt {
         VAR_DECL,
         BLOCK,
         IF,
+        WHILE,
     };
 
     Type ty;
@@ -103,7 +104,7 @@ struct Stmt {
     Expr* expr;
     std::vector<Stmt> stmts;
 
-    Value evaluate(KauCompiler* compiler, Environment* env);
+    Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt);
     void print();
 };
 

@@ -662,13 +662,13 @@ void Value::print() const {
     }
 }
 
-Value Stmt::evaluate(KauCompiler* compiler, Environment* env) {
+Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt) {
     if (ty == Stmt::Type::BLOCK) {
         Value expr_val = {};
         Environment new_env = {};
         new_env.enclosing = env;
         for (Stmt& stmt : stmts) {
-            expr_val = stmt.evaluate(compiler, &new_env);
+            expr_val = stmt.evaluate(compiler, &new_env, from_prompt);
         }
         return expr_val;
     }
@@ -688,11 +688,33 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env) {
         Environment new_env = {};
         new_env.enclosing = env;
         if (if_result) {
-            expr_val = stmts[0].evaluate(compiler, &new_env);
+            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt);
         } else if (stmts[1].ty != Stmt::Type::ERR) {
-            expr_val = stmts[1].evaluate(compiler, &new_env);
+            expr_val = stmts[1].evaluate(compiler, &new_env, from_prompt);
         }
 
+        return expr_val;
+    }
+
+    if (ty == Stmt::Type::WHILE) {
+        Value expr_val = {};
+        while (true) {
+            Value test_expr_val = {};
+            RuntimeError expr_err = expr->evaluate(env, test_expr_val);
+            if (!expr_err.is_ok()) {
+                compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+            }
+            if (test_expr_val.ty != Value::Type::BOOL) {
+                compiler->runtime_error(expr_err.token->m_line, "while test expression must evaluate to bool");
+            }
+            if(!test_expr_val.b) {
+                break;
+            }
+
+            Environment new_env = {};
+            new_env.enclosing = env;
+            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt);
+        }
         return expr_val;
     }
 
@@ -709,6 +731,10 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env) {
 
     if (ty == Stmt::Type::VAR_DECL) {
         env->define(name, expr_val);
+    }
+
+    if (ty == Stmt::Type::PRINT || from_prompt) {
+        expr_val.print();
     }
 
     return expr_val;
@@ -753,6 +779,11 @@ void Stmt::print() {
             if (stmts[1].ty != Stmt::Type::ERR) {
                 stmts[1].print();
             }
+            break;
+        }
+        case Type::WHILE: {
+            std::print("WHILE: ");
+            stmts[0].print();
             break;
         }
         //

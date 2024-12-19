@@ -174,6 +174,16 @@ namespace {
         };
     }
 
+    Stmt new_while_stmt(Expr* expr, Stmt stmt) {
+        std::vector<Stmt> stmts;
+        stmts.emplace_back(stmt);
+        return Stmt {
+            .ty = Stmt::Type::WHILE,
+            .expr = expr,
+            .stmts = std::move(stmts)
+        };
+    }
+
     Stmt new_err_stmt() {
         return Stmt {
             .ty = Stmt::Type::ERR,
@@ -234,6 +244,9 @@ Stmt Parser::statement() {
     if (match(std::initializer_list<TokenType>{TokenType::IF})) {
         return if_statement();
     }
+    if (match(std::initializer_list<TokenType>{TokenType::WHILE})) {
+        return while_statement();
+    }
     if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
         return print_statement();
     }
@@ -282,18 +295,24 @@ Stmt Parser::if_statement() {
     Expr* expr = expression();
     consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in if statement");
 
-    consume(TokenType::LEFT_BRACE, "Expected '{' after if stament");
     Stmt if_stmt = statement();
-    consume(TokenType::RIGHT_BRACE, "Unterminated brace in if block");
 
     Stmt else_stmt = {};
     if (match(std::initializer_list<TokenType>{TokenType::ELSE})) {
-        consume(TokenType::LEFT_BRACE, "Expected '{' after else stament");
         else_stmt = statement();
-        consume(TokenType::RIGHT_BRACE, "Unterminated brace in else block");
     }
 
     return new_if_stmt(expr, if_stmt, else_stmt);
+}
+
+Stmt Parser::while_statement() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'while'");
+    Expr* expr = expression();
+    consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in while statement");
+
+    Stmt stmt = statement();
+
+    return new_while_stmt(expr, stmt);
 }
 
 Expr* Parser::expression() {
