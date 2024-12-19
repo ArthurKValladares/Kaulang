@@ -6,6 +6,7 @@
 struct Environment {
     void define(Token* token, Value value);
     bool contains(Token* token) const;
+    RuntimeError set(Token* token, Value value);
     RuntimeError get(Token* token, Value& in_value);
 
     // TODO: Annoying that im using an allocated string here

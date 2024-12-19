@@ -1,8 +1,9 @@
 var count = 0;
 while (count < 10) {
     print count;
-    var count = count + 1;
+    count = count + 1;
 }
+print "";
 
 var a = "global a";
 var b = "global b";

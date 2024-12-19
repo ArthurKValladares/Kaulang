@@ -18,6 +18,21 @@ bool Environment::contains(Token* token) const {
     }
 }
 
+RuntimeError Environment::set(Token* token, Value value) {
+    std::string str_name = std::string(token->m_lexeme);
+
+    if (values.contains(str_name)) {
+        values[str_name] = value;
+        return RuntimeError::ok();
+    } else {
+        if (enclosing != nullptr) {
+            enclosing->set(token, value);
+        }
+
+        return RuntimeError::undeclared_variable(token);
+    }
+}
+
 RuntimeError Environment::get(Token* token, Value& in_value) {
     std::string str_name = std::string(token->m_lexeme);
 
