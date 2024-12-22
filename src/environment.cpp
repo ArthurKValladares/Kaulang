@@ -1,11 +1,11 @@
 #include "environment.h"
 
-void Environment::define(Token* token, Value value) {
+void Environment::define(const Token* token, Value value) {
     // TODO: allocation
     values[std::string(token->m_lexeme)] = value;
 }
 
-bool Environment::contains(Token* token) const {
+bool Environment::contains(const Token* token) const {
     std::string str_name = std::string(token->m_lexeme);
     if(values.contains(str_name)) {
         return true;
@@ -18,7 +18,7 @@ bool Environment::contains(Token* token) const {
     }
 }
 
-RuntimeError Environment::set(Token* token, Value value) {
+RuntimeError Environment::set(const Token* token, Value value) {
     std::string str_name = std::string(token->m_lexeme);
 
     if (values.contains(str_name)) {
@@ -33,7 +33,7 @@ RuntimeError Environment::set(Token* token, Value value) {
     }
 }
 
-RuntimeError Environment::get(Token* token, Value& in_value) {
+RuntimeError Environment::get(const Token* token, Value& in_value) {
     std::string str_name = std::string(token->m_lexeme);
 
     if (values.contains(str_name)) {

@@ -2,6 +2,13 @@
 
 #include "defs.h"
 
+const Token true_token = Token {
+    TokenType::TRUE,
+    std::string_view(),
+    0,
+    TokenData{},
+};
+
 namespace {
     Expr* new_expr(Expr::Type ty, ExprPayload payload) {
         Expr* expr = (Expr*) malloc(sizeof(Expr));
@@ -37,7 +44,7 @@ namespace {
         return expr;
     }
 
-    Expr* new_literal(Token* val) {
+    Expr* new_literal(const Token* val) {
         LiteralExpr* literal = (LiteralExpr*) malloc(sizeof(LiteralExpr));
         literal->val = val;
 
@@ -91,7 +98,7 @@ namespace {
         return expr;
     }
 
-    Expr* new_assignment(Token* id, Expr* right) {
+    Expr* new_assignment(const Token* id, Expr* right) {
         AssignmentExpr* assignment = (AssignmentExpr*) malloc(sizeof(AssignmentExpr));
         assignment->id = id;
         assignment->right = right;
@@ -247,6 +254,9 @@ Stmt Parser::statement() {
     if (match(std::initializer_list<TokenType>{TokenType::WHILE})) {
         return while_statement();
     }
+    if (match(std::initializer_list<TokenType>{TokenType::FOR})) {
+        return for_statement();
+    }
     if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
         return print_statement();
     }
@@ -315,6 +325,43 @@ Stmt Parser::while_statement() {
     return new_while_stmt(expr, stmt);
 }
 
+Stmt Parser::for_statement() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'");
+    Stmt initializer = {};
+    if (match(std::initializer_list<TokenType>{TokenType::SEMICOLON})) {
+    } else if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+        initializer = var_declaration();
+    } else {
+        initializer = expr_statement();
+    }
+
+    Expr* condition = nullptr;
+    if (!check(TokenType::SEMICOLON)) {
+        condition = expression();
+    }
+
+    Expr* increment = nullptr;
+    if (!check(TokenType::SEMICOLON)) {
+        increment = expression();
+    }
+    consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in for statement");
+
+    Stmt body = statement();
+
+    if (increment != nullptr) {
+        body = new_block_stmt({body, new_expr_stmt(increment)});
+    }
+    if (condition == nullptr) {
+        condition = new_literal(&true_token);
+    }
+    body = new_while_stmt(condition, body);
+    if (initializer.ty != Stmt::Type::ERR) {
+        body = new_block_stmt({initializer, body});
+    }
+    
+    return body;
+}
+
 Expr* Parser::expression() {
     return assignment();
 }
@@ -327,7 +374,7 @@ Expr* Parser::assignment() {
         Expr* right = assignment();
 
         if (expr->ty == Expr::Type::LITERAL && expr->expr.literal->val->m_type == TokenType::IDENTIFIER) {
-            Token* id = expr->expr.literal->val;
+            const Token* id = expr->expr.literal->val;
             return new_assignment(id, right);
         } else {
             error(peek(), "invalid assignment target.");

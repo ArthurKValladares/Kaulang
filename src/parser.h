@@ -33,6 +33,7 @@ private:
     Stmt print_statement();
     Stmt if_statement();
     Stmt while_statement();
+    Stmt for_statement();
     Expr* expression();
     Expr* assignment();
     Expr* logic_or();

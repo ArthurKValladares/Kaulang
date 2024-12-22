@@ -19,7 +19,7 @@ RuntimeError RuntimeError::ok() {
     };
 }
 
-RuntimeError RuntimeError::unsupported_literal(Token* token) {
+RuntimeError RuntimeError::unsupported_literal(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_LITERAL,
         .token = token,
@@ -27,7 +27,7 @@ RuntimeError RuntimeError::unsupported_literal(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::unsupported_binary_op(Token* token) {
+RuntimeError RuntimeError::unsupported_binary_op(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
@@ -35,7 +35,7 @@ RuntimeError RuntimeError::unsupported_binary_op(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::unsupported_unary_op(Token* token) {
+RuntimeError RuntimeError::unsupported_unary_op(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
@@ -43,7 +43,7 @@ RuntimeError RuntimeError::unsupported_unary_op(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operands_must_be_equal(Token* token) {
+RuntimeError RuntimeError::operands_must_be_equal(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
@@ -51,7 +51,7 @@ RuntimeError RuntimeError::operands_must_be_equal(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operands_must_be_floats(Token* token) {
+RuntimeError RuntimeError::operands_must_be_floats(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
@@ -59,7 +59,7 @@ RuntimeError RuntimeError::operands_must_be_floats(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operands_must_be_strings(Token* token) {
+RuntimeError RuntimeError::operands_must_be_strings(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
@@ -67,7 +67,7 @@ RuntimeError RuntimeError::operands_must_be_strings(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operand_must_be_float(Token* token) {
+RuntimeError RuntimeError::operand_must_be_float(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
@@ -75,7 +75,7 @@ RuntimeError RuntimeError::operand_must_be_float(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operand_must_be_bool(Token* token) {
+RuntimeError RuntimeError::operand_must_be_bool(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
@@ -83,7 +83,7 @@ RuntimeError RuntimeError::operand_must_be_bool(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::divide_by_zero(Token* token) {
+RuntimeError RuntimeError::divide_by_zero(const Token* token) {
     return RuntimeError {
         .ty = Type::DIVIDE_BY_ZERO,
         .token = token,
@@ -91,7 +91,7 @@ RuntimeError RuntimeError::divide_by_zero(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::operands_do_not_support_operator(Token* token) {
+RuntimeError RuntimeError::operands_do_not_support_operator(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
@@ -99,7 +99,7 @@ RuntimeError RuntimeError::operands_do_not_support_operator(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::undeclared_variable(Token* token) {
+RuntimeError RuntimeError::undeclared_variable(const Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
         .token = token,
@@ -107,7 +107,7 @@ RuntimeError RuntimeError::undeclared_variable(Token* token) {
     };
 }
 
-RuntimeError RuntimeError::undefined_variable(Token* token) {
+RuntimeError RuntimeError::undefined_variable(const Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
         .token = token,
@@ -741,7 +741,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt) 
 }
 
 void Stmt::print() {
-    
+    // TODO: Review some of this stuff, its not great
     switch (ty)
     {
         case Type::VAR_DECL: {

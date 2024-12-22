@@ -32,18 +32,18 @@ union ExprPayload {
 
 struct RuntimeError {
     static RuntimeError ok();
-    static RuntimeError unsupported_literal(Token* token);
-    static RuntimeError unsupported_binary_op(Token* token);
-    static RuntimeError unsupported_unary_op(Token* token);
-    static RuntimeError operands_must_be_equal(Token* token);
-    static RuntimeError operands_must_be_floats(Token* token);
-    static RuntimeError operands_must_be_strings(Token* token);
-    static RuntimeError operand_must_be_float(Token* token);
-    static RuntimeError operand_must_be_bool(Token* token);
-    static RuntimeError divide_by_zero(Token* token);
-    static RuntimeError operands_do_not_support_operator(Token* token);
-    static RuntimeError undeclared_variable(Token* token);
-    static RuntimeError undefined_variable(Token* token);
+    static RuntimeError unsupported_literal(const Token* token);
+    static RuntimeError unsupported_binary_op(const Token* token);
+    static RuntimeError unsupported_unary_op(const Token* token);
+    static RuntimeError operands_must_be_equal(const Token* token);
+    static RuntimeError operands_must_be_floats(const Token* token);
+    static RuntimeError operands_must_be_strings(const Token* token);
+    static RuntimeError operand_must_be_float(const Token* token);
+    static RuntimeError operand_must_be_bool(const Token* token);
+    static RuntimeError divide_by_zero(const Token* token);
+    static RuntimeError operands_do_not_support_operator(const Token* token);
+    static RuntimeError undeclared_variable(const Token* token);
+    static RuntimeError undefined_variable(const Token* token);
 
     bool is_ok() const;
 
@@ -57,7 +57,7 @@ struct RuntimeError {
     };
 
     Type ty;
-    Token* token;
+    const Token* token;
     std::string_view message;
 };
 
@@ -85,6 +85,7 @@ struct Value {
 
 // This struct is a bit sloppy with weird distinction between the data
 // for each type, make better later. Also these two foward-declares
+// TODO: This is really really bad now, definitely need ot fix it.
 struct KauCompiler;
 struct Environment;
 struct Stmt {
@@ -110,6 +111,7 @@ struct Stmt {
 
 struct Expr {
     enum class Type {
+        ERR,
         LITERAL,
         UNARY,
         BINARY,
@@ -130,7 +132,7 @@ struct Expr {
 
 // TODO: review these Token*'s later
 struct LiteralExpr {
-    Token* val;
+    const Token* val;
 };
 
 struct GroupingExpr {
@@ -144,37 +146,37 @@ struct UnaryExpr {
 
 struct BinaryExpr {
     Expr* left;
-    Token* op;
+    const Token* op;
     Expr* right;
 };
 
 struct CommaExpr {
     Expr* left;
-    Token* op;
+    const Token* op;
     Expr* right;
 };
 
 struct TernaryExpr {
     Expr* left;
-    Token* left_op;
+    const Token* left_op;
     Expr* middle;
-    Token* right_op;
+    const Token* right_op;
     Expr* right;
 };
 
 struct AssignmentExpr {
-    Token* id;
+    const Token* id;
     Expr* right;
 };
 
 struct AndExpr {
     Expr* left;
-    Token* op;
+    const Token* op;
     Expr* right;
 };
 
 struct OrExpr {
     Expr* left;
-    Token* op;
+    const Token* op;
     Expr* right;
 };
