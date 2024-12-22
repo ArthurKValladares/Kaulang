@@ -327,6 +327,7 @@ Stmt Parser::while_statement() {
 
 Stmt Parser::for_statement() {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'");
+
     Stmt initializer = {};
     if (match(std::initializer_list<TokenType>{TokenType::SEMICOLON})) {
     } else if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
@@ -339,6 +340,7 @@ Stmt Parser::for_statement() {
     if (!check(TokenType::SEMICOLON)) {
         condition = expression();
     }
+    consume(TokenType::SEMICOLON, "Expected ';' after 'for' condition");
 
     Expr* increment = nullptr;
     if (!check(TokenType::SEMICOLON)) {
