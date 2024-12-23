@@ -662,13 +662,16 @@ void Value::print() const {
     }
 }
 
-Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt) {
+Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop) {
     if (ty == Stmt::Type::BLOCK) {
         Value expr_val = {};
         Environment new_env = {};
         new_env.enclosing = env;
         for (Stmt& stmt : stmts) {
-            expr_val = stmt.evaluate(compiler, &new_env, from_prompt);
+            expr_val = stmt.evaluate(compiler, &new_env, from_prompt, in_loop);
+            if (expr_val.ty == Value::Type::BREAK) {
+                break;
+            }
         }
         return expr_val;
     }
@@ -688,9 +691,9 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt) 
         Environment new_env = {};
         new_env.enclosing = env;
         if (if_result) {
-            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt);
+            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt, in_loop);
         } else if (stmts[1].ty != Stmt::Type::ERR) {
-            expr_val = stmts[1].evaluate(compiler, &new_env, from_prompt);
+            expr_val = stmts[1].evaluate(compiler, &new_env, from_prompt, in_loop);
         }
 
         return expr_val;
@@ -713,9 +716,22 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt) 
 
             Environment new_env = {};
             new_env.enclosing = env;
-            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt);
+            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt, true);
+            if (expr_val.ty == Value::Type::BREAK) {
+                break;
+            }
         }
         return expr_val;
+    }
+
+    if (ty == Stmt::Type::BREAK) {
+        if (!in_loop) {
+            // TODO: Get actual line later, Stmt structure needs to be better
+            compiler->runtime_error(0, "'break' statement can only be used in a loop.");
+        }
+        return Value {
+            .ty = Value::Type::BREAK
+        };
     }
 
     // For now a variable declaration, like `var a;` has no expr.
@@ -784,6 +800,10 @@ void Stmt::print() {
         case Type::WHILE: {
             std::print("WHILE: ");
             stmts[0].print();
+            break;
+        }
+        case Type::BREAK: {
+            std::print("BREAK");
             break;
         }
         //

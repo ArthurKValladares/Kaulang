@@ -23,6 +23,7 @@ const std::unordered_map<std::string_view, TokenType> keywords = {
     {"false", TokenType::FALSE},
     {"var", TokenType::VAR},
     {"while", TokenType::WHILE},
+    {"break", TokenType::BREAK},
 };
 
 bool Scanner::is_at_end() const {

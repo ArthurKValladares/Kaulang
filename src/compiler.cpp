@@ -41,7 +41,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
 #ifdef DEBUG_PRINT
         stmt.print();
 #endif
-        Value val = stmt.evaluate(this, &global_env, from_prompt);
+        Value val = stmt.evaluate(this, &global_env, from_prompt, false);
     }
 
     return 0;

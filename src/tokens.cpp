@@ -132,6 +132,9 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::WHILE: {
         return "while";
     }
+    case TokenType::BREAK: {
+        return "break";
+    }
     case TokenType::_EOF: {
         return "EOF";
     }

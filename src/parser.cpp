@@ -196,6 +196,12 @@ namespace {
             .ty = Stmt::Type::ERR,
         };
     }
+
+    Stmt new_break_stmt() {
+        return Stmt {
+            .ty = Stmt::Type::BREAK,
+        };
+    }
 };
 
 void Parser::error(Token* token, std::string_view message) {
@@ -262,6 +268,9 @@ Stmt Parser::statement() {
     }
     if (match(std::initializer_list<TokenType>{TokenType::LEFT_BRACE})) {
         return block_statement();
+    }
+    if (match(std::initializer_list<TokenType>{TokenType::BREAK})) {
+        return break_statement();
     }
     return expr_statement();
 }
@@ -362,6 +371,12 @@ Stmt Parser::for_statement() {
     }
     
     return body;
+}
+
+Stmt Parser::break_statement() {
+    consume(TokenType::SEMICOLON, "Expected ';' after 'break'");
+
+    return new_break_stmt();
 }
 
 Expr* Parser::expression() {

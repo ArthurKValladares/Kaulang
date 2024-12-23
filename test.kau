@@ -5,8 +5,16 @@ while (count < 10) {
 }
 print "";
 
-for (var a = 0; a < 10; a = a + 1) {
-    print a;
+for (var i = 0; i < 10; i = i + 1) {
+    print i;
+}
+print "";
+
+for (var i = 0; i < 10; i = i + 1) {
+    print i;
+    if (i == 5) {
+        break;
+    }
 }
 print "";
 

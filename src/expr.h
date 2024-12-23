@@ -69,6 +69,7 @@ struct Value {
         DOUBLE,
         INT,
         STRING,
+        BREAK,
     };
 
     Type ty;
@@ -97,6 +98,7 @@ struct Stmt {
         BLOCK,
         IF,
         WHILE,
+        BREAK,
     };
 
     Type ty;
@@ -105,7 +107,7 @@ struct Stmt {
     Expr* expr;
     std::vector<Stmt> stmts;
 
-    Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt);
+    Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop);
     void print();
 };
 
