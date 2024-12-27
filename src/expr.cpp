@@ -669,7 +669,10 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         new_env.enclosing = env;
         for (Stmt& stmt : stmts) {
             expr_val = stmt.evaluate(compiler, &new_env, from_prompt, in_loop);
-            if (expr_val.ty == Value::Type::BREAK) {
+            // continue statement stops current block from exeuting further, like a break.
+            if (expr_val.ty == Value::Type::BREAK ||
+                expr_val.ty == Value::Type::CONTINUE
+            ) {
                 break;
             }
         }
@@ -731,6 +734,16 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         }
         return Value {
             .ty = Value::Type::BREAK
+        };
+    }
+
+    if (ty == Stmt::Type::CONTINUE) {
+        if (!in_loop) {
+            // TODO: Get actual line later, Stmt structure needs to be better
+            compiler->runtime_error(0, "'continue' statement can only be used in a loop.");
+        }
+        return Value {
+            .ty = Value::Type::CONTINUE
         };
     }
 
@@ -804,6 +817,10 @@ void Stmt::print() {
         }
         case Type::BREAK: {
             std::print("BREAK");
+            break;
+        }
+        case Type::CONTINUE: {
+            std::print("CONTINUE");
             break;
         }
         //

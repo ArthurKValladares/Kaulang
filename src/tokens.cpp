@@ -135,6 +135,9 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::BREAK: {
         return "break";
     }
+    case TokenType::CONTINUE: {
+        return "continue";
+    }
     case TokenType::_EOF: {
         return "EOF";
     }

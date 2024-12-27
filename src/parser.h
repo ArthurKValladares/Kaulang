@@ -35,6 +35,7 @@ private:
     Stmt while_statement();
     Stmt for_statement();
     Stmt break_statement();
+    Stmt continue_statement();
     Expr* expression();
     Expr* assignment();
     Expr* logic_or();

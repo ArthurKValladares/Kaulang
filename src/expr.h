@@ -70,6 +70,7 @@ struct Value {
         INT,
         STRING,
         BREAK,
+        CONTINUE,
     };
 
     Type ty;
@@ -99,6 +100,7 @@ struct Stmt {
         IF,
         WHILE,
         BREAK,
+        CONTINUE,
     };
 
     Type ty;
