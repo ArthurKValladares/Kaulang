@@ -321,7 +321,6 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
 
             switch (binary->op->m_type)
             {
-                // TODO: Tons of repetition, clean up later
                 case TokenType::PLUS: {
                     if (left_val.ty != right_val.ty) {
                             return RuntimeError::operands_must_be_equal(binary->op);
@@ -584,7 +583,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             }
 
             in_value = left_val;
-            // TODO: so far this allow the right-side expression to evaluate to sommething other
+            // TODO: so far this allow the right-side expression to evaluate to something other
             // than bool in the case the left-side is false. Think about that.
             if (left_val.b == true) {
                 Value right_val = {};

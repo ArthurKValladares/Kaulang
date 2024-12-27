@@ -202,6 +202,12 @@ namespace {
             .ty = Stmt::Type::BREAK,
         };
     }
+
+    Stmt new_continue_stmt() {
+        return Stmt {
+            .ty = Stmt::Type::CONTINUE,
+        };
+    }
 };
 
 void Parser::error(Token* token, std::string_view message) {
@@ -272,6 +278,9 @@ Stmt Parser::statement() {
     if (match(std::initializer_list<TokenType>{TokenType::BREAK})) {
         return break_statement();
     }
+    if (match(std::initializer_list<TokenType>{TokenType::CONTINUE})) {
+        return continue_statement();
+    }
     return expr_statement();
 }
 
@@ -282,7 +291,6 @@ Stmt Parser::expr_statement() {
         return new_err_stmt();
     }
 
-    // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after expression");
     return new_expr_stmt(val);
 }
@@ -304,7 +312,6 @@ Stmt Parser::print_statement() {
         return new_err_stmt();
     }
 
-    // TODO: more error-checking here?
     consume(TokenType::SEMICOLON, "Expected ';' after value");
     return new_print_stmt(val);
 }
@@ -377,6 +384,12 @@ Stmt Parser::break_statement() {
     consume(TokenType::SEMICOLON, "Expected ';' after 'break'");
 
     return new_break_stmt();
+}
+
+Stmt Parser::continue_statement() {
+    consume(TokenType::SEMICOLON, "Expected ';' after 'continue'");
+
+    return new_continue_stmt();
 }
 
 Expr* Parser::expression() {

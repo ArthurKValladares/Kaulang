@@ -279,8 +279,7 @@ void Scanner::scan_token(KauCompiler& compiler) {
             } else if (isalpha(c)) {
                 identifier();
             } else {
-                // TODO: variadic?
-                compiler.error(m_current_line, "unexpected character {}");
+                compiler.error(m_current_line, "unexpected character " + c);
             }
             break;
         }
