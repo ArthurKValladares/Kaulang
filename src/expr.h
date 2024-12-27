@@ -17,6 +17,8 @@ struct AssignmentExpr;
 struct AndExpr;
 struct OrExpr;
 
+struct Stmt;
+
 union ExprPayload {
     LiteralExpr* literal;
     GroupingExpr* grouping;
@@ -85,15 +87,37 @@ struct Value {
     void print() const;
 };
 
-// This struct is a bit sloppy with weird distinction between the data
-// for each type, make better later. Also these two foward-declares
-// TODO: This is really really bad now, definitely need ot fix it.
+struct ExprStmtPayload {
+    Expr* expr;
+};
+
+struct VarDeclPayload {
+    Token* name;
+    Expr* expr;
+};
+
+struct BlockPayload {
+    // TODO: My own dynamic array class probably
+    Stmt** stmts;
+    int size;
+};
+
+struct IfPayload {
+    Expr* expr;
+    Stmt* if_stmt;
+    Stmt* else_stmt;
+};
+
+struct WhilePayload {
+    Expr* expr;
+    Stmt* stmt;
+};
+
 struct KauCompiler;
 struct Environment;
 struct Stmt {
     enum class Type {
         ERR,
-        PRINT,
         EXPR,
         VAR_DECL,
         BLOCK,
@@ -104,10 +128,14 @@ struct Stmt {
     };
 
     Type ty;
-
-    Token* name;
-    Expr* expr;
-    std::vector<Stmt> stmts;
+    union {
+        ExprStmtPayload s_expr;
+        VarDeclPayload s_var_decl;
+        BlockPayload s_block;
+        IfPayload s_if;
+        WhilePayload s_while;
+    };    
+    bool should_print = false;
 
     Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop);
     void print();

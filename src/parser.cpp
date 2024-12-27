@@ -141,53 +141,60 @@ namespace {
         return expr;
     }
 
+    // TODO: This function is probably temporary
+    Stmt* allocated_stmt(Stmt stmt) {
+        Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
+        *ret = stmt;
+        return ret;
+    }
+
     Stmt new_print_stmt(Expr* val) {
         return Stmt {
-            .ty = Stmt::Type::PRINT,
-            .expr = val
+            .ty = Stmt::Type::EXPR,
+            .s_expr = ExprStmtPayload{val},
+            .should_print = true,
         };
     }
 
-    Stmt new_block_stmt(std::vector<Stmt> stmts) {
+    Stmt new_block_stmt(Stmt** stmts, int size) {
         return Stmt {
             .ty = Stmt::Type::BLOCK,
-            .stmts = stmts
+            .s_block = BlockPayload{stmts, size}
         };
     }
 
     Stmt new_expr_stmt(Expr* expr) {
         return Stmt {
             .ty = Stmt::Type::EXPR,
-            .expr = expr
+            .s_expr = ExprStmtPayload{expr},
         };
     }
 
     Stmt new_var_decl(Token* name, Expr* expr) {
         return Stmt {
             .ty = Stmt::Type::VAR_DECL,
-            .name = name,
-            .expr = expr
+            .s_var_decl = VarDeclPayload{name, expr},
         };
     }
 
     Stmt new_if_stmt(Expr* expr, Stmt if_stmt, Stmt else_stmt) {
-        std::vector<Stmt> stmts;
-        stmts.emplace_back(if_stmt);
-        stmts.emplace_back(else_stmt);
         return Stmt {
             .ty = Stmt::Type::IF,
-            .expr = expr,
-            .stmts = std::move(stmts)
+            .s_if = IfPayload{
+                expr,
+                allocated_stmt(if_stmt),
+                allocated_stmt(else_stmt)
+            }
         };
     }
 
     Stmt new_while_stmt(Expr* expr, Stmt stmt) {
-        std::vector<Stmt> stmts;
-        stmts.emplace_back(stmt);
         return Stmt {
             .ty = Stmt::Type::WHILE,
-            .expr = expr,
-            .stmts = std::move(stmts)
+            .s_while = WhilePayload{
+                expr,
+                allocated_stmt(stmt)
+            }
         };
     }
 
@@ -303,7 +310,13 @@ Stmt Parser::block_statement() {
     }
     consume(TokenType::RIGHT_BRACE, "Expected '}' after block");
 
-    return new_block_stmt(stmts);
+    // TODO: Probably can make this better without this double `copy` step
+    const int size = stmts.size();
+    Stmt** stmts_c = (Stmt**) malloc(size * sizeof(Stmt*));
+    for (int i = 0; i < size; ++i) {
+        stmts_c[i] = allocated_stmt(stmts[i]);
+    }
+    return new_block_stmt(stmts_c, size);
 }
 
 Stmt Parser::print_statement() {
@@ -367,14 +380,22 @@ Stmt Parser::for_statement() {
     Stmt body = statement();
 
     if (increment != nullptr) {
-        body = new_block_stmt({body, new_expr_stmt(increment)});
+        const int size = 2;
+        Stmt** stmts = (Stmt**) malloc(size * sizeof(Stmt*));
+        stmts[0] = allocated_stmt(body);
+        stmts[1] = allocated_stmt(new_expr_stmt(increment));
+        body = new_block_stmt(stmts, size);
     }
     if (condition == nullptr) {
         condition = new_literal(&true_token);
     }
     body = new_while_stmt(condition, body);
     if (initializer.ty != Stmt::Type::ERR) {
-        body = new_block_stmt({initializer, body});
+        const int size = 2;
+        Stmt** stmts = (Stmt**) malloc(size * sizeof(Stmt*));
+        stmts[0] = allocated_stmt(initializer);
+        stmts[1] = allocated_stmt(body);
+        body = new_block_stmt(stmts, size);
     }
     
     return body;

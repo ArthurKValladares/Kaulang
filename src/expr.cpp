@@ -662,12 +662,13 @@ void Value::print() const {
 }
 
 Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop) {
+    Value expr_val = {};
+
     if (ty == Stmt::Type::BLOCK) {
-        Value expr_val = {};
         Environment new_env = {};
         new_env.enclosing = env;
-        for (Stmt& stmt : stmts) {
-            expr_val = stmt.evaluate(compiler, &new_env, from_prompt, in_loop);
+        for (int i = 0; i < s_block.size; ++i) {
+            expr_val = s_block.stmts[i]->evaluate(compiler, &new_env, from_prompt, in_loop);
             // continue statement stops current block from exeuting further, like a break.
             if (expr_val.ty == Value::Type::BREAK ||
                 expr_val.ty == Value::Type::CONTINUE
@@ -680,7 +681,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::IF) {
         Value test_expr_val = {};
-        RuntimeError expr_err = expr->evaluate(env, test_expr_val);
+        RuntimeError expr_err = s_if.expr->evaluate(env, test_expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -689,23 +690,21 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         }
         bool if_result = test_expr_val.b;
 
-        Value expr_val = {};
         Environment new_env = {};
         new_env.enclosing = env;
         if (if_result) {
-            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt, in_loop);
-        } else if (stmts[1].ty != Stmt::Type::ERR) {
-            expr_val = stmts[1].evaluate(compiler, &new_env, from_prompt, in_loop);
+            expr_val = s_if.if_stmt->evaluate(compiler, &new_env, from_prompt, in_loop);
+        } else if (s_if.else_stmt->ty != Stmt::Type::ERR) {
+            expr_val = s_if.else_stmt->evaluate(compiler, &new_env, from_prompt, in_loop);
         }
 
         return expr_val;
     }
 
     if (ty == Stmt::Type::WHILE) {
-        Value expr_val = {};
         while (true) {
             Value test_expr_val = {};
-            RuntimeError expr_err = expr->evaluate(env, test_expr_val);
+            RuntimeError expr_err = s_while.expr->evaluate(env, test_expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -718,7 +717,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
             Environment new_env = {};
             new_env.enclosing = env;
-            expr_val = stmts[0].evaluate(compiler, &new_env, from_prompt, true);
+            expr_val = s_while.stmt->evaluate(compiler, &new_env, from_prompt, true);
             if (expr_val.ty == Value::Type::BREAK) {
                 break;
             }
@@ -746,22 +745,25 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         };
     }
 
-    // For now a variable declaration, like `var a;` has no expr.
-    // Maybe it should have a no-op one instead, or just some sort of 
-    // expr that evaluates to a default val.
-    Value expr_val = {};
-    if (expr != nullptr) {
-        RuntimeError expr_err = expr->evaluate(env, expr_val);
+    if (ty == Stmt::Type::EXPR) {
+        RuntimeError expr_err = s_expr.expr->evaluate(env, expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
     }
 
     if (ty == Stmt::Type::VAR_DECL) {
-        env->define(name, expr_val);
+        if (s_var_decl.expr != nullptr) {
+            RuntimeError expr_err = s_var_decl.expr->evaluate(env, expr_val);
+            if (!expr_err.is_ok()) {
+                compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+            }
+        }
+
+        env->define(s_var_decl.name, expr_val);
     }
 
-    if (ty == Stmt::Type::PRINT || from_prompt) {
+    if (should_print || from_prompt) {
         expr_val.print();
     }
 
@@ -774,44 +776,38 @@ void Stmt::print() {
     {
         case Type::VAR_DECL: {
             std::print("VAR DECL: ");
-            std::print("{}", name->m_lexeme);
-            if (expr != nullptr) {
+            std::print("{}", s_var_decl.name->m_lexeme);
+            if (s_var_decl.expr != nullptr) {
                 std::print(" = ");
-                expr->print();
+                s_var_decl.expr->print();
             }
-            std::println("");
-            break;
-        }
-        case Type::PRINT: {
-            std::print("PRINT: ");
-            expr->print();
             std::println("");
             break;
         }
         case Type::EXPR: {
             std::print("EXPR: ");
-            expr->print();
+            s_expr.expr->print();
             std::println("");
             break;
         }
         case Type::BLOCK: {
             std::print("BLOCK: ");
-            for (Stmt& stmt : stmts) {
-                stmt.print();
+            for (int i = 0; i < s_block.size; ++i) {
+                s_block.stmts[i]->print();
             }
             break;
         }
         case Type::IF: {
             std::print("IF: ");
-            stmts[0].print();
-            if (stmts[1].ty != Stmt::Type::ERR) {
-                stmts[1].print();
+            s_if.if_stmt->print();
+            if (s_if.else_stmt->ty != Stmt::Type::ERR) {
+                s_if.else_stmt->print();
             }
             break;
         }
         case Type::WHILE: {
             std::print("WHILE: ");
-            stmts[0].print();
+            s_while.stmt->print();
             break;
         }
         case Type::BREAK: {
