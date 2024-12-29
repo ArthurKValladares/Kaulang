@@ -727,8 +727,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::BREAK) {
         if (!in_loop) {
-            // TODO: Get actual line later, Stmt structure needs to be better
-            compiler->runtime_error(0, "'break' statement can only be used in a loop.");
+            compiler->runtime_error(s_break_continue.line, "'break' statement can only be used in a loop.");
         }
         return Value {
             .ty = Value::Type::BREAK
@@ -737,8 +736,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::CONTINUE) {
         if (!in_loop) {
-            // TODO: Get actual line later, Stmt structure needs to be better
-            compiler->runtime_error(0, "'continue' statement can only be used in a loop.");
+            compiler->runtime_error(s_break_continue.line, "'continue' statement can only be used in a loop.");
         }
         return Value {
             .ty = Value::Type::CONTINUE

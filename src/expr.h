@@ -113,6 +113,10 @@ struct WhilePayload {
     Stmt* stmt;
 };
 
+struct BreakContinuePayload {
+    int line;
+};
+
 struct KauCompiler;
 struct Environment;
 struct Stmt {
@@ -134,6 +138,7 @@ struct Stmt {
         BlockPayload s_block;
         IfPayload s_if;
         WhilePayload s_while;
+        BreakContinuePayload s_break_continue;
     };    
     bool should_print = false;
 

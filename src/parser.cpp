@@ -204,15 +204,17 @@ namespace {
         };
     }
 
-    Stmt new_break_stmt() {
+    Stmt new_break_stmt(int line) {
         return Stmt {
             .ty = Stmt::Type::BREAK,
+            .s_break_continue = BreakContinuePayload{line},
         };
     }
 
-    Stmt new_continue_stmt() {
+    Stmt new_continue_stmt(int line) {
         return Stmt {
             .ty = Stmt::Type::CONTINUE,
+            .s_break_continue = BreakContinuePayload{line},
         };
     }
 };
@@ -404,13 +406,13 @@ Stmt Parser::for_statement() {
 Stmt Parser::break_statement() {
     consume(TokenType::SEMICOLON, "Expected ';' after 'break'");
 
-    return new_break_stmt();
+    return new_break_stmt(previous()->m_line);
 }
 
 Stmt Parser::continue_statement() {
     consume(TokenType::SEMICOLON, "Expected ';' after 'continue'");
 
-    return new_continue_stmt();
+    return new_continue_stmt(previous()->m_line);
 }
 
 Expr* Parser::expression() {
