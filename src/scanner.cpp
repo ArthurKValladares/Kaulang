@@ -102,7 +102,7 @@ void Scanner::string(KauCompiler& compiler) {
     add_token(TokenType::STRING, substr);
 }
 
-void Scanner::number() {
+void Scanner::number(KauCompiler& compiler) {
     while(isdigit(peek())) {
         advance();
     }
@@ -135,7 +135,9 @@ void Scanner::number() {
     } else {
         char* err;
         const double fractional = strtod(m_source + m_start_char_offset, &err);
-        // TODO: Probably some error checking on err
+        if (err == nullptr) {
+            compiler.error(m_current_line, "could not convert string to double");
+        }
         add_token(TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
     }
 }
@@ -275,7 +277,7 @@ void Scanner::scan_token(KauCompiler& compiler) {
         }
         default: {
             if (isdigit(c)) {
-                number();
+                number(compiler);
             } else if (isalpha(c)) {
                 identifier();
             } else {

@@ -30,7 +30,7 @@ private:
     std::string_view get_substring(int start_offset, int end_offset) const;
 
     void string(KauCompiler& compiler);
-    void number();
+    void number(KauCompiler& compiler);
     void identifier();
     void block_comment(KauCompiler& compiler);
     
