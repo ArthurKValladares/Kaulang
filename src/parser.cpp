@@ -219,7 +219,7 @@ namespace {
     }
 };
 
-void Parser::error(Token* token, std::string_view message) {
+void Parser::error(const Token* token, std::string_view message) {
     if (token->m_type == TokenType::_EOF) {
         std::println(stderr, "Parser Error: {} at end.", message);
     } else {
@@ -628,7 +628,7 @@ Expr* Parser::primary() {
     return nullptr;
 }
 
-bool Parser::is_at_end() {
+bool Parser::is_at_end() const {
     return peek()->m_type == TokenType::_EOF;
 }
 
@@ -662,7 +662,7 @@ bool Parser::check(TokenType ty) {
     return peek()->m_type == ty;
 }
 
-Token* Parser::peek() {
+const Token* Parser::peek() const {
     return &m_tokens[m_current];
 }
 

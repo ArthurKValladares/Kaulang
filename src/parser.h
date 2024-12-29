@@ -7,7 +7,6 @@
 #include <vector>
 #include <span>
 
-// TODO: Probably makes sense to make a lot of this stuff const
 struct Parser {
     // TODO: Make sure both these constructors can just move the data
 
@@ -22,7 +21,7 @@ struct Parser {
     std::vector<Stmt> parse();
 
 private:
-    void error(Token* token, std::string_view message);
+    void error(const Token* token, std::string_view message);
 
     std::vector<Stmt> program();
     Stmt declaration();
@@ -53,8 +52,8 @@ private:
     Token* advance();
 
     bool check(TokenType ty);
-    bool is_at_end();
-    Token* peek();
+    bool is_at_end() const;
+    const Token* peek() const;
     Token* previous();
 
     Token* consume(TokenType ty, std::string_view message);

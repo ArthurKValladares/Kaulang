@@ -97,7 +97,6 @@ struct VarDeclPayload {
 };
 
 struct BlockPayload {
-    // TODO: My own dynamic array class probably
     Stmt** stmts;
     int size;
 };
