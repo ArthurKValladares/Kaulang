@@ -203,6 +203,21 @@ void Expr::print() const {
 
             break;
         }
+        case Type::FN_CALL: {
+            FnCallExpr* fn_call = expr.fn_call;
+
+            fn_call->callee->print();
+            std::print("(");
+            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
+                fn_call->arguments[i]->print();
+                if (i != fn_call->arguments.size() - 1) {
+                    std::print(", ");
+                }
+            }
+            std::print(")");
+
+            break;
+        }
     }
 }
 
@@ -626,6 +641,10 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                 .b = left_val.b || right_val.b
             };
 
+            return RuntimeError::ok();
+        }
+        case Type::FN_CALL:  {
+            //TODO
             return RuntimeError::ok();
         }
     }

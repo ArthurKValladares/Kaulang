@@ -141,6 +141,21 @@ namespace {
         return expr;
     }
 
+    Expr* new_fn_call(Expr* callee, const Token* paren, std::vector<Expr*> arguments) {
+        FnCallExpr* fn_call = (FnCallExpr*) malloc(sizeof(FnCallExpr));
+        assert(fn_call != nullptr);
+        fn_call->callee = callee;
+        fn_call->paren = paren;
+        fn_call->arguments = std::move(arguments);
+
+        Expr* expr = new_expr(
+            Expr::Type::FN_CALL,
+            ExprPayload{.fn_call = fn_call}
+        );
+
+        return expr;
+    }
+
     // TODO: This function is probably temporary
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
@@ -599,8 +614,36 @@ Expr* Parser::unary() {
         Expr* right = unary();
         return new_unary(op, right);
     } else {
-        return primary();
+        return fn_call();
     }
+}
+
+Expr* Parser::fn_call() {
+    Expr* expr = primary();
+
+    while (true) {
+        if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
+            expr = finish_call(expr);
+        } else {
+            break;
+        }
+    }
+
+    return expr;
+}
+
+Expr* Parser::finish_call(Expr* callee) {
+    std::vector<Expr*> arguments = {};
+
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            arguments.push_back(expression());
+        } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
+    }
+
+    Token* paren = consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments");
+
+    return new_fn_call(callee, paren, arguments);
 }
 
 Expr* Parser::primary() {

@@ -46,7 +46,10 @@ private:
     Expr* term();
     Expr* factor();
     Expr* unary();
+    Expr* fn_call();
     Expr* primary();
+
+    Expr* finish_call(Expr* callee);
 
     bool match(std::span<const TokenType> types);
     Token* advance();

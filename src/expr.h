@@ -16,6 +16,7 @@ struct PrintExpr;
 struct AssignmentExpr;
 struct AndExpr;
 struct OrExpr;
+struct FnCallExpr;
 
 struct Stmt;
 
@@ -30,6 +31,7 @@ union ExprPayload {
     AssignmentExpr* assignment;
     AndExpr* logical_and;
     OrExpr* logical_or;
+    FnCallExpr* fn_call;
 };
 
 struct RuntimeError {
@@ -157,6 +159,7 @@ struct Expr {
         ASSIGNMENT,
         AND,
         OR,
+        FN_CALL,
     };
 
     Type ty;
@@ -215,4 +218,10 @@ struct OrExpr {
     Expr* left;
     const Token* op;
     Expr* right;
+};
+
+struct FnCallExpr {
+    Expr* callee;
+    const Token* paren;
+    std::vector<Expr*> arguments;
 };
