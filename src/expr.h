@@ -48,6 +48,8 @@ struct RuntimeError {
     static RuntimeError operands_do_not_support_operator(const Token* token);
     static RuntimeError undeclared_variable(const Token* token);
     static RuntimeError undefined_variable(const Token* token);
+    static RuntimeError undeclared_function(const Token* token);
+    static RuntimeError invalid_function_identifier(const Token* token);
 
     bool is_ok() const;
 
@@ -58,6 +60,8 @@ struct RuntimeError {
         WRONG_OPERANDS,
         DIVIDE_BY_ZERO,
         UNDEFINED_VARIABLE,
+        UNDEFINED_FUNCTION,
+        INVALID_IDENTIFIER,
     };
 
     Type ty;

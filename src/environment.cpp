@@ -50,3 +50,18 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
         return RuntimeError::undeclared_variable(token);
     }
 }
+
+RuntimeError Environment::get_callable(const Token* token, Callable& in_callable) {
+    std::string str_name = std::string(token->m_lexeme);
+
+    if (callables.contains(str_name)) {
+        // TODO
+        return RuntimeError::ok();
+    } else {
+        if (enclosing != nullptr) {
+            return enclosing->get_callable(token, in_callable);
+        }
+
+        return RuntimeError::undeclared_function(token);
+    }
+}

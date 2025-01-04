@@ -142,7 +142,8 @@ namespace {
     }
 
     Expr* new_fn_call(Expr* callee, const Token* paren, std::vector<Expr*> arguments) {
-        FnCallExpr* fn_call = (FnCallExpr*) malloc(sizeof(FnCallExpr));
+        // TODO: do away with the vector later so i can use malloc
+        FnCallExpr* fn_call = new FnCallExpr;
         assert(fn_call != nullptr);
         fn_call->callee = callee;
         fn_call->paren = paren;
@@ -620,6 +621,7 @@ Expr* Parser::unary() {
 
 Expr* Parser::fn_call() {
     Expr* expr = primary();
+    assert(expr->ty == Expr::Type::LITERAL);
 
     while (true) {
         if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {

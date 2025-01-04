@@ -115,6 +115,22 @@ RuntimeError RuntimeError::undefined_variable(const Token* token) {
     };
 }
 
+RuntimeError RuntimeError::undeclared_function(const Token* token) {
+    return RuntimeError {
+        .ty = Type::UNDEFINED_VARIABLE,
+        .token = token,
+        .message = "Undeclared function"
+    };
+}
+
+RuntimeError RuntimeError::invalid_function_identifier(const Token* token) {
+    return RuntimeError {
+        .ty = Type::INVALID_IDENTIFIER,
+        .token = token,
+        .message = "invalid identifier"
+    };
+}
+
 bool RuntimeError::is_ok() const {
     return ty == Type::Ok;
 }
@@ -644,7 +660,22 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             return RuntimeError::ok();
         }
         case Type::FN_CALL:  {
-            //TODO
+            FnCallExpr* fn_call = expr.fn_call;
+            
+            Expr* callee = fn_call->callee;
+            LiteralExpr* callee_literal = callee->expr.literal;
+            if (callee_literal->val->m_type != TokenType::IDENTIFIER) {
+                return RuntimeError::invalid_function_identifier(callee_literal->val);
+            }
+    
+            Callable callable = {};
+            RuntimeError err = env->get_callable(callee_literal->val, callable);
+            if (!err.is_ok()) {
+                return err;
+            }
+
+            // TODO: call the callable
+
             return RuntimeError::ok();
         }
     }
