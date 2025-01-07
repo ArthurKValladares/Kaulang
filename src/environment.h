@@ -5,6 +5,7 @@
 
 // TODO: temp struct
 struct Callable {
+    int arity;
 };
 
 struct Environment {

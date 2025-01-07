@@ -131,6 +131,16 @@ RuntimeError RuntimeError::invalid_function_identifier(const Token* token) {
     };
 }
 
+// TODO: error messages will be better later, need to add a string param
+// so i can set `expected` and `found` numbers
+RuntimeError RuntimeError::wrong_number_arguments(const Token* token) {
+    return RuntimeError {
+        .ty = Type::WRONG_NUMBER_ARGUMENTS,
+        .token = token,
+        .message = "wrong number of arguments"
+    };
+}
+
 bool RuntimeError::is_ok() const {
     return ty == Type::Ok;
 }
@@ -673,7 +683,9 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             if (!err.is_ok()) {
                 return err;
             }
-
+            if (callable.arity != fn_call->arguments.size()) {
+                return RuntimeError::wrong_number_arguments(callee_literal->val);
+            }
             // TODO: call the callable
 
             return RuntimeError::ok();

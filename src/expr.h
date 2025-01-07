@@ -50,6 +50,7 @@ struct RuntimeError {
     static RuntimeError undefined_variable(const Token* token);
     static RuntimeError undeclared_function(const Token* token);
     static RuntimeError invalid_function_identifier(const Token* token);
+    static RuntimeError wrong_number_arguments(const Token* token);
 
     bool is_ok() const;
 
@@ -62,6 +63,7 @@ struct RuntimeError {
         UNDEFINED_VARIABLE,
         UNDEFINED_FUNCTION,
         INVALID_IDENTIFIER,
+        WRONG_NUMBER_ARGUMENTS,
     };
 
     Type ty;
