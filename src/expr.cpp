@@ -683,7 +683,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             if (!err.is_ok()) {
                 return err;
             }
-            if (callable.arity != fn_call->arguments.size()) {
+            if (callable.m_arity != fn_call->arguments.size()) {
                 return RuntimeError::wrong_number_arguments(callee_literal->val);
             }
             // TODO: call the callable

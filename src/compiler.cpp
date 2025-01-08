@@ -19,6 +19,10 @@ long get_file_size(FILE* file) {
 }
 };
 
+KauCompiler::KauCompiler() {
+    global_env.define_callable("clock", Callable(0));
+}
+
 void KauCompiler::error(int line, std::string_view message) {
     std::println(stderr, "[Line {}] Error: {}", line, message);
     m_had_error = true;

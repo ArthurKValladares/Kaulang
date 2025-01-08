@@ -5,7 +5,12 @@
 
 // TODO: temp struct
 struct Callable {
-    int arity;
+    Callable() {}
+    Callable(int arity) 
+        : m_arity(arity)
+    {}
+
+    int m_arity = 0;
 };
 
 struct Environment {
@@ -14,6 +19,8 @@ struct Environment {
     RuntimeError set(const Token* token, Value value);
     RuntimeError get(const Token* token, Value& in_value);
 
+    void define_callable(const Token* token, Callable in_callable);
+    void define_callable(const std::string &str, Callable in_callable);
     RuntimeError get_callable(const Token* token, Callable& in_callable);
 
     // TODO: Annoying that im using an allocated string here

@@ -5,6 +5,8 @@
 #include "environment.h"
 
 struct KauCompiler {
+    KauCompiler();
+    
     bool m_had_error = false;
     bool m_had_runtime_error = false;
     Environment global_env = {};

@@ -51,6 +51,15 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
     }
 }
 
+void Environment::define_callable(const Token* token, Callable in_callable) {
+    // TODO: Allocation
+    define_callable(std::string(token->m_lexeme), in_callable);
+}
+
+void Environment::define_callable(const std::string &str, Callable in_callable) {
+    callables[str] = in_callable;
+}
+
 RuntimeError Environment::get_callable(const Token* token, Callable& in_callable) {
     std::string str_name = std::string(token->m_lexeme);
 
