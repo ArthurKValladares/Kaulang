@@ -78,6 +78,7 @@ struct Value {
         FLOAT,
         DOUBLE,
         INT,
+        LONG,
         STRING,
         BREAK,
         CONTINUE,
@@ -87,6 +88,7 @@ struct Value {
     union {
         bool b;
         int i;
+        long l;
         float f;
         double d;
         std::string_view str = {};

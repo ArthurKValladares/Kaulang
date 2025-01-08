@@ -16,7 +16,7 @@ enum class TokenType {
 
     // Literals
     IDENTIFIER, STRING,
-    NUMBER_INT, NUMBER_FLOAT, NUMBER_DOUBLE,
+    NUMBER_INT, NUMBER_LONG, NUMBER_FLOAT, NUMBER_DOUBLE,
 
     // Keywords
     AND, CLASS, ELSE, FALSE, FN, FOR, IF, NIL, OR,
@@ -32,6 +32,7 @@ struct TokenData {
         FLOAT,
         DOUBLE,
         INT,
+        LONG,
         STRING
     };
 
@@ -40,11 +41,13 @@ struct TokenData {
         float f;
         double d;
         int i;
+        long l;
     } data;
 
     static TokenData new_float(float val);
     static TokenData new_double(double val);
     static TokenData new_int(int val);
+    static TokenData new_long(long val);
 };
 
 struct Token {

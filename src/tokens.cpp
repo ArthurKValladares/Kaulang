@@ -194,3 +194,12 @@ TokenData TokenData::new_int(int val) {
     };
     return data;
 }
+
+TokenData TokenData::new_long(long val) {
+    TokenData data = {};
+    data.ty = TokenData::Type::LONG;
+    data.data = TokenData::InnerData {
+        .l = val
+    };
+    return data;
+}

@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <print>
+#include <ctime>
 
 namespace {
 long get_file_size(FILE* file) {
@@ -20,7 +21,12 @@ long get_file_size(FILE* file) {
 };
 
 KauCompiler::KauCompiler() {
-    global_env.define_callable("clock", Callable(0));
+    global_env.define_callable("clock", Callable(0, [](std::vector<Expr*> const &args) {
+        return Value{
+            .ty = Value::Type::LONG,
+            .l = clock()
+        };
+    }));
 }
 
 void KauCompiler::error(int line, std::string_view message) {

@@ -281,6 +281,13 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                     };
                     return RuntimeError::ok();
                 }
+                case TokenType::NUMBER_LONG: {
+                    in_value = Value {
+                        .ty = Value::Type::LONG,
+                        .l = literal->val->data.data.l
+                    };
+                    return RuntimeError::ok();
+                }
                 case TokenType::NUMBER_FLOAT: {
                     in_value = Value {
                         .ty = Value::Type::FLOAT,
@@ -430,6 +437,18 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                         in_value = Value {
                             .ty = Value::Type::INT,
                             .i = left_val.i / right_val.i
+                        };
+                        return RuntimeError::ok();
+                    }
+
+                    if (left_val.ty == Value::Type::LONG) {
+                        if (right_val.l == 0) {
+                            return RuntimeError::divide_by_zero(binary->op);
+                        }
+                        
+                        in_value = Value {
+                            .ty = Value::Type::LONG,
+                            .l = left_val.l / right_val.l
                         };
                         return RuntimeError::ok();
                     }
@@ -686,8 +705,10 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             if (callable.m_arity != fn_call->arguments.size()) {
                 return RuntimeError::wrong_number_arguments(callee_literal->val);
             }
-            // TODO: call the callable
-
+            
+            const Value ret_value = callable.m_callback(fn_call->arguments);
+            in_value = ret_value;
+            
             return RuntimeError::ok();
         }
     }

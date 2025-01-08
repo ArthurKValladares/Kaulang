@@ -108,6 +108,9 @@ void Scanner::number(KauCompiler& compiler) {
     }
 
     TokenData::Type ty = TokenData::Type::INT;
+    if (peek() == 'l') {
+        ty = TokenData::Type::LONG;
+    }
 
     if (peek() == '.') {
         advance(); // skip over '.'
@@ -129,6 +132,9 @@ void Scanner::number(KauCompiler& compiler) {
     if (ty == TokenData::Type::INT) {
         const int integer = atoi(m_source + m_start_char_offset);
         add_token(TokenType::NUMBER_INT, TokenData::new_int(integer));
+    } else if (ty == TokenData::Type::LONG) {
+        const long integer = atol(m_source + m_start_char_offset);
+        add_token(TokenType::NUMBER_LONG, TokenData::new_long(integer));
     } else if (ty == TokenData::Type::FLOAT) {
         const float fractional = atof(m_source + m_start_char_offset);
         add_token(TokenType::NUMBER_FLOAT, TokenData::new_float(fractional));

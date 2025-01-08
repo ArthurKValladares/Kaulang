@@ -2,15 +2,20 @@
 
 #include "expr.h"
 #include <unordered_map>
+#include <vector>
+#include <functional>
 
 // TODO: temp struct
+using CallableCallback = std::function<Value(std::vector<Expr*> const&)>;
 struct Callable {
     Callable() {}
-    Callable(int arity) 
+    Callable(int arity, CallableCallback callback) 
         : m_arity(arity)
+        , m_callback(callback)
     {}
 
     int m_arity = 0;
+    CallableCallback m_callback;
 };
 
 struct Environment {
