@@ -737,6 +737,10 @@ void Value::print() const {
             std::println("{}", i);
             break;
         }
+        case Type::LONG: {
+            std::println("{}", l);
+            break;
+        }
         case Type::STRING: {
             std::println("{}", str);
             break;

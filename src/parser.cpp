@@ -621,7 +621,6 @@ Expr* Parser::unary() {
 
 Expr* Parser::fn_call() {
     Expr* expr = primary();
-    assert(expr->ty == Expr::Type::LITERAL);
 
     while (true) {
         if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {

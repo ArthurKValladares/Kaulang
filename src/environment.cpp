@@ -64,7 +64,8 @@ RuntimeError Environment::get_callable(const Token* token, Callable& in_callable
     std::string str_name = std::string(token->m_lexeme);
 
     if (callables.contains(str_name)) {
-        // TODO
+        in_callable = callables[str_name];
+
         return RuntimeError::ok();
     } else {
         if (enclosing != nullptr) {
