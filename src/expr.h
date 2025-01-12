@@ -126,6 +126,13 @@ struct BreakContinuePayload {
     int line;
 };
 
+struct FnDeclarationPayload {
+    Token* name;
+    Token** params;
+    int params_size;
+    Stmt* body;
+};
+
 struct KauCompiler;
 struct Environment;
 struct Stmt {
@@ -138,6 +145,7 @@ struct Stmt {
         WHILE,
         BREAK,
         CONTINUE,
+        FN_DECLARATION,
     };
 
     Type ty;
@@ -148,6 +156,7 @@ struct Stmt {
         IfPayload s_if;
         WhilePayload s_while;
         BreakContinuePayload s_break_continue;
+        FnDeclarationPayload fn_declaration;
     };    
     bool should_print = false;
 

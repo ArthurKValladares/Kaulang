@@ -149,7 +149,7 @@ void Scanner::number(KauCompiler& compiler) {
 }
 
 void Scanner::identifier() {
-    while (isalnum(peek())) {
+    while (isalnum(peek()) || peek() == '_') {
         advance();
     }
 
@@ -284,7 +284,7 @@ void Scanner::scan_token(KauCompiler& compiler) {
         default: {
             if (isdigit(c)) {
                 number(compiler);
-            } else if (isalpha(c)) {
+            } else if (isalpha(c) || c == '_') {
                 identifier();
             } else {
                 compiler.error(m_current_line, "unexpected character " + c);

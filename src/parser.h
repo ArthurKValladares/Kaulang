@@ -26,6 +26,7 @@ private:
     std::vector<Stmt> program();
     Stmt declaration();
     Stmt var_declaration();
+    Stmt fn_declaration();
     Stmt statement();
     Stmt expr_statement();
     Stmt block_statement();

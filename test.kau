@@ -44,3 +44,13 @@ print "";
 var d = 10.5;
 var e = 15.4;
 print d + e;
+
+fn foo() {
+}
+
+fn bar(foo) {
+}
+
+fn test(test_param, test_param_2) {
+    var foo = test_param + test_param_2;
+}

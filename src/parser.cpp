@@ -233,6 +233,18 @@ namespace {
             .s_break_continue = BreakContinuePayload{line},
         };
     }
+
+    Stmt new_fn_declaration(Token* name, Token** params, int params_size, Stmt* body) {
+        return Stmt {
+            .ty = Stmt::Type::FN_DECLARATION,
+            .fn_declaration = FnDeclarationPayload{
+                name, 
+                params,
+                params_size,
+                body
+            },
+        };
+    }
 };
 
 void Parser::error(const Token* token, std::string_view message) {
@@ -261,6 +273,8 @@ Stmt Parser::declaration() {
     Stmt ret;
     if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
         ret = var_declaration();
+    } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
+        ret = fn_declaration();
     } else {
         ret = statement();
     }
@@ -271,6 +285,31 @@ Stmt Parser::declaration() {
 
     return ret;
 }
+
+Stmt Parser::fn_declaration() {
+    Token* name = consume(TokenType::IDENTIFIER, "Expected function name");
+    consume(TokenType::LEFT_PAREN, "Expected '(' after function name");
+    std::vector<Token*> params = {};
+    if (!check(TokenType::RIGHT_PAREN)) {
+        do {
+            params.push_back(consume(TokenType::IDENTIFIER, "Expecteded parameter name"));
+        } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
+    }
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after function parameters");
+
+    // TODO: Probably can make this better without this double `copy` step
+    const int size = params.size();
+    Token** params_c = (Token**) malloc(size * sizeof(Token*));
+    for (int i = 0; i < size; ++i) {
+        params_c[i] = params[i];
+    }
+
+    consume(TokenType::LEFT_BRACE, "Expected '{' before function body.");
+    Stmt* body = allocated_stmt(block_statement());
+
+    return new_fn_declaration(name, params_c, size, body);
+}
+
 
 Stmt Parser::var_declaration() {
     Token* name = consume(TokenType::IDENTIFIER, "Expected variable name");
