@@ -220,6 +220,16 @@ namespace {
         };
     }
 
+    Stmt new_return_stmt(Token* keyword, Expr* expr) {
+        return Stmt {
+            .ty = Stmt::Type::RETURN,
+            .s_return = ReturnPayload{
+                keyword,
+                expr
+            },
+        };
+    }
+
     Stmt new_fn_declaration(Token* name, Token** params, int params_size, Stmt* body) {
         return Stmt {
             .ty = Stmt::Type::FN_DECLARATION,
@@ -330,6 +340,9 @@ Stmt Parser::statement() {
     }
     if (match(std::initializer_list<TokenType>{TokenType::CONTINUE})) {
         return continue_statement();
+    }
+    if (match(std::initializer_list<TokenType>{TokenType::RETURN})) {
+        return return_statement();
     }
     return expr_statement();
 }
@@ -454,6 +467,18 @@ Stmt Parser::continue_statement() {
     consume(TokenType::SEMICOLON, "Expected ';' after 'continue'");
 
     return new_continue_stmt(previous()->m_line);
+}
+
+Stmt Parser::return_statement() {
+    Token* return_keyword = previous();
+    
+    Expr* value = nullptr;
+    if (!check(TokenType::SEMICOLON)) {
+        value = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expected ';' after retur value");
+
+    return new_return_stmt(return_keyword, value);
 }
 
 Expr* Parser::expression() {

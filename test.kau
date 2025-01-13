@@ -45,18 +45,30 @@ var d = 10.5;
 var e = 15.4;
 print d + e;
 
-fn stub() {
-    print 1;
+fn fn_test_1() {
+    return 1;
 }
-stub();
+print fn_test_1();
 
-fn foo(arg) {
-    print arg + 1;
+fn fn_test_2(arg_1) {
+    return arg_1 + 1;
 }
-foo(3);
+print fn_test_2(3);
 
-fn bar(arg_1, arg_2) {
-    print arg_1 * arg_2;
+fn fn_test_3(arg_1, arg_2) {
+    return arg_1 * arg_2;
 }
 var fn_arg = 3;
-bar(2, fn_arg);
+print fn_test_3(2, fn_arg);
+
+fn fn_test_4(arg_1, arg_2) {
+    print "this should happen";
+    return arg_1 * arg_2;
+}
+print fn_test_4(3, 4);
+
+fn fn_test_5(arg_1, arg_2) {
+    return arg_1 * arg_2;
+    print "this should not happen";
+}
+print fn_test_5(3, 4);

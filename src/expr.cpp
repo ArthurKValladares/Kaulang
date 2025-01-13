@@ -703,6 +703,8 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             const Value ret_value = callable.m_callback(values, compiler, env);
             in_value = ret_value;
             
+            compiler->hit_return = false;
+
             return RuntimeError::ok();
         }
     }
@@ -742,6 +744,7 @@ void Value::print() const {
     }
 }
 
+// TODO: Restructure this, with a switch and the should-print stuff at the end
 Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop) {
     Value expr_val = {};
 
@@ -752,7 +755,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
             expr_val = s_block.stmts[i]->evaluate(compiler, &new_env, from_prompt, in_loop);
             // continue statement stops current block from exeuting further, like a break.
             if (expr_val.ty == Value::Type::BREAK ||
-                expr_val.ty == Value::Type::CONTINUE
+                expr_val.ty == Value::Type::CONTINUE ||
+                compiler->hit_return
             ) {
                 break;
             }
@@ -799,7 +803,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
             Environment new_env = {};
             new_env.enclosing = env;
             expr_val = s_while.stmt->evaluate(compiler, &new_env, from_prompt, true);
-            if (expr_val.ty == Value::Type::BREAK) {
+            if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
                 break;
             }
         }
@@ -822,6 +826,14 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         return Value {
             .ty = Value::Type::CONTINUE
         };
+    }
+
+    if (ty == Stmt::Type::RETURN) {
+        RuntimeError expr_err = s_return.expr->evaluate(compiler, env, expr_val);
+        if (!expr_err.is_ok()) {
+            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+        }
+        compiler->hit_return = true;
     }
 
     if (ty == Stmt::Type::EXPR) {
@@ -911,6 +923,11 @@ void Stmt::print() {
         }
         case Type::CONTINUE: {
             std::print("CONTINUE");
+            break;
+        }
+        case Type::RETURN: {
+            std::print("RETURN");
+            s_return.expr->print();
             break;
         }
         //

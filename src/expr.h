@@ -135,6 +135,12 @@ struct FnDeclarationPayload {
     Stmt* body;
 };
 
+// TODO: Review `Token` struct and add it to more payloads maybe if we need it for logging
+struct ReturnPayload {
+    Token* keyword;
+    Expr* expr;
+};
+
 struct KauCompiler;
 struct Environment;
 struct Stmt {
@@ -148,6 +154,7 @@ struct Stmt {
         BREAK,
         CONTINUE,
         FN_DECLARATION,
+        RETURN,
     };
 
     Type ty;
@@ -159,7 +166,9 @@ struct Stmt {
         WhilePayload s_while;
         BreakContinuePayload s_break_continue;
         FnDeclarationPayload fn_declaration;
-    };    
+        ReturnPayload s_return;
+    };
+    // TODO: bitfield
     bool should_print = false;
 
     Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop);
