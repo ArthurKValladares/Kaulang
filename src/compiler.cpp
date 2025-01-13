@@ -21,7 +21,7 @@ long get_file_size(FILE* file) {
 };
 
 KauCompiler::KauCompiler() {
-    global_env.define_callable("clock", Callable(0, [](std::vector<Expr*> const &args) {
+    global_env.define_callable("clock", Callable(0, [](std::vector<Value> const &args) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()

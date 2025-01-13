@@ -700,7 +700,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             }
             
             
-            const Value ret_value = callable.m_callback(fn_call->arguments);
+            const Value ret_value = callable.m_callback(values);
             in_value = ret_value;
             
             return RuntimeError::ok();
@@ -846,7 +846,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         // TODO: Get ride of string conversion
         std::string str_name = std::string(fn_declaration.name->m_lexeme);
         // TODO: Actual callable
-        env->define_callable(str_name, Callable(fn_declaration.params_size, [](std::vector<Expr*> const &args) {
+        env->define_callable(str_name, Callable(fn_declaration.params_size, [](std::vector<Value> const &args) {
             return Value{
                 .ty = Value::Type::LONG,
                 .l = clock()
