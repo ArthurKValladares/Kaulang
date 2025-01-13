@@ -845,12 +845,15 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     if (ty == Stmt::Type::FN_DECLARATION) {        
         // TODO: Get ride of string conversion
         std::string str_name = std::string(fn_declaration.name->m_lexeme);
-        // TODO: Actual callable
-        env->define_callable(str_name, Callable(fn_declaration.params_size, [](std::vector<Value> const &args) {
-            return Value{
-                .ty = Value::Type::LONG,
-                .l = clock()
-            };
+        env->define_callable(str_name, Callable(fn_declaration.params_size, [&](std::vector<Value> const &args) {
+            Environment new_env = {};
+            new_env.enclosing = env;
+
+            for (size_t i = 0; i < fn_declaration.params_size; ++i) {
+                new_env.define(fn_declaration.params[i], args[i]);
+            }
+
+            return fn_declaration.body->evaluate(compiler, &new_env, false, false);
         }));
     }
 

@@ -46,17 +46,17 @@ var e = 15.4;
 print d + e;
 
 fn stub() {
-    return 1;
+    print 1;
 }
-print stub();
+stub();
 
 fn foo(arg) {
-    return arg + 1;
+    print arg + 1;
 }
-print foo(3);
+foo(3);
 
 fn bar(arg_1, arg_2) {
-    return arg_1 * arg_2;
+    print arg_1 * arg_2;
 }
 var fn_arg = 3;
-print bar(2, fn_arg);
+bar(2, fn_arg);
