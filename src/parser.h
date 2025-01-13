@@ -40,7 +40,6 @@ private:
     Expr* assignment();
     Expr* logic_or();
     Expr* logic_and();
-    Expr* comma();
     Expr* ternary();
     Expr* equality();
     Expr* comparison();

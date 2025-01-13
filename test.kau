@@ -45,12 +45,18 @@ var d = 10.5;
 var e = 15.4;
 print d + e;
 
-fn foo() {
+fn stub() {
+    return 1;
 }
+print stub();
 
-fn bar(foo) {
+fn foo(arg) {
+    return arg + 1;
 }
+print foo(3);
 
-fn test(test_param, test_param_2) {
-    var foo = test_param + test_param_2;
+fn bar(arg_1, arg_2) {
+    return arg_1 * arg_2;
 }
+var fn_arg = 3;
+print bar(2, fn_arg);

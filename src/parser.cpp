@@ -68,20 +68,6 @@ namespace {
         return expr;
     }
 
-    Expr* new_comma(Expr* left, Token* op, Expr* right) {
-        CommaExpr* comma = (CommaExpr*) malloc(sizeof(CommaExpr));
-        comma->left = left;
-        comma->op = op;
-        comma->right = right;
-
-        Expr* expr = new_expr(
-            Expr::Type::COMMA,
-            ExprPayload{.comma = comma}
-        );
-
-        return expr;
-    }
-
     Expr* new_ternary(Expr* left, Token* left_op, Expr* middle, Token* right_op, Expr* right) {
         TernaryExpr* ternary = (TernaryExpr*) malloc(sizeof(TernaryExpr));
         ternary->left = left;
@@ -506,25 +492,12 @@ Expr* Parser::logic_or() {
 }
 
 Expr* Parser::logic_and() {
-    Expr* expr = comma();
+    Expr* expr = ternary();
 
     while (match(std::initializer_list<TokenType>{TokenType::AND})) {
         Token* op = previous();
-        Expr* right = comma();
+        Expr* right = ternary();
         return new_and(expr, op, right);
-    }
-
-    return expr;
-}
-
-Expr* Parser::comma() {
-    Expr* expr = ternary();
-
-    while (match(std::initializer_list<TokenType>{TokenType::COMMA})) {
-        Token* op = previous();
-        Expr* right = comma();
-        Expr* comma = new_comma(expr, op, right);
-        expr = comma;
     }
 
     return expr;

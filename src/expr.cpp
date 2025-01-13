@@ -131,6 +131,15 @@ RuntimeError RuntimeError::invalid_function_identifier(const Token* token) {
     };
 }
 
+RuntimeError RuntimeError::invalid_function_argument(const Token* token) {
+    return RuntimeError {
+        .ty = Type::INVALID_ARGUMENT,
+        .token = token,
+        .message = "invalid argument"
+    };
+}
+
+
 // TODO: error messages will be better later, need to add a string param
 // so i can set `expected` and `found` numbers
 RuntimeError RuntimeError::wrong_number_arguments(const Token* token) {
@@ -179,15 +188,6 @@ void Expr::print() const {
             GroupingExpr* grouping = expr.grouping;
 
             grouping->expr->print();
-
-            break;
-        }
-        case Type::COMMA: {
-            CommaExpr* comma = expr.comma;
-
-            comma->left->print();
-            std::print(" , ");
-            comma->right->print();
 
             break;
         }
@@ -554,25 +554,6 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
 
             return RuntimeError::ok();
         }
-        case Type::COMMA: {
-            CommaExpr* comma = expr.comma;
-
-            Value left_val = {};
-            RuntimeError left_err = comma->left->evaluate(env, left_val);
-            if (!left_err.is_ok()) {
-                return left_err;
-            }
-
-            Value right_val = {};
-            RuntimeError right_err = comma->right->evaluate(env, right_val);
-            if (!right_err.is_ok()) {
-                return right_err;
-            }
-
-            in_value = right_val;
-
-            return RuntimeError::ok();
-        }
         case Type::TERNARY: {
             TernaryExpr* ternary = expr.ternary;
 
@@ -702,9 +683,22 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             if (!err.is_ok()) {
                 return err;
             }
+
             if (callable.m_arity != fn_call->arguments.size()) {
                 return RuntimeError::wrong_number_arguments(callee_literal->val);
             }
+
+            std::vector<Value> values;
+            values.resize(fn_call->arguments.size());
+            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
+                Value arg_val = {};
+                RuntimeError err = fn_call->arguments[i]->evaluate(env, arg_val);
+                if (!err.is_ok()) {
+                    return RuntimeError::invalid_function_argument(callee_literal->val);
+                }
+                values[i] = arg_val;
+            }
+            
             
             const Value ret_value = callable.m_callback(fn_call->arguments);
             in_value = ret_value;
@@ -846,6 +840,18 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         }
 
         env->define(s_var_decl.name, expr_val);
+    }
+
+    if (ty == Stmt::Type::FN_DECLARATION) {        
+        // TODO: Get ride of string conversion
+        std::string str_name = std::string(fn_declaration.name->m_lexeme);
+        // TODO: Actual callable
+        env->define_callable(str_name, Callable(fn_declaration.params_size, [](std::vector<Expr*> const &args) {
+            return Value{
+                .ty = Value::Type::LONG,
+                .l = clock()
+            };
+        }));
     }
 
     if (should_print || from_prompt) {

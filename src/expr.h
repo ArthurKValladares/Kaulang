@@ -50,6 +50,7 @@ struct RuntimeError {
     static RuntimeError undefined_variable(const Token* token);
     static RuntimeError undeclared_function(const Token* token);
     static RuntimeError invalid_function_identifier(const Token* token);
+    static RuntimeError invalid_function_argument(const Token* token);
     static RuntimeError wrong_number_arguments(const Token* token);
 
     bool is_ok() const;
@@ -63,6 +64,7 @@ struct RuntimeError {
         UNDEFINED_VARIABLE,
         UNDEFINED_FUNCTION,
         INVALID_IDENTIFIER,
+        INVALID_ARGUMENT,
         WRONG_NUMBER_ARGUMENTS,
     };
 
@@ -171,7 +173,6 @@ struct Expr {
         UNARY,
         BINARY,
         GROUPING,
-        COMMA,
         TERNARY,
         ASSIGNMENT,
         AND,
