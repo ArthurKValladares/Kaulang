@@ -184,7 +184,7 @@ struct Expr {
     ExprPayload expr;
 
     void print() const;
-    RuntimeError evaluate(Environment* env, Value& in_value);
+    RuntimeError evaluate(KauCompiler* compiler, Environment* env, Value& in_value);
 };
 
 // TODO: review these Token*'s later

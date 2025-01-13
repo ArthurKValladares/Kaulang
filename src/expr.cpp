@@ -247,7 +247,7 @@ void Expr::print() const {
     }
 }
 
-RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
+RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_value) {
     switch (ty)
     {
         case Type::LITERAL: {
@@ -323,7 +323,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             UnaryExpr* unary = expr.unary;
 
             Value right_val = {};
-            RuntimeError right_err = unary->right->evaluate(env, right_val);
+            RuntimeError right_err = unary->right->evaluate(compiler, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -356,13 +356,13 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             BinaryExpr* binary = expr.binary;
 
             Value left_val = {};
-            RuntimeError left_err = binary->left->evaluate(env, left_val);
+            RuntimeError left_err = binary->left->evaluate(compiler, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
 
             Value right_val = {};
-            RuntimeError right_err = binary->right->evaluate(env, right_val);
+            RuntimeError right_err = binary->right->evaluate(compiler, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -547,7 +547,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             GroupingExpr* grouping = expr.grouping;
 
             Value val = {};
-            RuntimeError err = grouping->expr->evaluate(env, val);
+            RuntimeError err = grouping->expr->evaluate(compiler, env, val);
             if (!err.is_ok()) {
                 return err;
             }
@@ -558,7 +558,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             TernaryExpr* ternary = expr.ternary;
 
             Value left_val = {};
-            RuntimeError left_err = ternary->left->evaluate(env, left_val);
+            RuntimeError left_err = ternary->left->evaluate(compiler, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -569,7 +569,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
 
             if (left_val.b) {
                 Value middle_val = {};
-                RuntimeError middle_err = ternary->middle->evaluate(env, middle_val);
+                RuntimeError middle_err = ternary->middle->evaluate(compiler, env, middle_val);
                 if (!middle_err.is_ok()) {
                     return middle_err;
                 }
@@ -579,7 +579,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
                 return RuntimeError::ok();
             } else {
                 Value right_val = {};
-                RuntimeError right_err = ternary->right->evaluate(env, right_val);
+                RuntimeError right_err = ternary->right->evaluate(compiler, env, right_val);
                 if (!right_err.is_ok()) {
                     return right_err;
                 }
@@ -595,7 +595,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             AssignmentExpr* assignment = expr.assignment;
 
             Value right_val = {};
-            RuntimeError right_err = assignment->right->evaluate(env, right_val);
+            RuntimeError right_err = assignment->right->evaluate(compiler, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -615,7 +615,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             AndExpr* logical_and = expr.logical_and;
 
             Value left_val = {};
-            RuntimeError left_err = logical_and->left->evaluate(env, left_val);
+            RuntimeError left_err = logical_and->left->evaluate(compiler, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -628,7 +628,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             // than bool in the case the left-side is false. Think about that.
             if (left_val.b == true) {
                 Value right_val = {};
-                RuntimeError right_err = logical_and->right->evaluate(env, right_val);
+                RuntimeError right_err = logical_and->right->evaluate(compiler, env, right_val);
                 if (!right_err.is_ok()) {
                     return right_err;
                 }
@@ -645,7 +645,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             OrExpr* logical_or = expr.logical_or;
 
             Value left_val = {};
-            RuntimeError left_err = logical_or->left->evaluate(env, left_val);
+            RuntimeError left_err = logical_or->left->evaluate(compiler, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -654,7 +654,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             }
 
             Value right_val = {};
-            RuntimeError right_err = logical_or->right->evaluate(env, right_val);
+            RuntimeError right_err = logical_or->right->evaluate(compiler, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -692,7 +692,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             values.resize(fn_call->arguments.size());
             for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 Value arg_val = {};
-                RuntimeError err = fn_call->arguments[i]->evaluate(env, arg_val);
+                RuntimeError err = fn_call->arguments[i]->evaluate(compiler, env, arg_val);
                 if (!err.is_ok()) {
                     return RuntimeError::invalid_function_argument(callee_literal->val);
                 }
@@ -700,7 +700,7 @@ RuntimeError Expr::evaluate(Environment* env, Value& in_value) {
             }
             
             
-            const Value ret_value = callable.m_callback(values);
+            const Value ret_value = callable.m_callback(values, compiler, env);
             in_value = ret_value;
             
             return RuntimeError::ok();
@@ -762,7 +762,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::IF) {
         Value test_expr_val = {};
-        RuntimeError expr_err = s_if.expr->evaluate(env, test_expr_val);
+        RuntimeError expr_err = s_if.expr->evaluate(compiler, env, test_expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -785,7 +785,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     if (ty == Stmt::Type::WHILE) {
         while (true) {
             Value test_expr_val = {};
-            RuntimeError expr_err = s_while.expr->evaluate(env, test_expr_val);
+            RuntimeError expr_err = s_while.expr->evaluate(compiler, env, test_expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -825,7 +825,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     }
 
     if (ty == Stmt::Type::EXPR) {
-        RuntimeError expr_err = s_expr.expr->evaluate(env, expr_val);
+        RuntimeError expr_err = s_expr.expr->evaluate(compiler, env, expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -833,7 +833,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::VAR_DECL) {
         if (s_var_decl.expr != nullptr) {
-            RuntimeError expr_err = s_var_decl.expr->evaluate(env, expr_val);
+            RuntimeError expr_err = s_var_decl.expr->evaluate(compiler, env, expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -845,15 +845,16 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     if (ty == Stmt::Type::FN_DECLARATION) {        
         // TODO: Get ride of string conversion
         std::string str_name = std::string(fn_declaration.name->m_lexeme);
-        env->define_callable(str_name, Callable(fn_declaration.params_size, [&](std::vector<Value> const &args) {
+        FnDeclarationPayload fn = fn_declaration;
+        env->define_callable(str_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Environment* env) {
             Environment new_env = {};
             new_env.enclosing = env;
 
-            for (size_t i = 0; i < fn_declaration.params_size; ++i) {
-                new_env.define(fn_declaration.params[i], args[i]);
+            for (size_t i = 0; i < fn.params_size; ++i) {
+                new_env.define(fn.params[i], args[i]);
             }
 
-            return fn_declaration.body->evaluate(compiler, &new_env, false, false);
+            return fn.body->evaluate(compiler, &new_env, false, false);
         }));
     }
 
