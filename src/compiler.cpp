@@ -21,7 +21,11 @@ long get_file_size(FILE* file) {
 };
 
 KauCompiler::KauCompiler() {
-    global_env.define_callable("clock", Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Environment* env) {
+    String clock_str = String {
+        .chars = "CLOCK",
+        .len = 5
+    };
+    global_env.define_callable(clock_str, Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Environment* env) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string_view>
+#include "lib/string.h"
 
 enum class TokenType {
     // Single-Character tokens
@@ -52,7 +52,7 @@ struct TokenData {
 
 struct Token {
     TokenType m_type;
-    std::string_view m_lexeme;
+    String m_lexeme;
     int m_line;
     TokenData data;
 

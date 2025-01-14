@@ -55,23 +55,23 @@ bool Scanner::match(char c) {
     return true;
 }
 
-std::string_view Scanner::get_substring(int start_offset, int end_offset) const {
+String Scanner::get_substring(int start_offset, int end_offset) const {
     const char* start_char = m_source + start_offset;
-    const int substr_len = end_offset - start_offset;
-    return std::string_view(start_char, substr_len);
+    const size_t substr_len = end_offset - start_offset;
+    return String{start_char, substr_len};
 }
 
 void Scanner::add_token(TokenType token_type, TokenData data) {
     m_tokens.push_back(Token{
         token_type,
-        std::string_view(),
+        String{},
         m_current_line,
         data
     });
 }
 
-void Scanner::add_token(TokenType token_type, std::string_view substr, TokenData data) {
-    std::string_view lexeme = substr;
+void Scanner::add_token(TokenType token_type, String substr, TokenData data) {
+    String lexeme = substr;
     if (substr.empty()) {
         lexeme = get_substring(m_start_char_offset, m_current_char_offset);
     }
@@ -98,7 +98,7 @@ void Scanner::string(KauCompiler& compiler) {
 
     advance();
 
-    const std::string_view substr = get_substring(m_start_char_offset + 1, m_current_char_offset - 1);
+    const String substr = get_substring(m_start_char_offset + 1, m_current_char_offset - 1);
     add_token(TokenType::STRING, substr);
 }
 
@@ -153,12 +153,13 @@ void Scanner::identifier() {
         advance();
     }
 
-    const std::string_view id = get_substring(m_start_char_offset, m_current_char_offset);
+    const String id = get_substring(m_start_char_offset, m_current_char_offset);
+    const std::string_view id_view = id.to_string_view();
 
-    if (keywords.contains(id)) {
-        add_token(keywords.at(id));
+    if (keywords.contains(id_view)) {
+        add_token(keywords.at(id_view));
     } else {
-        add_token(TokenType::IDENTIFIER, std::string_view());
+        add_token(TokenType::IDENTIFIER, String{});
     }
 }
 
@@ -302,7 +303,7 @@ void Scanner::scan_tokens(KauCompiler& compiler) {
 
     m_tokens.push_back(Token{
         TokenType::_EOF,
-        "",
+        String{"", 0},
         m_current_line,
     });
 }

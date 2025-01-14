@@ -4,7 +4,7 @@
 
 const Token true_token = Token {
     TokenType::TRUE,
-    std::string_view(),
+    String{},
     0,
     TokenData{},
 };
@@ -248,7 +248,7 @@ void Parser::error(const Token* token, std::string_view message) {
         std::println(stderr, "Parser Error: {} at end.", message);
     } else {
         std::println(stderr, "Parser Error: {} of token: {} at {}.", message,
-                token->m_lexeme, token->m_line);
+                token->m_lexeme.to_string_view(), token->m_line);
     }
     m_had_error = true;
 }

@@ -1,13 +1,11 @@
 #include "environment.h"
 
 void Environment::define(const Token* token, Value value) {
-    // TODO: allocation
-    values[std::string(token->m_lexeme)] = value;
+    values[token->m_lexeme] = value;
 }
 
 bool Environment::contains(const Token* token) const {
-    std::string str_name = std::string(token->m_lexeme);
-    if(values.contains(str_name)) {
+    if(values.contains(token->m_lexeme)) {
         return true;
     } else {
         if (enclosing != nullptr) {
@@ -19,10 +17,10 @@ bool Environment::contains(const Token* token) const {
 }
 
 RuntimeError Environment::set(const Token* token, Value value) {
-    std::string str_name = std::string(token->m_lexeme);
+    String lexeme = token->m_lexeme;
 
-    if (values.contains(str_name)) {
-        values[str_name] = value;
+    if (values.contains(lexeme)) {
+        values[lexeme] = value;
         return RuntimeError::ok();
     } else {
         if (enclosing != nullptr) {
@@ -34,10 +32,10 @@ RuntimeError Environment::set(const Token* token, Value value) {
 }
 
 RuntimeError Environment::get(const Token* token, Value& in_value) {
-    std::string str_name = std::string(token->m_lexeme);
+    String lexeme = token->m_lexeme;
 
-    if (values.contains(str_name)) {
-        in_value = values.at(str_name);
+    if (values.contains(lexeme)) {
+        in_value = values.at(lexeme);
         if (in_value.ty == Value::Type::NIL) {
             return RuntimeError::undefined_variable(token);
         }
@@ -52,20 +50,18 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
 }
 
 void Environment::define_callable(const Token* token, Callable in_callable) {
-    // TODO: Allocation
-    define_callable(std::string(token->m_lexeme), in_callable);
+    define_callable(token->m_lexeme, in_callable);
 }
 
-void Environment::define_callable(const std::string &str, Callable in_callable) {
+void Environment::define_callable(const String &str, Callable in_callable) {
     callables[str] = in_callable;
 }
 
 RuntimeError Environment::get_callable(const Token* token, Callable& in_callable) {
-    // TODO: Annoying string conversion
-    std::string str_name = std::string(token->m_lexeme);
+    String lexeme = token->m_lexeme;
 
-    if (callables.contains(str_name)) {
-        in_callable = callables[str_name];
+    if (callables.contains(lexeme)) {
+        in_callable = callables[lexeme];
 
         return RuntimeError::ok();
     } else {

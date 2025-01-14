@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/string.h"
+
 #include "tokens.h"
 #include "compiler.h"
 
@@ -27,7 +29,7 @@ private:
     char advance();
     bool match(char c);
 
-    std::string_view get_substring(int start_offset, int end_offset) const;
+    String get_substring(int start_offset, int end_offset) const;
 
     void string(KauCompiler& compiler);
     void number(KauCompiler& compiler);
@@ -35,7 +37,7 @@ private:
     void block_comment(KauCompiler& compiler);
     
     void add_token(TokenType token_type, TokenData data = {});
-    void add_token(TokenType token_type, std::string_view substr, TokenData data = {});
+    void add_token(TokenType token_type, String substr, TokenData data = {});
 
     char* m_source;
     int m_source_len;

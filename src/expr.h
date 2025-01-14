@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/string.h"
+
 #include "tokens.h"
 
 #include <string>
@@ -93,7 +95,7 @@ struct Value {
         long l;
         float f;
         double d;
-        std::string_view str = {};
+        String str = {};
     };
 
     void print() const;

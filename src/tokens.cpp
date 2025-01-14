@@ -147,7 +147,7 @@ const char* token_type_to_string(TokenType ty) {
 void Token::print() const {
     std::print("{}", token_type_to_string(m_type));
     if (!m_lexeme.empty()) {
-        std::print(" -> {}", m_lexeme);
+        std::print(" -> {}", m_lexeme.to_string_view());
     }
     switch (data.ty) {
         case TokenData::Type::FLOAT: {

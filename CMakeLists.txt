@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
     src/parser.cpp
     src/expr.cpp
     src/environment.cpp
+    src/lib/string.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

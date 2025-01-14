@@ -738,7 +738,7 @@ void Value::print() const {
             break;
         }
         case Type::STRING: {
-            std::println("{}", str);
+            std::println("{}", str.to_string_view());
             break;
         }
     }
@@ -855,10 +855,9 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     }
 
     if (ty == Stmt::Type::FN_DECLARATION) {        
-        // TODO: Get ride of string conversion
-        std::string str_name = std::string(fn_declaration.name->m_lexeme);
+        String fn_name = fn_declaration.name->m_lexeme;
         FnDeclarationPayload fn = fn_declaration;
-        env->define_callable(str_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Environment* env) {
+        env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Environment* env) {
             Environment new_env = {};
             new_env.enclosing = env;
 
@@ -883,7 +882,7 @@ void Stmt::print() {
     {
         case Type::VAR_DECL: {
             std::print("VAR DECL: ");
-            std::print("{}", s_var_decl.name->m_lexeme);
+            std::print("{}", s_var_decl.name->m_lexeme.to_string_view());
             if (s_var_decl.expr != nullptr) {
                 std::print(" = ");
                 s_var_decl.expr->print();
