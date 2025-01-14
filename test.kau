@@ -29,12 +29,12 @@ var c = "global c";
         print a;
         print b;
         print c;
-        print "";
+        print "---";
     }
     print a;
     print b;
     print c;
-    print "";
+    print "---";
 }
 print a;
 print b;
@@ -44,34 +44,40 @@ print "";
 var d = 10.5;
 var e = 15.4;
 print d + e;
+print "";
 
 fn fn_test_1() {
     return 1;
 }
 print fn_test_1();
+print "";
 
 fn fn_test_2(arg_1) {
     return arg_1 + 1;
 }
 print fn_test_2(3);
+print "";
 
 fn fn_test_3(arg_1, arg_2) {
     return arg_1 * arg_2;
 }
 var fn_arg = 3;
 print fn_test_3(2, fn_arg);
+print "";
 
 fn fn_test_4(arg_1, arg_2) {
     print "this should happen";
     return arg_1 * arg_2;
 }
 print fn_test_4(3, 4);
+print "";
 
 fn fn_test_5(arg_1, arg_2) {
     return arg_1 * arg_2;
     print "this should not happen";
 }
 print fn_test_5(3, 4);
+print "";
 
 fn fib(n) {
     if (n <= 1) return n;
@@ -81,3 +87,4 @@ fn fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
     print fib(i);
 }
+print "";

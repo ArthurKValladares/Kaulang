@@ -158,7 +158,7 @@ namespace {
         };
     }
 
-    Stmt new_block_stmt(Stmt** stmts, int size) {
+    Stmt new_block_stmt(Stmt* stmts, int size) {
         return Stmt {
             .ty = Stmt::Type::BLOCK,
             .s_block = BlockPayload{stmts, size}
@@ -286,26 +286,21 @@ Stmt Parser::fn_declaration(Arena* arena) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected function name");
     consume(TokenType::LEFT_PAREN, "Expected '(' after function name");
 
-    std::vector<Token*> params = {};
+    int param_count = 0;
+    Token** params = (Token**) arena->push_no_zero(0);
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
-            params.push_back(consume(TokenType::IDENTIFIER, "Expecteded parameter name"));
+            arena->push_struct_no_zero<Token*>();
+            params[param_count] = consume(TokenType::IDENTIFIER, "Expecteded parameter name");
+            ++param_count;
         } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
     }
     consume(TokenType::RIGHT_PAREN, "Expected ')' after function parameters");
 
-    // TODO: Probably can make this better without this double `copy` step,
-    // Just need to use the arena to make a better `std::vector` replacement
-    const int size = params.size();
-    Token** params_c = (Token**) arena->push_array_no_zero<Token*>(size);
-    for (int i = 0; i < size; ++i) {
-        params_c[i] = params[i];
-    }
-
     consume(TokenType::LEFT_BRACE, "Expected '{' before function body.");
     Stmt* body = allocated_stmt(block_statement(arena));
 
-    return new_fn_declaration(name, params_c, size, body);
+    return new_fn_declaration(name, params, param_count, body);
 }
 
 
@@ -361,20 +356,17 @@ Stmt Parser::expr_statement() {
 }
 
 Stmt Parser::block_statement(Arena* arena) {
-    std::vector<Stmt> stmts = {};
+    int stmt_count = 0;
+    Stmt* stmts = (Stmt*) arena->push_no_zero(0);
 
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
-        stmts.push_back(declaration(arena));
+        arena->push_struct_no_zero<Stmt>();
+        stmts[stmt_count] = declaration(arena);
+        ++stmt_count;
     }
     consume(TokenType::RIGHT_BRACE, "Expected '}' after block");
 
-    // TODO: Probably can make this better without this double `copy` step
-    const int size = stmts.size();
-    Stmt** stmts_c = (Stmt**) arena->push_array_no_zero<Stmt*>(size);
-    for (int i = 0; i < size; ++i) {
-        stmts_c[i] = allocated_stmt(stmts[i]);
-    }
-    return new_block_stmt(stmts_c, size);
+    return new_block_stmt(stmts, stmt_count);
 }
 
 Stmt Parser::print_statement() {
@@ -439,9 +431,9 @@ Stmt Parser::for_statement(Arena* arena) {
 
     if (increment != nullptr) {
         const int size = 2;
-        Stmt** stmts = (Stmt**) malloc(size * sizeof(Stmt*));
-        stmts[0] = allocated_stmt(body);
-        stmts[1] = allocated_stmt(new_expr_stmt(increment));
+        Stmt* stmts = (Stmt*) arena->push_array_no_zero<Stmt>(2);
+        stmts[0] = body;
+        stmts[1] = new_expr_stmt(increment);
         body = new_block_stmt(stmts, size);
     }
     if (condition == nullptr) {
@@ -450,9 +442,9 @@ Stmt Parser::for_statement(Arena* arena) {
     body = new_while_stmt(condition, body);
     if (initializer.ty != Stmt::Type::ERR) {
         const int size = 2;
-        Stmt** stmts = (Stmt**) malloc(size * sizeof(Stmt*));
-        stmts[0] = allocated_stmt(initializer);
-        stmts[1] = allocated_stmt(body);
+        Stmt* stmts = (Stmt*) arena->push_array_no_zero<Stmt>(2);
+        stmts[0] = initializer;
+        stmts[1] = body;
         body = new_block_stmt(stmts, size);
     }
     

@@ -13,7 +13,9 @@ void Arena::release() {
 }
 
 void* Arena::push(u64 size) {
-    return nullptr;
+    void* ret = push(size);
+    std::memset(ret, 0, size);
+    return ret;
 }
 
 void* Arena::push_no_zero(u64 size) {

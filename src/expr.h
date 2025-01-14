@@ -111,7 +111,7 @@ struct VarDeclPayload {
 };
 
 struct BlockPayload {
-    Stmt** stmts;
+    Stmt* stmts;
     int size;
 };
 

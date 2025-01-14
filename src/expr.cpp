@@ -752,7 +752,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         Environment new_env = {};
         new_env.enclosing = env;
         for (int i = 0; i < s_block.size; ++i) {
-            expr_val = s_block.stmts[i]->evaluate(compiler, &new_env, from_prompt, in_loop);
+            expr_val = s_block.stmts[i].evaluate(compiler, &new_env, from_prompt, in_loop);
             // continue statement stops current block from exeuting further, like a break.
             if (expr_val.ty == Value::Type::BREAK ||
                 expr_val.ty == Value::Type::CONTINUE ||
@@ -899,7 +899,7 @@ void Stmt::print() {
         case Type::BLOCK: {
             std::print("BLOCK: ");
             for (int i = 0; i < s_block.size; ++i) {
-                s_block.stmts[i]->print();
+                s_block.stmts[i].print();
             }
             break;
         }
