@@ -3,7 +3,7 @@
 #include "../defs.h"
 
 struct Arena {
-    Arena();
+    Arena(u64 cap);
 
     void release();
 
@@ -29,9 +29,14 @@ struct Arena {
     }
 
     void pop(u64 size);
+    void pop_to(u64 pos);
 
     u64 get_pos() const;
 
-    void set_pos_back(u64 pos);
     void clear();
+
+private:
+    u64 m_cap;
+    void* mem;
+    u64 offset;
 };
