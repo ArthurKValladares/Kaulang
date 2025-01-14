@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
     src/expr.cpp
     src/environment.cpp
     src/lib/string.cpp
+    src/lib/arena.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
