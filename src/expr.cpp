@@ -775,12 +775,10 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         }
         bool if_result = test_expr_val.b;
 
-        Environment new_env = {};
-        new_env.enclosing = env;
         if (if_result) {
-            expr_val = s_if.if_stmt->evaluate(compiler, &new_env, from_prompt, in_loop);
+            expr_val = s_if.if_stmt->evaluate(compiler, env, from_prompt, in_loop);
         } else if (s_if.else_stmt->ty != Stmt::Type::ERR) {
-            expr_val = s_if.else_stmt->evaluate(compiler, &new_env, from_prompt, in_loop);
+            expr_val = s_if.else_stmt->evaluate(compiler, env, from_prompt, in_loop);
         }
 
         return expr_val;
@@ -800,9 +798,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
                 break;
             }
 
-            Environment new_env = {};
-            new_env.enclosing = env;
-            expr_val = s_while.stmt->evaluate(compiler, &new_env, from_prompt, true);
+            expr_val = s_while.stmt->evaluate(compiler, env, from_prompt, true);
             if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
                 break;
             }
