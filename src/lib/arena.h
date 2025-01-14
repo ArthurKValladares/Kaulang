@@ -8,15 +8,15 @@ struct Arena {
     void release();
 
     void* push(u64 size);
-    void* push_zero(u64 size);
+    void* push_no_zero(u64 size);
 
     template<class T>
     void* push_array(u64 count) {
         push(sizeof(T) * count);
     }
     template<class T>
-    void* push_array_zero(u64 count) {
-        push_zero(sizeof(T) * count);
+    void* push_array_no_zero(u64 count) {
+        push_no_zero(sizeof(T) * count);
     }
 
     template<class T>
@@ -24,8 +24,8 @@ struct Arena {
         push_array<T>(1);
     }
     template<class T>
-    void* push_struct_zero() {
-        push_array_zero<T>(1);
+    void* push_struct_no_zero() {
+        push_array_no_zero<T>(1);
     }
 
     void pop(u64 size);
