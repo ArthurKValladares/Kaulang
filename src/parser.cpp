@@ -253,26 +253,26 @@ void Parser::error(const Token* token, std::string_view message) {
     m_had_error = true;
 }
 
-std::vector<Stmt> Parser::parse() {
-    return program();
+std::vector<Stmt> Parser::parse(Arena* arena) {
+    return program(arena);
 }
 
-std::vector<Stmt> Parser::program() {
+std::vector<Stmt> Parser::program(Arena* arena) {
     std::vector<Stmt> statements = {};
     while (!is_at_end()) {
-        statements.emplace_back(declaration());
+        statements.emplace_back(declaration(arena));
     }
     return statements;
 }
 
-Stmt Parser::declaration() {
+Stmt Parser::declaration(Arena* arena) {
     Stmt ret;
     if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
         ret = var_declaration();
     } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
-        ret = fn_declaration();
+        ret = fn_declaration(arena);
     } else {
-        ret = statement();
+        ret = statement(arena);
     }
 
     if (ret.ty == Stmt::Type::ERR) {
@@ -282,9 +282,10 @@ Stmt Parser::declaration() {
     return ret;
 }
 
-Stmt Parser::fn_declaration() {
+Stmt Parser::fn_declaration(Arena* arena) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected function name");
     consume(TokenType::LEFT_PAREN, "Expected '(' after function name");
+
     std::vector<Token*> params = {};
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
@@ -293,15 +294,16 @@ Stmt Parser::fn_declaration() {
     }
     consume(TokenType::RIGHT_PAREN, "Expected ')' after function parameters");
 
-    // TODO: Probably can make this better without this double `copy` step
+    // TODO: Probably can make this better without this double `copy` step,
+    // Just need to use the arena to make a better `std::vector` replacement
     const int size = params.size();
-    Token** params_c = (Token**) malloc(size * sizeof(Token*));
+    Token** params_c = (Token**) arena->push_array_no_zero<Token*>(size);
     for (int i = 0; i < size; ++i) {
         params_c[i] = params[i];
     }
 
     consume(TokenType::LEFT_BRACE, "Expected '{' before function body.");
-    Stmt* body = allocated_stmt(block_statement());
+    Stmt* body = allocated_stmt(block_statement(arena));
 
     return new_fn_declaration(name, params_c, size, body);
 }
@@ -319,21 +321,21 @@ Stmt Parser::var_declaration() {
     return new_var_decl(name, initializer);
 }
 
-Stmt Parser::statement() {
+Stmt Parser::statement(Arena* arena) {
     if (match(std::initializer_list<TokenType>{TokenType::IF})) {
-        return if_statement();
+        return if_statement(arena);
     }
     if (match(std::initializer_list<TokenType>{TokenType::WHILE})) {
-        return while_statement();
+        return while_statement(arena);
     }
     if (match(std::initializer_list<TokenType>{TokenType::FOR})) {
-        return for_statement();
+        return for_statement(arena);
     }
     if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
         return print_statement();
     }
     if (match(std::initializer_list<TokenType>{TokenType::LEFT_BRACE})) {
-        return block_statement();
+        return block_statement(arena);
     }
     if (match(std::initializer_list<TokenType>{TokenType::BREAK})) {
         return break_statement();
@@ -358,17 +360,17 @@ Stmt Parser::expr_statement() {
     return new_expr_stmt(val);
 }
 
-Stmt Parser::block_statement() {
+Stmt Parser::block_statement(Arena* arena) {
     std::vector<Stmt> stmts = {};
 
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
-        stmts.push_back(declaration());
+        stmts.push_back(declaration(arena));
     }
     consume(TokenType::RIGHT_BRACE, "Expected '}' after block");
 
     // TODO: Probably can make this better without this double `copy` step
     const int size = stmts.size();
-    Stmt** stmts_c = (Stmt**) malloc(size * sizeof(Stmt*));
+    Stmt** stmts_c = (Stmt**) arena->push_array_no_zero<Stmt*>(size);
     for (int i = 0; i < size; ++i) {
         stmts_c[i] = allocated_stmt(stmts[i]);
     }
@@ -385,32 +387,32 @@ Stmt Parser::print_statement() {
     return new_print_stmt(val);
 }
 
-Stmt Parser::if_statement() {
+Stmt Parser::if_statement(Arena* arena) {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'if'");
     Expr* expr = expression();
     consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in if statement");
 
-    Stmt if_stmt = statement();
+    Stmt if_stmt = statement(arena);
 
     Stmt else_stmt = {};
     if (match(std::initializer_list<TokenType>{TokenType::ELSE})) {
-        else_stmt = statement();
+        else_stmt = statement(arena);
     }
 
     return new_if_stmt(expr, if_stmt, else_stmt);
 }
 
-Stmt Parser::while_statement() {
+Stmt Parser::while_statement(Arena* arena) {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'while'");
     Expr* expr = expression();
     consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in while statement");
 
-    Stmt stmt = statement();
+    Stmt stmt = statement(arena);
 
     return new_while_stmt(expr, stmt);
 }
 
-Stmt Parser::for_statement() {
+Stmt Parser::for_statement(Arena* arena) {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'");
 
     Stmt initializer = {};
@@ -433,7 +435,7 @@ Stmt Parser::for_statement() {
     }
     consume(TokenType::RIGHT_PAREN, "Unterminated parentheses in for statement");
 
-    Stmt body = statement();
+    Stmt body = statement(arena);
 
     if (increment != nullptr) {
         const int size = 2;

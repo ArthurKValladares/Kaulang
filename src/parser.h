@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lib/arena.h"
+
 #include "tokens.h"
 #include "expr.h"
 #include "scanner.h"
@@ -18,22 +20,22 @@ struct Parser {
         : m_tokens(std::move(scanner.m_tokens))
     {}
 
-    std::vector<Stmt> parse();
+    std::vector<Stmt> parse(Arena* arena);
 
 private:
     void error(const Token* token, std::string_view message);
 
-    std::vector<Stmt> program();
-    Stmt declaration();
+    std::vector<Stmt> program(Arena* arena);
+    Stmt declaration(Arena* arena);
     Stmt var_declaration();
-    Stmt fn_declaration();
-    Stmt statement();
+    Stmt fn_declaration(Arena* arena);
+    Stmt statement(Arena* arena);
     Stmt expr_statement();
-    Stmt block_statement();
+    Stmt block_statement(Arena* arena);
     Stmt print_statement();
-    Stmt if_statement();
-    Stmt while_statement();
-    Stmt for_statement();
+    Stmt if_statement(Arena* arena);
+    Stmt while_statement(Arena* arena);
+    Stmt for_statement(Arena* arena);
     Stmt break_statement();
     Stmt continue_statement();
     Stmt return_statement();

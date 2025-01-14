@@ -3,7 +3,7 @@
 #include "../defs.h"
 
 struct Arena {
-    Arena(u64 cap);
+    void alloc(u64 cap);
 
     void release();
 
@@ -12,20 +12,20 @@ struct Arena {
 
     template<class T>
     void* push_array(u64 count) {
-        push(sizeof(T) * count);
+        return push(sizeof(T) * count);
     }
     template<class T>
     void* push_array_no_zero(u64 count) {
-        push_no_zero(sizeof(T) * count);
+        return push_no_zero(sizeof(T) * count);
     }
 
     template<class T>
     void* push_struct() {
-        push_array<T>(1);
+        return push_array<T>(1);
     }
     template<class T>
     void* push_struct_no_zero() {
-        push_array_no_zero<T>(1);
+        return push_array_no_zero<T>(1);
     }
 
     void pop(u64 size);

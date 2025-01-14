@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/arena.h"
 #include "defs.h"
 
 #include "environment.h"
@@ -22,4 +23,5 @@ struct KauCompiler {
 
     // TODO: Re-think this, at least make it a bitfield with other stuff like `should_print`
     bool hit_return = false;
+    Arena global_arena;
 };
