@@ -832,7 +832,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         compiler->hit_return = true;
     }
 
-    if (ty == Stmt::Type::EXPR) {
+    // TODO: can maybe make this print/expr stuff better
+    if (ty == Stmt::Type::EXPR || ty == Stmt::Type::PRINT) {
         RuntimeError expr_err = s_expr.expr->evaluate(compiler, env, expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
@@ -865,7 +866,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         }));
     }
 
-    if (should_print || from_prompt) {
+    if (ty == Stmt::Type::PRINT || from_prompt) {
         expr_val.print();
     }
 
@@ -892,8 +893,14 @@ void Stmt::print() {
             std::println("");
             break;
         }
+        case Type::PRINT: {
+            std::print("PRINT: ");
+            s_expr.expr->print();
+            std::println("");
+            break;
+        }
         case Type::BLOCK: {
-            std::print("BLOCK: ");
+            std::println("BLOCK");
             for (int i = 0; i < s_block.size; ++i) {
                 s_block.stmts[i].print();
             }
@@ -913,16 +920,17 @@ void Stmt::print() {
             break;
         }
         case Type::BREAK: {
-            std::print("BREAK");
+            std::println("BREAK");
             break;
         }
         case Type::CONTINUE: {
-            std::print("CONTINUE");
+            std::println("CONTINUE");
             break;
         }
         case Type::RETURN: {
             std::print("RETURN");
             s_return.expr->print();
+            std::println("");
             break;
         }
         //

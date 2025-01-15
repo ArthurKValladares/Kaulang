@@ -157,6 +157,7 @@ struct Stmt {
         CONTINUE,
         FN_DECLARATION,
         RETURN,
+        PRINT,
     };
 
     Type ty;
@@ -170,8 +171,6 @@ struct Stmt {
         FnDeclarationPayload fn_declaration;
         ReturnPayload s_return;
     };
-    // TODO: bitfield
-    bool should_print = false;
 
     Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop);
     void print();

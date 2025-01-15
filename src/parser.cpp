@@ -152,9 +152,8 @@ namespace {
 
     Stmt new_print_stmt(Expr* val) {
         return Stmt {
-            .ty = Stmt::Type::EXPR,
+            .ty = Stmt::Type::PRINT,
             .s_expr = ExprStmtPayload{val},
-            .should_print = true,
         };
     }
 
@@ -357,10 +356,11 @@ Stmt Parser::expr_statement() {
 
 Stmt Parser::block_statement(Arena* arena) {
     int stmt_count = 0;
-    Stmt* stmts = (Stmt*) arena->push_no_zero(0);
+    // TODO: I'm pre-allocating the array size here because the recursion is messing this up if I don't.
+    // Think of how to solve it later
+    Stmt* stmts = (Stmt*) arena->push_array_no_zero<Stmt>(100);
 
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
-        arena->push_struct_no_zero<Stmt>();
         stmts[stmt_count] = declaration(arena);
         ++stmt_count;
     }
