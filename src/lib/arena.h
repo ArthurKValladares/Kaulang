@@ -3,8 +3,6 @@
 #include "../defs.h"
 
 struct Arena {
-    void alloc(u64 cap);
-
     void release();
 
     void* push(u64 size);
@@ -35,8 +33,13 @@ struct Arena {
 
     void clear();
 
-private:
+    // TODO: This is pretty sloppy and i need to handle multiple arenas better later,
+    // This is here just to make vectors work
+    Arena* child_arena;
+
     u64 m_cap;
     void* mem;
     u64 offset;
 };
+
+Arena* alloc_arena(u64 cap);

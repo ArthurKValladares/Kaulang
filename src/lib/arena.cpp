@@ -1,9 +1,13 @@
 #include "arena.h"
 
-void Arena::alloc(u64 cap) {
-    m_cap = cap;
-    mem = malloc(cap);
-    offset = 0;
+Arena* alloc_arena(u64 cap) {
+    Arena* arena = (Arena*) malloc(sizeof(Arena));
+
+    arena->m_cap = cap;
+    arena->mem = malloc(cap);
+    arena->offset = 0;
+
+    return arena;
 }
 
 void Arena::release() {

@@ -23,5 +23,6 @@ struct KauCompiler {
 
     // TODO: Re-think this, at least make it a bitfield with other stuff like `should_print`
     bool hit_return = false;
-    Arena global_arena;
+
+    Arena* global_arena;
 };

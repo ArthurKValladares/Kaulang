@@ -356,12 +356,14 @@ Stmt Parser::expr_statement() {
 
 Stmt Parser::block_statement(Arena* arena) {
     int stmt_count = 0;
-    // TODO: I'm pre-allocating the array size here because the recursion is messing this up if I don't.
-    // Think of how to solve it later
-    Stmt* stmts = (Stmt*) arena->push_array_no_zero<Stmt>(100);
 
+    // TODO: This random size thing will go away soon
+    arena->child_arena = alloc_arena(sizeof(Stmt) * 100);
+
+    Stmt* stmts = (Stmt*) arena->push_no_zero(0);
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
-        stmts[stmt_count] = declaration(arena);
+        arena->push_struct_no_zero<Stmt>();
+        stmts[stmt_count] = declaration(arena->child_arena);
         ++stmt_count;
     }
     consume(TokenType::RIGHT_BRACE, "Expected '}' after block");

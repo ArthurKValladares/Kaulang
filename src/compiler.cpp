@@ -32,7 +32,7 @@ KauCompiler::KauCompiler() {
         };
     }));
     // TODO: This size is temp
-    global_arena.alloc(64000000);
+    global_arena = alloc_arena(64000000);
 }
 
 void KauCompiler::error(int line, std::string_view message) {
@@ -51,7 +51,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     scanner.scan_tokens(*this);
 
     Parser parser(std::move(scanner));
-    std::vector<Stmt> stmts = parser.parse(&global_arena);
+    std::vector<Stmt> stmts = parser.parse(global_arena);
 
     for (Stmt stmt : stmts) {
 #ifdef DEBUG_PRINT
@@ -60,7 +60,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
         Value val = stmt.evaluate(this, &global_env, from_prompt, false);
     }
 
-    global_arena.clear();
+    global_arena->clear();
 
     return 0;
 }
