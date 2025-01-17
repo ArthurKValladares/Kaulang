@@ -1,29 +1,47 @@
 #include "arena.h"
 
-Arena* alloc_arena(u64 cap) {
+#include <windows.h>
+
+namespace {
+    size_t round_up_to_multiple(size_t multiple, size_t size) {
+        if (size == 0) return 0;
+
+        if (size <= multiple) {
+            return multiple;
+        } else {
+            const size_t remainder = size % multiple;
+            return size + (multiple - remainder);
+        }
+    }
+};
+
+Arena* alloc_arena() {
     Arena* arena = (Arena*) malloc(sizeof(Arena));
 
-    arena->m_cap = cap;
-    arena->mem = malloc(cap);
+    SYSTEM_INFO sys_info;
+    GetSystemInfo(&sys_info);
+
+    arena->page_size = sys_info.dwPageSize;
+    arena->mem = VirtualAlloc(nullptr, arena->page_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     arena->offset = 0;
 
     return arena;
 }
 
 void Arena::release() {
-    m_cap = 0;
+    page_size = 0;
     free(mem);
     offset = 0;
 }
 
 void* Arena::push(u64 size) {
-    void* ret = push(size);
+    void* ret = push_no_zero(size);
     std::memset(ret, 0, size);
     return ret;
 }
 
 void* Arena::push_no_zero(u64 size) {
-    if (offset + size > m_cap) {
+    if (offset + size > page_size) {
         fprintf(stderr, "Area ran out of memory.");
         exit(-1);
     }

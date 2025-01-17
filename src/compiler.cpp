@@ -31,8 +31,7 @@ KauCompiler::KauCompiler() {
             .l = clock()
         };
     }));
-    // TODO: This size is temp
-    global_arena = alloc_arena(64000000);
+    global_arena = alloc_arena();
 }
 
 void KauCompiler::error(int line, std::string_view message) {

@@ -37,9 +37,10 @@ struct Arena {
     // This is here just to make vectors work
     Arena* child_arena;
 
-    u64 m_cap;
+    size_t page_size;
+    
     void* mem;
     u64 offset;
 };
 
-Arena* alloc_arena(u64 cap);
+Arena* alloc_arena();

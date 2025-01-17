@@ -143,7 +143,6 @@ namespace {
         return expr;
     }
 
-    // TODO: This function is probably temporary
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -357,8 +356,7 @@ Stmt Parser::expr_statement() {
 Stmt Parser::block_statement(Arena* arena) {
     int stmt_count = 0;
 
-    // TODO: This random size thing will go away soon
-    arena->child_arena = alloc_arena(sizeof(Stmt) * 100);
+    arena->child_arena = alloc_arena();
 
     Stmt* stmts = (Stmt*) arena->push_no_zero(0);
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
