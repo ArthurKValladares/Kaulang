@@ -161,6 +161,8 @@ void Scanner::identifier(Arena* arena) {
     if (keywords.contains(id_view)) {
         add_token(arena, keywords.at(id_view));
     } else {
+        // TODO: This add_token stuff is a bit messy atm imo, specially the subcstring stuff.
+        // MAybe just handle it all explicitly
         add_token(arena, TokenType::IDENTIFIER, String{});
     }
 }

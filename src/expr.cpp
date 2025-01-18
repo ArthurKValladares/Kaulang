@@ -247,7 +247,7 @@ void Expr::print() const {
     }
 }
 
-RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_value) {
+RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, Value& in_value) {
     switch (ty)
     {
         case Type::LITERAL: {
@@ -323,7 +323,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             UnaryExpr* unary = expr.unary;
 
             Value right_val = {};
-            RuntimeError right_err = unary->right->evaluate(compiler, env, right_val);
+            RuntimeError right_err = unary->right->evaluate(compiler, arena, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -356,13 +356,13 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             BinaryExpr* binary = expr.binary;
 
             Value left_val = {};
-            RuntimeError left_err = binary->left->evaluate(compiler, env, left_val);
+            RuntimeError left_err = binary->left->evaluate(compiler, arena, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
 
             Value right_val = {};
-            RuntimeError right_err = binary->right->evaluate(compiler, env, right_val);
+            RuntimeError right_err = binary->right->evaluate(compiler, arena, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -379,10 +379,9 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
                     TEST_BINARY_OP(INT, i, INT, i, +);
 
                     if (left_val.ty == Value::Type::STRING) {
-                        // TODO: Correctly handle later when i have better string support
                         in_value = Value {
                             .ty = Value::Type::STRING,
-                            .str = left_val.str
+                            .str = concatenated_string(arena, left_val.str, right_val.str)
                         };
                         return RuntimeError::ok();
                     }
@@ -547,7 +546,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             GroupingExpr* grouping = expr.grouping;
 
             Value val = {};
-            RuntimeError err = grouping->expr->evaluate(compiler, env, val);
+            RuntimeError err = grouping->expr->evaluate(compiler, arena, env, val);
             if (!err.is_ok()) {
                 return err;
             }
@@ -558,7 +557,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             TernaryExpr* ternary = expr.ternary;
 
             Value left_val = {};
-            RuntimeError left_err = ternary->left->evaluate(compiler, env, left_val);
+            RuntimeError left_err = ternary->left->evaluate(compiler, arena, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -569,7 +568,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
 
             if (left_val.b) {
                 Value middle_val = {};
-                RuntimeError middle_err = ternary->middle->evaluate(compiler, env, middle_val);
+                RuntimeError middle_err = ternary->middle->evaluate(compiler, arena, env, middle_val);
                 if (!middle_err.is_ok()) {
                     return middle_err;
                 }
@@ -579,7 +578,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
                 return RuntimeError::ok();
             } else {
                 Value right_val = {};
-                RuntimeError right_err = ternary->right->evaluate(compiler, env, right_val);
+                RuntimeError right_err = ternary->right->evaluate(compiler, arena, env, right_val);
                 if (!right_err.is_ok()) {
                     return right_err;
                 }
@@ -595,7 +594,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             AssignmentExpr* assignment = expr.assignment;
 
             Value right_val = {};
-            RuntimeError right_err = assignment->right->evaluate(compiler, env, right_val);
+            RuntimeError right_err = assignment->right->evaluate(compiler, arena, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -615,7 +614,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             AndExpr* logical_and = expr.logical_and;
 
             Value left_val = {};
-            RuntimeError left_err = logical_and->left->evaluate(compiler, env, left_val);
+            RuntimeError left_err = logical_and->left->evaluate(compiler, arena, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -628,7 +627,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             // than bool in the case the left-side is false. Think about that.
             if (left_val.b == true) {
                 Value right_val = {};
-                RuntimeError right_err = logical_and->right->evaluate(compiler, env, right_val);
+                RuntimeError right_err = logical_and->right->evaluate(compiler, arena, env, right_val);
                 if (!right_err.is_ok()) {
                     return right_err;
                 }
@@ -645,7 +644,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             OrExpr* logical_or = expr.logical_or;
 
             Value left_val = {};
-            RuntimeError left_err = logical_or->left->evaluate(compiler, env, left_val);
+            RuntimeError left_err = logical_or->left->evaluate(compiler, arena, env, left_val);
             if (!left_err.is_ok()) {
                 return left_err;
             }
@@ -654,7 +653,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             }
 
             Value right_val = {};
-            RuntimeError right_err = logical_or->right->evaluate(compiler, env, right_val);
+            RuntimeError right_err = logical_or->right->evaluate(compiler, arena, env, right_val);
             if (!right_err.is_ok()) {
                 return right_err;
             }
@@ -692,7 +691,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             values.resize(fn_call->arguments.size());
             for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 Value arg_val = {};
-                RuntimeError err = fn_call->arguments[i]->evaluate(compiler, env, arg_val);
+                RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {
                     return RuntimeError::invalid_function_argument(callee_literal->val);
                 }
@@ -700,7 +699,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Environment* env, Value& in_v
             }
             
             
-            const Value ret_value = callable.m_callback(values, compiler, env);
+            const Value ret_value = callable.m_callback(values, compiler, arena, env);
             in_value = ret_value;
             
             compiler->hit_return = false;
@@ -745,14 +744,14 @@ void Value::print() const {
 }
 
 // TODO: Restructure this, with a switch and the should-print stuff at the end
-Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop) {
+Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool from_prompt, bool in_loop) {
     Value expr_val = {};
 
     if (ty == Stmt::Type::BLOCK) {
         Environment new_env = {};
         new_env.enclosing = env;
         for (int i = 0; i < s_block.size; ++i) {
-            expr_val = s_block.stmts[i].evaluate(compiler, &new_env, from_prompt, in_loop);
+            expr_val = s_block.stmts[i].evaluate(compiler, arena, &new_env, from_prompt, in_loop);
             // continue statement stops current block from exeuting further, like a break.
             if (expr_val.ty == Value::Type::BREAK ||
                 expr_val.ty == Value::Type::CONTINUE ||
@@ -766,7 +765,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::IF) {
         Value test_expr_val = {};
-        RuntimeError expr_err = s_if.expr->evaluate(compiler, env, test_expr_val);
+        RuntimeError expr_err = s_if.expr->evaluate(compiler, arena, env, test_expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -776,9 +775,9 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
         bool if_result = test_expr_val.b;
 
         if (if_result) {
-            expr_val = s_if.if_stmt->evaluate(compiler, env, from_prompt, in_loop);
+            expr_val = s_if.if_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
         } else if (s_if.else_stmt->ty != Stmt::Type::ERR) {
-            expr_val = s_if.else_stmt->evaluate(compiler, env, from_prompt, in_loop);
+            expr_val = s_if.else_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
         }
 
         return expr_val;
@@ -787,7 +786,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     if (ty == Stmt::Type::WHILE) {
         while (true) {
             Value test_expr_val = {};
-            RuntimeError expr_err = s_while.expr->evaluate(compiler, env, test_expr_val);
+            RuntimeError expr_err = s_while.expr->evaluate(compiler, arena, env, test_expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -798,7 +797,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
                 break;
             }
 
-            expr_val = s_while.stmt->evaluate(compiler, env, from_prompt, true);
+            expr_val = s_while.stmt->evaluate(compiler, arena, env, from_prompt, true);
             if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
                 break;
             }
@@ -825,7 +824,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     }
 
     if (ty == Stmt::Type::RETURN) {
-        RuntimeError expr_err = s_return.expr->evaluate(compiler, env, expr_val);
+        RuntimeError expr_err = s_return.expr->evaluate(compiler, arena, env, expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -834,7 +833,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     // TODO: can maybe make this print/expr stuff better
     if (ty == Stmt::Type::EXPR || ty == Stmt::Type::PRINT) {
-        RuntimeError expr_err = s_expr.expr->evaluate(compiler, env, expr_val);
+        RuntimeError expr_err = s_expr.expr->evaluate(compiler, arena, env, expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -842,7 +841,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
 
     if (ty == Stmt::Type::VAR_DECL) {
         if (s_var_decl.expr != nullptr) {
-            RuntimeError expr_err = s_var_decl.expr->evaluate(compiler, env, expr_val);
+            RuntimeError expr_err = s_var_decl.expr->evaluate(compiler, arena, env, expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -854,7 +853,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
     if (ty == Stmt::Type::FN_DECLARATION) {        
         String fn_name = fn_declaration.name->m_lexeme;
         FnDeclarationPayload fn = fn_declaration;
-        env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Environment* env) {
+        env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
             Environment new_env = {};
             new_env.enclosing = env;
 
@@ -862,7 +861,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, 
                 new_env.define(fn.params[i], args[i]);
             }
 
-            return fn.body->evaluate(compiler, &new_env, false, false);
+            return fn.body->evaluate(compiler, arena, &new_env, false, false);
         }));
     }
 

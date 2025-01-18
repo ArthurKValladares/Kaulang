@@ -1,23 +1,24 @@
+print "##### Test 1 #####";
 var count = 0;
 while (count < 10) {
     print count;
     count = count + 1;
 }
-print "";
 
+print "##### Test 2 #####";
 for (var i = 0; i < 10; i = i + 1) {
     print i;
 }
-print "";
 
+print "##### Test 3 #####";
 for (var i = 0; i < 10; i = i + 1) {
     print i;
     if (i == 5) {
         break;
     }
 }
-print "";
 
+print "##### Test 4 #####";
 var a = "global a";
 var b = "global b";
 var c = "global c";
@@ -39,46 +40,49 @@ var c = "global c";
 print a;
 print b;
 print c;
-print "";
 
+print "##### Test 5 #####";
 var d = 10.5;
 var e = 15.4;
 print d + e;
-print "";
 
+print "##### Test 6 #####";
+print "test" + "string";
+
+print "##### Test 7 #####";
 fn fn_test_1() {
     return 1;
 }
 print fn_test_1();
-print "";
 
+print "##### Test 8 #####";
 fn fn_test_2(arg_1) {
     return arg_1 + 1;
 }
 print fn_test_2(3);
-print "";
 
+print "##### Test 9 #####";
 fn fn_test_3(arg_1, arg_2) {
     return arg_1 * arg_2;
 }
 var fn_arg = 3;
 print fn_test_3(2, fn_arg);
-print "";
 
+print "##### Test 10 #####";
 fn fn_test_4(arg_1, arg_2) {
     print "this should happen";
     return arg_1 * arg_2;
 }
 print fn_test_4(3, 4);
-print "";
 
+print "##### Test 11 #####";
 fn fn_test_5(arg_1, arg_2) {
     return arg_1 * arg_2;
     print "this should not happen";
 }
 print fn_test_5(3, 4);
-print "";
 
+print "##### Test 12 #####";
 fn fib(n) {
     if (n <= 1) return n;
     return fib(n - 2) + fib(n - 1);
@@ -87,4 +91,3 @@ fn fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
     print fib(i);
 }
-print "";

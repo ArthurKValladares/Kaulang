@@ -25,7 +25,7 @@ KauCompiler::KauCompiler() {
         .chars = "CLOCK",
         .len = 5
     };
-    global_env.define_callable(clock_str, Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Environment* env) {
+    global_env.define_callable(clock_str, Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Arena*, Environment* env) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()
@@ -56,7 +56,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
 #ifdef DEBUG_PRINT
         stmt.print();
 #endif
-        Value val = stmt.evaluate(this, &global_env, from_prompt, false);
+        Value val = stmt.evaluate(this, this->global_arena, &global_env, from_prompt, false);
     }
 
     global_arena->clear();

@@ -172,7 +172,7 @@ struct Stmt {
         ReturnPayload s_return;
     };
 
-    Value evaluate(KauCompiler* compiler, Environment* env, bool from_prompt, bool in_loop);
+    Value evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool from_prompt, bool in_loop);
     void print();
 };
 
@@ -194,7 +194,7 @@ struct Expr {
     ExprPayload expr;
 
     void print() const;
-    RuntimeError evaluate(KauCompiler* compiler, Environment* env, Value& in_value);
+    RuntimeError evaluate(KauCompiler* compiler, Arena* arena, Environment* env, Value& in_value);
 };
 
 // TODO: review these Token*'s later

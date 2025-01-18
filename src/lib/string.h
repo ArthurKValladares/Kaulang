@@ -1,5 +1,7 @@
 #pragma once
 
+#include "arena.h"
+
 #include <string_view>
 
 int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len);
@@ -39,6 +41,8 @@ struct String {
         return std::string_view(chars, len);
     }
 };
+
+String concatenated_string(Arena* arena, String left, String right);
 
 struct StringHasher {
     size_t operator()(const String& p) const
