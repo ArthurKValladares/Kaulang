@@ -61,30 +61,32 @@ String Scanner::get_substring(int start_offset, int end_offset) const {
     return String{start_char, substr_len};
 }
 
-void Scanner::add_token(TokenType token_type, TokenData data) {
-    m_tokens.push_back(Token{
+void Scanner::add_token(Arena* arena, TokenType token_type, TokenData data) {
+    arena->push_struct_no_zero<Token>();
+    m_tokens[m_tokens_len++] = Token{
         token_type,
         String{},
         m_current_line,
         data
-    });
+    };
 }
 
-void Scanner::add_token(TokenType token_type, String substr, TokenData data) {
+void Scanner::add_token(Arena* arena, TokenType token_type, String substr, TokenData data) {
     String lexeme = substr;
     if (substr.empty()) {
         lexeme = get_substring(m_start_char_offset, m_current_char_offset);
     }
 
-    m_tokens.push_back(Token{
+    arena->push_struct_no_zero<Token>();
+    m_tokens[m_tokens_len++] = Token{
         token_type,
         lexeme,
         m_current_line,
         data
-    });
+    };
 }
 
-void Scanner::string(KauCompiler& compiler) {
+void Scanner::string(KauCompiler& compiler, Arena* arena) {
     while(!is_at_end() && peek() != '"') {
         if (peek() == '\n') {
             ++m_current_line;
@@ -99,10 +101,10 @@ void Scanner::string(KauCompiler& compiler) {
     advance();
 
     const String substr = get_substring(m_start_char_offset + 1, m_current_char_offset - 1);
-    add_token(TokenType::STRING, substr);
+    add_token(arena, TokenType::STRING, substr);
 }
 
-void Scanner::number(KauCompiler& compiler) {
+void Scanner::number(KauCompiler& compiler, Arena* arena) {
     while(isdigit(peek())) {
         advance();
     }
@@ -131,24 +133,24 @@ void Scanner::number(KauCompiler& compiler) {
 
     if (ty == TokenData::Type::INT) {
         const int integer = atoi(m_source + m_start_char_offset);
-        add_token(TokenType::NUMBER_INT, TokenData::new_int(integer));
+        add_token(arena, TokenType::NUMBER_INT, TokenData::new_int(integer));
     } else if (ty == TokenData::Type::LONG) {
         const long integer = atol(m_source + m_start_char_offset);
-        add_token(TokenType::NUMBER_LONG, TokenData::new_long(integer));
+        add_token(arena, TokenType::NUMBER_LONG, TokenData::new_long(integer));
     } else if (ty == TokenData::Type::FLOAT) {
         const float fractional = atof(m_source + m_start_char_offset);
-        add_token(TokenType::NUMBER_FLOAT, TokenData::new_float(fractional));
+        add_token(arena, TokenType::NUMBER_FLOAT, TokenData::new_float(fractional));
     } else {
         char* err;
         const double fractional = strtod(m_source + m_start_char_offset, &err);
         if (err == nullptr) {
             compiler.error(m_current_line, "could not convert string to double");
         }
-        add_token(TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
+        add_token(arena, TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
     }
 }
 
-void Scanner::identifier() {
+void Scanner::identifier(Arena* arena) {
     while (isalnum(peek()) || peek() == '_') {
         advance();
     }
@@ -157,9 +159,9 @@ void Scanner::identifier() {
     const std::string_view id_view = id.to_string_view();
 
     if (keywords.contains(id_view)) {
-        add_token(keywords.at(id_view));
+        add_token(arena, keywords.at(id_view));
     } else {
-        add_token(TokenType::IDENTIFIER, String{});
+        add_token(arena, TokenType::IDENTIFIER, String{});
     }
 }
 
@@ -180,73 +182,73 @@ void Scanner::block_comment(KauCompiler& compiler) {
     advance();
 }
 
-void Scanner::scan_token(KauCompiler& compiler) {
+void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
     const char c = advance();
     switch(c) {
         // Single-character
         case '(': {
-            add_token(TokenType::LEFT_PAREN);
+            add_token(arena, TokenType::LEFT_PAREN);
             break;
         }
         case ')': {
-            add_token(TokenType::RIGHT_PAREN);
+            add_token(arena, TokenType::RIGHT_PAREN);
             break;
         }
         case '{': {
-            add_token(TokenType::LEFT_BRACE);
+            add_token(arena, TokenType::LEFT_BRACE);
             break;
         }
         case '}': {
-            add_token(TokenType::RIGHT_BRACE);
+            add_token(arena, TokenType::RIGHT_BRACE);
             break;
         }
         case ',': {
-            add_token(TokenType::COMMA);
+            add_token(arena, TokenType::COMMA);
             break;
         }
         case '.': {
-            add_token(TokenType::DOT);
+            add_token(arena, TokenType::DOT);
             break;
         }
         case '-': {
-            add_token(TokenType::MINUS);
+            add_token(arena, TokenType::MINUS);
             break;
         }
         case '+': {
-            add_token(TokenType::PLUS);
+            add_token(arena, TokenType::PLUS);
             break;
         }
         case ';': {
-            add_token(TokenType::SEMICOLON);
+            add_token(arena, TokenType::SEMICOLON);
             break;
         }
         case ':': {
-            add_token(TokenType::COLON);
+            add_token(arena, TokenType::COLON);
             break;
         }
         case '*': {
-            add_token(TokenType::STAR);
+            add_token(arena, TokenType::STAR);
             break;
         }
         case '?': {
-            add_token(TokenType::QUESTION_MARK);
+            add_token(arena, TokenType::QUESTION_MARK);
             break;
         }
         // One or two character tokens
         case '!': {
-            add_token(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+            add_token(arena, match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
             break;
         }
         case '=': {
-            add_token(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+            add_token(arena, match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
             break;
         }
         case '>': {
-            add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            add_token(arena, match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
             break;
         }
         case '<': {
-            add_token(match('=') ? TokenType::LESSER_EQUAL : TokenType::LESSER);
+            add_token(arena, match('=') ? TokenType::LESSER_EQUAL : TokenType::LESSER);
             break;
         }
         // Special-case
@@ -259,7 +261,7 @@ void Scanner::scan_token(KauCompiler& compiler) {
             } else if (match('*')) {
                 block_comment(compiler);
             } else {
-                add_token(TokenType::SLASH);
+                add_token(arena, TokenType::SLASH);
             }
             break;
         }
@@ -276,7 +278,7 @@ void Scanner::scan_token(KauCompiler& compiler) {
         }
         // String literals
         case '"': {
-            string(compiler);
+            string(compiler, arena);
             break;
         }
         case '\0': {
@@ -284,9 +286,9 @@ void Scanner::scan_token(KauCompiler& compiler) {
         }
         default: {
             if (isdigit(c)) {
-                number(compiler);
+                number(compiler, arena);
             } else if (isalpha(c) || c == '_') {
-                identifier();
+                identifier(arena);
             } else {
                 compiler.error(m_current_line, "unexpected character " + c);
             }
@@ -295,22 +297,24 @@ void Scanner::scan_token(KauCompiler& compiler) {
     }
 }
 
-void Scanner::scan_tokens(KauCompiler& compiler) {
+void Scanner::scan_tokens(KauCompiler& compiler, Arena* arena) {
     while (!is_at_end()) {
         m_start_char_offset = m_current_char_offset;
-        scan_token(compiler);
+        scan_token(compiler, arena);
     }
 
-    m_tokens.push_back(Token{
+    arena->push_struct_no_zero<Token>();
+    m_tokens[m_tokens_len++] = Token{
         TokenType::_EOF,
         String{"", 0},
         m_current_line,
-    });
+    };
 }
 
 #ifdef DEBUG
 void Scanner::print_tokens() {
-    for (const Token& token: m_tokens) {
+    for (size_t i = 0; i < m_tokens_len; ++i) {
+        Token& token = m_tokens[i];
         token.print();
         std::println("");
     }

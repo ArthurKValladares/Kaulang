@@ -10,16 +10,10 @@
 #include <span>
 
 struct Parser {
-    // TODO: Make sure both these constructors can just move the data
-
-    // TODO: Just pass in a span instead?
-    Parser(std::vector<Token> tokens)
-        : m_tokens(std::move(tokens))
+    Parser(Token* tokens, u64 tokens_size)
+        : m_tokens(tokens)
+        , m_tokens_size(tokens_size)
     {}
-    Parser(Scanner&& scanner)
-        : m_tokens(std::move(scanner.m_tokens))
-    {}
-
     std::vector<Stmt> parse(Arena* arena);
 
 private:
@@ -66,7 +60,8 @@ private:
 
     void syncronize();
 
-    std::vector<Token> m_tokens;
+    Token* m_tokens;
+    u64 m_tokens_size;
     int m_current = 0;
 
     bool m_had_error = false;

@@ -45,11 +45,11 @@ void KauCompiler::runtime_error(int line, std::string_view message) {
 }
 
 int KauCompiler::run(char* program, int size, bool from_prompt) {
-    Scanner scanner = Scanner(program, size);
+    Scanner scanner = Scanner(global_arena, program, size);
     // TODO: fix this kinda circular dependency thing later
-    scanner.scan_tokens(*this);
+    scanner.scan_tokens(*this, global_arena);
 
-    Parser parser(std::move(scanner));
+    Parser parser(scanner.m_tokens, scanner.m_tokens_len);
     std::vector<Stmt> stmts = parser.parse(global_arena);
 
     for (Stmt stmt : stmts) {
