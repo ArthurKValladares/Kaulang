@@ -8,7 +8,6 @@
 #include <vector>
 #include <functional>
 
-// TODO: temp struct
 using CallableCallback = std::function<Value(std::vector<Value> const&, KauCompiler*, Arena*, Environment*)>;
 struct Callable {
     Callable() {}
