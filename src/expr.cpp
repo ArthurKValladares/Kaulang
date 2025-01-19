@@ -13,6 +13,30 @@
     }\
 }
 
+namespace {
+    bool is_numeric(Value::Type ty) {
+        return ty == Value::Type::DOUBLE ||
+            ty == Value::Type::FLOAT ||
+            ty == Value::Type::LONG ||
+            ty == Value::Type::INT;
+    }
+
+    Value::Type highest_precision_type(Value::Type a, Value::Type b) {
+        assert(is_numeric(a) && is_numeric(b));
+
+        if (a == Value::Type::DOUBLE || b == Value::Type::DOUBLE) {
+            return Value::Type::DOUBLE;
+        }
+        if (a == Value::Type::FLOAT || b == Value::Type::FLOAT) {
+            return Value::Type::FLOAT;
+        }
+        if (a == Value::Type::LONG || b == Value::Type::LONG) {
+            return Value::Type::LONG;
+        }
+        return Value::Type::INT;
+    }
+};
+
 RuntimeError RuntimeError::ok() {
     return RuntimeError {
         .ty = Type::Ok
@@ -234,9 +258,9 @@ void Expr::print() const {
 
             fn_call->callee->print();
             std::print("(");
-            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
+            for (size_t i = 0; i < fn_call->arguments_len; ++i) {
                 fn_call->arguments[i]->print();
-                if (i != fn_call->arguments.size() - 1) {
+                if (i != fn_call->arguments_len - 1) {
                     std::print(", ");
                 }
             }
@@ -683,13 +707,13 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return err;
             }
 
-            if (callable.m_arity != fn_call->arguments.size()) {
+            if (callable.m_arity != fn_call->arguments_len) {
                 return RuntimeError::wrong_number_arguments(callee_literal->val);
             }
 
             std::vector<Value> values;
-            values.resize(fn_call->arguments.size());
-            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
+            values.resize(fn_call->arguments_len);
+            for (size_t i = 0; i < fn_call->arguments_len; ++i) {
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {

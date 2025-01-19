@@ -251,5 +251,6 @@ struct OrExpr {
 struct FnCallExpr {
     Expr* callee;
     const Token* paren;
-    std::vector<Expr*> arguments;
+    Expr** arguments;
+    u64 arguments_len;
 };
