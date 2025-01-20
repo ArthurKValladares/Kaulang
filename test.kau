@@ -91,3 +91,15 @@ fn fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
     print fib(i);
 }
+
+print "##### Test 13 #####";
+var a = "global";
+{
+    fn show_a() {
+        print a;
+    }
+
+    show_a();
+    var a = "block";
+    show_a();
+}
