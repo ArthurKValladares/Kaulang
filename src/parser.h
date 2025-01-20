@@ -14,12 +14,12 @@ struct Parser {
         : m_tokens(tokens)
         , m_tokens_size(tokens_size)
     {}
-    std::vector<Stmt> parse(Arena* arena);
+    Stmt* parse(Arena* arena, u64& input_len);
 
 private:
     void error(const Token* token, std::string_view message);
 
-    std::vector<Stmt> program(Arena* arena);
+    Stmt* program(Arena* arena, u64& input_len);
     Stmt declaration(Arena* arena);
     Stmt var_declaration(Arena* arena);
     Stmt fn_declaration(Arena* arena);

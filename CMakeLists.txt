@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
     src/parser.cpp
     src/expr.cpp
     src/environment.cpp
+    src/resolver.cpp
     src/lib/string.cpp
     src/lib/arena.cpp
 )

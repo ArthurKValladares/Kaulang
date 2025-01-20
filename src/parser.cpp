@@ -251,15 +251,20 @@ void Parser::error(const Token* token, std::string_view message) {
     m_had_error = true;
 }
 
-std::vector<Stmt> Parser::parse(Arena* arena) {
-    return program(arena);
+Stmt* Parser::parse(Arena* arena, u64& input_len) {
+    return program(arena, input_len);
 }
 
-std::vector<Stmt> Parser::program(Arena* arena) {
-    std::vector<Stmt> statements = {};
+Stmt* Parser::program(Arena* arena, u64& input_len) {
+    arena->child_arena = alloc_arena();
+
+    u64 stmts_len = 0;
+    Stmt* statements = (Stmt*) arena->push_no_zero(0);
     while (!is_at_end()) {
-        statements.emplace_back(declaration(arena));
+        arena->push_struct_no_zero<Stmt>();
+        statements[stmts_len++] = declaration(arena->child_arena);
     }
+    input_len = stmts_len;
     return statements;
 }
 

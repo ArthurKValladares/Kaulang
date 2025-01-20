@@ -2,6 +2,7 @@
 
 #include "scanner.h"
 #include "parser.h"
+#include "resolver.h"
 
 #include <iostream>
 #include <print>
@@ -50,9 +51,15 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     scanner.scan_tokens(*this, global_arena);
 
     Parser parser(scanner.m_tokens, scanner.m_tokens_len);
-    std::vector<Stmt> stmts = parser.parse(global_arena);
+    u64 stmts_len;
+    Stmt* stmts = parser.parse(global_arena, stmts_len);
 
-    for (Stmt stmt : stmts) {
+    Resolver resolver = {};
+    resolver.resolve(stmts, stmts_len);
+
+    for (u64 i = 0; i < stmts_len; ++i) {
+        Stmt& stmt = stmts[i];
+
 #ifdef DEBUG_PRINT
         stmt.print();
 #endif
