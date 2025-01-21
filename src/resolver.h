@@ -22,6 +22,12 @@ private:
     
     void visit_variable_expr(Expr* expr);
     void visit_assign_expr(Expr* expr);
+    void visit_binary_expr(Expr* expr);
+    void visit_fn_call_expr(Expr* expr);
+    void visit_grouping_expr(Expr* expr);
+    void visit_logical_expr(Expr* expr);
+    void visit_unary_expr(Expr* expr);
+    void visit_ternary_expr(Expr* expr);
 
     void declare(Token* name);
     void define(Token* name);

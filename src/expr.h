@@ -16,8 +16,7 @@ struct CommaExpr;
 struct TernaryExpr;
 struct PrintExpr;
 struct AssignmentExpr;
-struct AndExpr;
-struct OrExpr;
+struct LogicalBinaryExpr;
 struct FnCallExpr;
 
 struct Stmt;
@@ -31,8 +30,7 @@ union ExprPayload {
     TernaryExpr* ternary;
     PrintExpr* print;
     AssignmentExpr* assignment;
-    AndExpr* logical_and;
-    OrExpr* logical_or;
+    LogicalBinaryExpr* logical_binary;
     FnCallExpr* fn_call;
 };
 
@@ -236,13 +234,7 @@ struct AssignmentExpr {
     Expr* right;
 };
 
-struct AndExpr {
-    Expr* left;
-    const Token* op;
-    Expr* right;
-};
-
-struct OrExpr {
+struct LogicalBinaryExpr {
     Expr* left;
     const Token* op;
     Expr* right;

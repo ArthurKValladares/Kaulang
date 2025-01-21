@@ -236,7 +236,7 @@ void Expr::print() const {
             break;
         }
         case Type::AND: {
-            AndExpr* logical_and = expr.logical_and;
+            LogicalBinaryExpr* logical_and = expr.logical_binary;
 
             logical_and->left->print();
             std::print(" and ");
@@ -245,7 +245,7 @@ void Expr::print() const {
             break;
         }
         case Type::OR: {
-            OrExpr* logical_or = expr.logical_or;
+            LogicalBinaryExpr* logical_or = expr.logical_binary;
 
             logical_or->left->print();
             std::print(" or ");
@@ -635,7 +635,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             return RuntimeError::ok();
         }
         case Type::AND: {
-            AndExpr* logical_and = expr.logical_and;
+            LogicalBinaryExpr* logical_and = expr.logical_binary;
 
             Value left_val = {};
             RuntimeError left_err = logical_and->left->evaluate(compiler, arena, env, left_val);
@@ -665,7 +665,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             return RuntimeError::ok();
         }
         case Type::OR: {
-            OrExpr* logical_or = expr.logical_or;
+            LogicalBinaryExpr* logical_or = expr.logical_binary;
 
             Value left_val = {};
             RuntimeError left_err = logical_or->left->evaluate(compiler, arena, env, left_val);

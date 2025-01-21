@@ -98,30 +98,30 @@ namespace {
     }
 
     Expr* new_and(Expr* left, Token* op, Expr* right) {
-        AndExpr* logical_and = (AndExpr*) malloc(sizeof(AndExpr));
-        assert(logical_and != nullptr);
-        logical_and->left = left;
-        logical_and->op = op;
-        logical_and->right = right;
+        LogicalBinaryExpr* logical_binary = (LogicalBinaryExpr*) malloc(sizeof(LogicalBinaryExpr));
+        assert(logical_binary != nullptr);
+        logical_binary->left = left;
+        logical_binary->op = op;
+        logical_binary->right = right;
 
         Expr* expr = new_expr(
             Expr::Type::AND,
-            ExprPayload{.logical_and = logical_and}
+            ExprPayload{.logical_binary = logical_binary}
         );
 
         return expr;
     }
 
     Expr* new_or(Expr* left, Token* op, Expr* right) {
-        OrExpr* logical_or = (OrExpr*) malloc(sizeof(OrExpr));
-        assert(logical_or != nullptr);
-        logical_or->left = left;
-        logical_or->op = op;
-        logical_or->right = right;
+        LogicalBinaryExpr* logical_binary = (LogicalBinaryExpr*) malloc(sizeof(LogicalBinaryExpr));
+        assert(logical_binary != nullptr);
+        logical_binary->left = left;
+        logical_binary->op = op;
+        logical_binary->right = right;
 
         Expr* expr = new_expr(
             Expr::Type::OR,
-            ExprPayload{.logical_or = logical_or}
+            ExprPayload{.logical_binary = logical_binary}
         );
 
         return expr;

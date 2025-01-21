@@ -63,15 +63,19 @@ void Resolver::resolve_expr(Expr* expr) {
             break;
         }
         case Expr::Type::UNARY: {
+            visit_unary_expr(expr);
             break;
         }
         case Expr::Type::BINARY: {
+            visit_binary_expr(expr);
             break;
         }
         case Expr::Type::GROUPING: {
+            visit_grouping_expr(expr);
             break;
         }
         case Expr::Type::TERNARY: {
+            visit_ternary_expr(expr);
             break;
         }
         case Expr::Type::ASSIGNMENT: {
@@ -79,12 +83,15 @@ void Resolver::resolve_expr(Expr* expr) {
             break;
         }
         case Expr::Type::AND: {
+            visit_logical_expr(expr);
             break;
         }
         case Expr::Type::OR: {
+            visit_logical_expr(expr);
             break;
         }
         case Expr::Type::FN_CALL: {
+            visit_fn_call_expr(expr);
             break;
         }
         case Expr::Type::ERR: {
@@ -155,6 +162,38 @@ void Resolver::visit_variable_expr(Expr* expr) {
 void Resolver::visit_assign_expr(Expr* expr) {
     resolve_expr(expr->expr.assignment->right);
     resolve_local(expr, expr->expr.literal->val);
+}
+
+void Resolver::visit_binary_expr(Expr* expr) {
+    resolve_expr(expr->expr.binary->left);
+    resolve_expr(expr->expr.binary->right);
+}
+
+void Resolver::visit_fn_call_expr(Expr* expr) {
+    resolve_expr(expr->expr.fn_call->callee);
+
+    for (u64 i = 0; i < expr->expr.fn_call->arguments_len; ++i) {
+        resolve_expr(expr->expr.fn_call->arguments[i]);
+    }
+}
+
+void Resolver::visit_grouping_expr(Expr* expr) {
+    resolve_expr(expr->expr.grouping->expr);
+}
+
+void Resolver::visit_logical_expr(Expr* expr) {
+    resolve_expr(expr->expr.logical_binary->left);
+    resolve_expr(expr->expr.logical_binary->right);
+}
+
+void Resolver::visit_unary_expr(Expr* expr) {
+    resolve_expr(expr->expr.unary->right);
+}
+
+void Resolver::visit_ternary_expr(Expr* expr) {
+    resolve_expr(expr->expr.ternary->left);
+    resolve_expr(expr->expr.ternary->middle);
+    resolve_expr(expr->expr.ternary->right);
 }
 
 void Resolver::resolve_local(Expr* expr, const Token* token) {
