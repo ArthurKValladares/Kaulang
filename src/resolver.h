@@ -11,9 +11,15 @@ using ScopeMap = std::unordered_map<String, bool, StringHasher>;
 struct Resolver {
     void resolve(Stmt* stmts, u64 stmts_len);
 private:
+    void visit_expr_stmt(Stmt* stmt);
     void visit_block_stmt(Stmt* stmt);
     void visit_var_stmt(Stmt* stmt);
     void visit_fn_stmt(Stmt* stmt);
+    void visit_if_stmt(Stmt* stmt);
+    void visit_print_stmt(Stmt* stmt);
+    void visit_return_stmt(Stmt* stmt);
+    void visit_while_stmt(Stmt* stmt);
+    
     void visit_variable_expr(Expr* expr);
     void visit_assign_expr(Expr* expr);
 

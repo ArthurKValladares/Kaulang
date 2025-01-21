@@ -107,7 +107,7 @@ struct ExprStmtPayload {
 
 struct VarDeclPayload {
     Token* name;
-    Expr* expr;
+    Expr* initializer;
 };
 
 struct BlockPayload {
@@ -116,14 +116,14 @@ struct BlockPayload {
 };
 
 struct IfPayload {
-    Expr* expr;
+    Expr* condition;
     Stmt* if_stmt;
     Stmt* else_stmt;
 };
 
 struct WhilePayload {
-    Expr* expr;
-    Stmt* stmt;
+    Expr* condition;
+    Stmt* body;
 };
 
 struct BreakContinuePayload {

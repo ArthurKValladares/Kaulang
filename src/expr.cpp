@@ -789,7 +789,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
     if (ty == Stmt::Type::IF) {
         Value test_expr_val = {};
-        RuntimeError expr_err = s_if.expr->evaluate(compiler, arena, env, test_expr_val);
+        RuntimeError expr_err = s_if.condition->evaluate(compiler, arena, env, test_expr_val);
         if (!expr_err.is_ok()) {
             compiler->runtime_error(expr_err.token->m_line, expr_err.message);
         }
@@ -810,7 +810,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
     if (ty == Stmt::Type::WHILE) {
         while (true) {
             Value test_expr_val = {};
-            RuntimeError expr_err = s_while.expr->evaluate(compiler, arena, env, test_expr_val);
+            RuntimeError expr_err = s_while.condition->evaluate(compiler, arena, env, test_expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -821,7 +821,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 break;
             }
 
-            expr_val = s_while.stmt->evaluate(compiler, arena, env, from_prompt, true);
+            expr_val = s_while.body->evaluate(compiler, arena, env, from_prompt, true);
             if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
                 break;
             }
@@ -864,8 +864,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
     }
 
     if (ty == Stmt::Type::VAR_DECL) {
-        if (s_var_decl.expr != nullptr) {
-            RuntimeError expr_err = s_var_decl.expr->evaluate(compiler, arena, env, expr_val);
+        if (s_var_decl.initializer != nullptr) {
+            RuntimeError expr_err = s_var_decl.initializer->evaluate(compiler, arena, env, expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
@@ -903,9 +903,9 @@ void Stmt::print() {
         case Type::VAR_DECL: {
             std::print("VAR DECL: ");
             std::print("{}", s_var_decl.name->m_lexeme.to_string_view());
-            if (s_var_decl.expr != nullptr) {
+            if (s_var_decl.initializer != nullptr) {
                 std::print(" = ");
-                s_var_decl.expr->print();
+                s_var_decl.initializer->print();
             }
             std::println("");
             break;
@@ -939,7 +939,7 @@ void Stmt::print() {
         }
         case Type::WHILE: {
             std::print("WHILE: ");
-            s_while.stmt->print();
+            s_while.body->print();
             break;
         }
         case Type::BREAK: {

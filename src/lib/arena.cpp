@@ -71,9 +71,11 @@ u64 Arena::get_pos() const {
 }
 
 void Arena::clear() {
+    /*
     if (child_arena != nullptr) {
         child_arena->clear();
         free(child_arena);
     }
+    */
     offset = 0;
 }
