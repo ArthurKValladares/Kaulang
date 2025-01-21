@@ -334,8 +334,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return RuntimeError::ok();
                 }
                 case TokenType::IDENTIFIER: {
-                    //return compiler->lookup_variable(literal->val, this, in_value);
-                    return env->get(literal->val, in_value);
+                    return compiler->lookup_variable(env, literal->val, this, in_value);
                 }
                 default:  {
                     return RuntimeError::unsupported_literal(literal->val);

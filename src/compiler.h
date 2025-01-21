@@ -14,7 +14,7 @@ struct KauCompiler {
     Environment global_env = {};
     std::unordered_map<Expr*, u64> locals;
 
-    RuntimeError lookup_variable(const Token* name, Expr* expr, Value& in_value);
+    RuntimeError lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value);
 
     void error(int line, std::string_view message);
     void runtime_error(int line, std::string_view message);

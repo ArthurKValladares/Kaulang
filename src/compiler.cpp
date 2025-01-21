@@ -127,12 +127,11 @@ int KauCompiler::run_file(const char* file_path) {
     return 0;
 }
 
-RuntimeError KauCompiler::lookup_variable(const Token* name, Expr* expr, Value& in_value) {
+RuntimeError KauCompiler::lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value) {
     if (locals.contains(expr)) {
         const u64 distance = locals[expr];
-        std::println("distance = {}", distance);
-        return global_env.get_at(name, distance, in_value);
+        return env->get_at(name, distance, in_value);
     } else {
-        return global_env.get_at(name, 0, in_value);
+        return global_env.get(name, in_value);
     }
 }
