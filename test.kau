@@ -1,3 +1,11 @@
+print "##### Test 0 #####";
+var global_var = "global";
+print global_var;
+{
+    var inner_var = "inner";
+    print inner_var;
+}
+
 print "##### Test 1 #####";
 var count = 0;
 while (count < 10) {

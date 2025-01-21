@@ -49,6 +49,18 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
     }
 }
 
+Environment* Environment::ancestor(u64 distance) {
+    Environment* env = this;
+    for (u64 i = 0; i < distance; ++i) {
+        env = env->enclosing;
+    }
+    return env;
+}
+
+RuntimeError Environment::get_at(const Token* token, u64 distance, Value& in_value) {
+    return ancestor(distance)->get(token, in_value);
+}
+
 void Environment::define_callable(const Token* token, Callable in_callable) {
     define_callable(token->m_lexeme, in_callable);
 }

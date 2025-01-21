@@ -8,26 +8,27 @@
 
 using ScopeMap = std::unordered_map<String, bool, StringHasher>;
 
+struct KauCompiler;
 struct Resolver {
-    void resolve(Stmt* stmts, u64 stmts_len);
+    void resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len);
 private:
-    void visit_expr_stmt(Stmt* stmt);
-    void visit_block_stmt(Stmt* stmt);
-    void visit_var_stmt(Stmt* stmt);
-    void visit_fn_stmt(Stmt* stmt);
-    void visit_if_stmt(Stmt* stmt);
-    void visit_print_stmt(Stmt* stmt);
-    void visit_return_stmt(Stmt* stmt);
-    void visit_while_stmt(Stmt* stmt);
+    void visit_expr_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_block_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_var_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_fn_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_if_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_print_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_return_stmt(KauCompiler* compiler, Stmt* stmt);
+    void visit_while_stmt(KauCompiler* compiler, Stmt* stmt);
     
-    void visit_variable_expr(Expr* expr);
-    void visit_assign_expr(Expr* expr);
-    void visit_binary_expr(Expr* expr);
-    void visit_fn_call_expr(Expr* expr);
-    void visit_grouping_expr(Expr* expr);
-    void visit_logical_expr(Expr* expr);
-    void visit_unary_expr(Expr* expr);
-    void visit_ternary_expr(Expr* expr);
+    void visit_variable_expr(KauCompiler* compiler, Expr* expr);
+    void visit_assign_expr(KauCompiler* compiler, Expr* expr);
+    void visit_binary_expr(KauCompiler* compiler, Expr* expr);
+    void visit_fn_call_expr(KauCompiler* compiler, Expr* expr);
+    void visit_grouping_expr(KauCompiler* compiler, Expr* expr);
+    void visit_logical_expr(KauCompiler* compiler, Expr* expr);
+    void visit_unary_expr(KauCompiler* compiler, Expr* expr);
+    void visit_ternary_expr(KauCompiler* compiler, Expr* expr);
 
     void declare(Token* name);
     void define(Token* name);
@@ -35,13 +36,13 @@ private:
     void begin_scope();
     void end_scope();
 
-    void resolve_stmt(Stmt* stmt);
-    void resolve_expr(Expr* expr);
-    void resolve_fn(Stmt* stmt);
+    void resolve_stmt(KauCompiler* compiler, Stmt* stmt);
+    void resolve_expr(KauCompiler* compiler, Expr* expr);
+    void resolve_fn(KauCompiler* compiler, Stmt* stmt);
 
-    void resolve_local(Expr* expr, const Token* token);
+    void resolve_local(KauCompiler* compiler, Expr* expr, const Token* token);
 
-    void mark_resolved(Expr* expr, int depth);
+    void mark_resolved(KauCompiler* compiler, Expr* expr, int depth);
 
     // TOOD: using std structures for now
     std::vector<ScopeMap> scopes;

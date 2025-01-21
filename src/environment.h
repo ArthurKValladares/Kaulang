@@ -26,6 +26,8 @@ struct Environment {
     RuntimeError set(const Token* token, Value value);
     RuntimeError get(const Token* token, Value& in_value);
 
+    RuntimeError get_at(const Token* token, u64 distance, Value& in_value);
+
     void define_callable(const Token* token, Callable in_callable);
     void define_callable(const String &str, Callable in_callable);
     RuntimeError get_callable(const Token* token, Callable& in_callable);
@@ -33,5 +35,7 @@ struct Environment {
     std::unordered_map<String, Value, StringHasher> values;
     std::unordered_map<String, Callable, StringHasher> callables;
 
+    Environment* ancestor(u64 distance);
+    
     Environment* enclosing = nullptr;
 };

@@ -1,43 +1,45 @@
 #include "resolver.h"
 
-void Resolver::resolve(Stmt* stmts, u64 stmts_len) {
+#include "compiler.h"
+
+void Resolver::resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len) {
     for (u64 i = 0; i < stmts_len; ++i) {
-        resolve_stmt(&stmts[i]);
+        resolve_stmt(compiler, &stmts[i]);
     }
 }
 
-void Resolver::resolve_stmt(Stmt* stmt) {
+void Resolver::resolve_stmt(KauCompiler* compiler, Stmt* stmt) {
     switch (stmt->ty) {
         case Stmt::Type::EXPR: {
-            visit_expr_stmt(stmt);
+            visit_expr_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::VAR_DECL: {
-            visit_var_stmt(stmt);
+            visit_var_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::BLOCK: {
-            visit_block_stmt(stmt);
+            visit_block_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::IF: {
-            visit_if_stmt(stmt);
+            visit_if_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::WHILE: {
-            visit_while_stmt(stmt);
+            visit_while_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::FN_DECLARATION: {
-            visit_fn_stmt(stmt);
+            visit_fn_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::RETURN: {
-            visit_return_stmt(stmt);
+            visit_return_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::PRINT: {
-            visit_print_stmt(stmt);
+            visit_print_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::BREAK: {
@@ -53,45 +55,45 @@ void Resolver::resolve_stmt(Stmt* stmt) {
     }
 }
 
-void Resolver::resolve_expr(Expr* expr) {
+void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
     switch (expr->ty) {
         case Expr::Type::LITERAL: {
             // TODO: Don't love that this is how I need to detect a variable, make it better
             if (expr->expr.literal->val->m_type == TokenType::IDENTIFIER) {
-                visit_variable_expr(expr);
+                visit_variable_expr(compiler, expr);
             }
             break;
         }
         case Expr::Type::UNARY: {
-            visit_unary_expr(expr);
+            visit_unary_expr(compiler, expr);
             break;
         }
         case Expr::Type::BINARY: {
-            visit_binary_expr(expr);
+            visit_binary_expr(compiler, expr);
             break;
         }
         case Expr::Type::GROUPING: {
-            visit_grouping_expr(expr);
+            visit_grouping_expr(compiler, expr);
             break;
         }
         case Expr::Type::TERNARY: {
-            visit_ternary_expr(expr);
+            visit_ternary_expr(compiler, expr);
             break;
         }
         case Expr::Type::ASSIGNMENT: {
-            visit_assign_expr(expr);
+            visit_assign_expr(compiler, expr);
             break;
         }
         case Expr::Type::AND: {
-            visit_logical_expr(expr);
+            visit_logical_expr(compiler, expr);
             break;
         }
         case Expr::Type::OR: {
-            visit_logical_expr(expr);
+            visit_logical_expr(compiler, expr);
             break;
         }
         case Expr::Type::FN_CALL: {
-            visit_fn_call_expr(expr);
+            visit_fn_call_expr(compiler, expr);
             break;
         }
         case Expr::Type::ERR: {
@@ -101,54 +103,54 @@ void Resolver::resolve_expr(Expr* expr) {
     }   
 }
 
-void Resolver::visit_expr_stmt(Stmt* stmt) {
-    resolve_expr(stmt->s_expr.expr);
+void Resolver::visit_expr_stmt(KauCompiler* compiler, Stmt* stmt) {
+    resolve_expr(compiler, stmt->s_expr.expr);
 }
 
-void Resolver::visit_block_stmt(Stmt* stmt) {
+void Resolver::visit_block_stmt(KauCompiler* compiler, Stmt* stmt) {
     begin_scope();
-    resolve(stmt->s_block.stmts, stmt->s_block.size);
+    resolve(compiler, stmt->s_block.stmts, stmt->s_block.size);
     end_scope();
 }
 
-void Resolver::visit_var_stmt(Stmt* stmt) {
+void Resolver::visit_var_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(stmt->s_var_decl.name);
     if (stmt->s_var_decl.initializer != nullptr) {
-        resolve_expr(stmt->s_var_decl.initializer);
+        resolve_expr(compiler, stmt->s_var_decl.initializer);
     }
     define(stmt->s_var_decl.name);
 }
 
-void Resolver::visit_fn_stmt(Stmt* stmt) {
+void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(stmt->fn_declaration.name);
     define(stmt->fn_declaration.name);
 
-    resolve_fn(stmt);
+    resolve_fn(compiler, stmt);
 }
 
-void Resolver::visit_if_stmt(Stmt* stmt) {
-    resolve_expr(stmt->s_if.condition);
-    resolve_stmt(stmt->s_if.if_stmt);
+void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
+    resolve_expr(compiler, stmt->s_if.condition);
+    resolve_stmt(compiler, stmt->s_if.if_stmt);
     if (stmt->s_if.else_stmt->ty != Stmt::Type::ERR) {
-        resolve_stmt(stmt->s_if.else_stmt);
+        resolve_stmt(compiler, stmt->s_if.else_stmt);
     }
 }
 
-void Resolver::visit_print_stmt(Stmt* stmt) {
+void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
     // TODO: Print Stmt should be its own thing
-    resolve_expr(stmt->s_expr.expr);
+    resolve_expr(compiler, stmt->s_expr.expr);
 }
 
-void Resolver::visit_return_stmt(Stmt* stmt) {
-    resolve_expr(stmt->s_return.expr);
+void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
+    resolve_expr(compiler, stmt->s_return.expr);
 }
 
-void Resolver::visit_while_stmt(Stmt* stmt) {
-    resolve_expr(stmt->s_while.condition);
-    resolve_stmt(stmt->s_while.body);
+void Resolver::visit_while_stmt(KauCompiler* compiler, Stmt* stmt) {
+    resolve_expr(compiler, stmt->s_while.condition);
+    resolve_stmt(compiler, stmt->s_while.body);
 }
 
-void Resolver::visit_variable_expr(Expr* expr) {
+void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     const Token* token = expr->expr.literal->val;
     if (!scopes.empty() &&
         scopes.back().contains(token->m_lexeme) &&
@@ -156,63 +158,63 @@ void Resolver::visit_variable_expr(Expr* expr) {
         std::println(stderr, "Can't read local varaible in its own initializer");
         exit(-1);
     }
-    resolve_local(expr, token);
+    resolve_local(compiler, expr, token);
 }
 
-void Resolver::visit_assign_expr(Expr* expr) {
-    resolve_expr(expr->expr.assignment->right);
-    resolve_local(expr, expr->expr.literal->val);
+void Resolver::visit_assign_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.assignment->right);
+    resolve_local(compiler, expr, expr->expr.literal->val);
 }
 
-void Resolver::visit_binary_expr(Expr* expr) {
-    resolve_expr(expr->expr.binary->left);
-    resolve_expr(expr->expr.binary->right);
+void Resolver::visit_binary_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.binary->left);
+    resolve_expr(compiler, expr->expr.binary->right);
 }
 
-void Resolver::visit_fn_call_expr(Expr* expr) {
-    resolve_expr(expr->expr.fn_call->callee);
+void Resolver::visit_fn_call_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.fn_call->callee);
 
     for (u64 i = 0; i < expr->expr.fn_call->arguments_len; ++i) {
-        resolve_expr(expr->expr.fn_call->arguments[i]);
+        resolve_expr(compiler, expr->expr.fn_call->arguments[i]);
     }
 }
 
-void Resolver::visit_grouping_expr(Expr* expr) {
-    resolve_expr(expr->expr.grouping->expr);
+void Resolver::visit_grouping_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.grouping->expr);
 }
 
-void Resolver::visit_logical_expr(Expr* expr) {
-    resolve_expr(expr->expr.logical_binary->left);
-    resolve_expr(expr->expr.logical_binary->right);
+void Resolver::visit_logical_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.logical_binary->left);
+    resolve_expr(compiler, expr->expr.logical_binary->right);
 }
 
-void Resolver::visit_unary_expr(Expr* expr) {
-    resolve_expr(expr->expr.unary->right);
+void Resolver::visit_unary_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.unary->right);
 }
 
-void Resolver::visit_ternary_expr(Expr* expr) {
-    resolve_expr(expr->expr.ternary->left);
-    resolve_expr(expr->expr.ternary->middle);
-    resolve_expr(expr->expr.ternary->right);
+void Resolver::visit_ternary_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.ternary->left);
+    resolve_expr(compiler, expr->expr.ternary->middle);
+    resolve_expr(compiler, expr->expr.ternary->right);
 }
 
-void Resolver::resolve_local(Expr* expr, const Token* token) {
+void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {
     for (i64 i = scopes.size() - 1; i >= 0; --i) {
         if (scopes[i].contains(token->m_lexeme)) {
-            mark_resolved(expr, scopes.size() - 1 - i);
+            mark_resolved(compiler, expr, scopes.size() - 1 - i);
             return;
         }
     }
 }
 
-void Resolver::resolve_fn(Stmt* stmt) {
+void Resolver::resolve_fn(KauCompiler* compiler, Stmt* stmt) {
     begin_scope();
     for (u64 i = 0; i < stmt->fn_declaration.params_size; ++i) {
         Token* param = stmt->fn_declaration.params[i];
         declare(param);
         define(param);
     }
-    resolve_stmt(stmt->fn_declaration.body);
+    resolve_stmt(compiler, stmt->fn_declaration.body);
     end_scope();
 }
 
@@ -240,6 +242,6 @@ void Resolver::end_scope() {
     scopes.pop_back();
 }
 
-void Resolver::mark_resolved(Expr* expr, int depth) {
-    // TODO
+void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, int depth) {
+    compiler->locals[expr] = depth;
 }

@@ -55,7 +55,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     Stmt* stmts = parser.parse(global_arena, stmts_len);
 
     Resolver resolver = {};
-    resolver.resolve(stmts, stmts_len);
+    resolver.resolve(this, stmts, stmts_len);
 
     for (u64 i = 0; i < stmts_len; ++i) {
         Stmt& stmt = stmts[i];
@@ -125,4 +125,14 @@ int KauCompiler::run_file(const char* file_path) {
     }
 
     return 0;
+}
+
+RuntimeError KauCompiler::lookup_variable(const Token* name, Expr* expr, Value& in_value) {
+    if (locals.contains(expr)) {
+        const u64 distance = locals[expr];
+        std::println("distance = {}", distance);
+        return global_env.get_at(name, distance, in_value);
+    } else {
+        return global_env.get_at(name, 0, in_value);
+    }
 }
