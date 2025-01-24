@@ -8,6 +8,11 @@
 
 using ScopeMap = std::unordered_map<String, bool, StringHasher>;
 
+enum class FunctionType {
+    None,
+    Function,
+};
+
 struct KauCompiler;
 struct Resolver {
     void resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len);
@@ -30,7 +35,7 @@ private:
     void visit_unary_expr(KauCompiler* compiler, Expr* expr);
     void visit_ternary_expr(KauCompiler* compiler, Expr* expr);
 
-    void declare(Token* name);
+    void declare(KauCompiler* compiler, Token* name);
     void define(Token* name);
 
     void begin_scope();
@@ -38,7 +43,7 @@ private:
 
     void resolve_stmt(KauCompiler* compiler, Stmt* stmt);
     void resolve_expr(KauCompiler* compiler, Expr* expr);
-    void resolve_fn(KauCompiler* compiler, Stmt* stmt);
+    void resolve_fn(KauCompiler* compiler, Stmt* stmt, FunctionType ty);
 
     void resolve_local(KauCompiler* compiler, Expr* expr, const Token* token);
 
@@ -46,4 +51,5 @@ private:
 
     // TOOD: using std structures for now
     std::vector<ScopeMap> scopes;
+    FunctionType current_function = FunctionType::None;
 };

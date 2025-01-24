@@ -114,7 +114,7 @@ void Resolver::visit_block_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_var_stmt(KauCompiler* compiler, Stmt* stmt) {
-    declare(stmt->s_var_decl.name);
+    declare(compiler, stmt->s_var_decl.name);
     if (stmt->s_var_decl.initializer != nullptr) {
         resolve_expr(compiler, stmt->s_var_decl.initializer);
     }
@@ -122,10 +122,10 @@ void Resolver::visit_var_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
-    declare(stmt->fn_declaration.name);
+    declare(compiler, stmt->fn_declaration.name);
     define(stmt->fn_declaration.name);
 
-    resolve_fn(compiler, stmt);
+    resolve_fn(compiler, stmt,  FunctionType::Function);
 }
 
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
@@ -142,6 +142,12 @@ void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
+    if (current_function == FunctionType::None) {
+        // TODO: Get actual line number
+        compiler->error(0, "Can't return from top-level code");
+        exit(-1);
+    }
+
     resolve_expr(compiler, stmt->s_return.expr);
 }
 
@@ -155,8 +161,8 @@ void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     if (!scopes.empty() &&
         scopes.back().contains(token->m_lexeme) &&
         scopes.back().at(token->m_lexeme) == false) {
-        std::println(stderr, "Can't read local varaible in its own initializer");
-        exit(-1);
+        compiler->error(0, "Can't read local varaible in its own initializer");
+        return;
     }
     resolve_local(compiler, expr, token);
 }
@@ -207,23 +213,32 @@ void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* tok
     }
 }
 
-void Resolver::resolve_fn(KauCompiler* compiler, Stmt* stmt) {
+void Resolver::resolve_fn(KauCompiler* compiler, Stmt* stmt, FunctionType ty) {
+    const FunctionType enclosing_function = current_function;
+    current_function = ty;
+
     begin_scope();
     for (u64 i = 0; i < stmt->fn_declaration.params_size; ++i) {
         Token* param = stmt->fn_declaration.params[i];
-        declare(param);
+        declare(compiler, param);
         define(param);
     }
     resolve_stmt(compiler, stmt->fn_declaration.body);
     end_scope();
+
+    current_function = enclosing_function;
 }
 
-void Resolver::declare(Token* name) {
+void Resolver::declare(KauCompiler* compiler, Token* name) {
     if (scopes.empty()) {
         return;
     }
-
-    scopes.back()[name->m_lexeme] = false;
+    ScopeMap& scope = scopes.back();
+    if (scope.contains(name->m_lexeme)) {
+        compiler->error(0, "Already a variable with this name in this scope");
+        return;
+    }
+    scope[name->m_lexeme] = false;
 }
 
 void Resolver::define(Token* name) {

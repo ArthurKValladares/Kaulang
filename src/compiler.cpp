@@ -56,7 +56,10 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
 
     Resolver resolver = {};
     resolver.resolve(this, stmts, stmts_len);
-
+    if (m_had_error) {
+        return -1;
+    }
+    
     for (u64 i = 0; i < stmts_len; ++i) {
         Stmt& stmt = stmts[i];
 
