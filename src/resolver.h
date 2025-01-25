@@ -6,7 +6,11 @@
 
 #include "parser.h"
 
-using ScopeMap = std::unordered_map<String, bool, StringHasher>;
+struct VariableStatus {
+    bool defined = false;
+    u64 uses = 0;
+};
+using ScopeMap = std::unordered_map<String, VariableStatus, StringHasher>;
 
 enum class FunctionType {
     None,

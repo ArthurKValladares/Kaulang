@@ -160,7 +160,7 @@ void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     const Token* token = expr->expr.literal->val;
     if (!scopes.empty() &&
         scopes.back().contains(token->m_lexeme) &&
-        scopes.back().at(token->m_lexeme) == false) {
+        scopes.back().at(token->m_lexeme).defined == false) {
         compiler->error(0, "Can't read local varaible in its own initializer");
         return;
     }
@@ -208,6 +208,7 @@ void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* tok
     for (i64 i = scopes.size() - 1; i >= 0; --i) {
         if (scopes[i].contains(token->m_lexeme)) {
             mark_resolved(compiler, expr, scopes.size() - 1 - i);
+            scopes[i][token->m_lexeme].uses += 1;
             return;
         }
     }
@@ -233,12 +234,16 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
     if (scopes.empty()) {
         return;
     }
+
     ScopeMap& scope = scopes.back();
     if (scope.contains(name->m_lexeme)) {
         compiler->error(0, "Already a variable with this name in this scope");
         return;
     }
-    scope[name->m_lexeme] = false;
+    scope[name->m_lexeme] = VariableStatus{
+        .defined = false,
+        .uses = 0,
+    };
 }
 
 void Resolver::define(Token* name) {
@@ -246,7 +251,8 @@ void Resolver::define(Token* name) {
         return;
     }
 
-    scopes.back()[name->m_lexeme] = true;
+    VariableStatus& status = scopes.back()[name->m_lexeme];
+    status.defined = true;
 }
 
 void Resolver::begin_scope() {
@@ -254,6 +260,11 @@ void Resolver::begin_scope() {
 }
 
 void Resolver::end_scope() {
+    for (auto const& [name, status] : scopes.back()) {
+        if (status.uses == 0) {
+            std::println("Warn: unused variable {}", name.to_string_view());
+        }
+    }
     scopes.pop_back();
 }
 

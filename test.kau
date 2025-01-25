@@ -111,3 +111,15 @@ var a = "global";
     var a = "block";
     show_a();
 }
+
+print "##### Test 14 #####";
+{
+    var unused_1 = "unused";
+    {
+        var used = "used";
+        {
+            var unused_2 = "unused";
+        }
+        print used;
+    }
+}
