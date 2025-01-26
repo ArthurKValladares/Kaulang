@@ -767,126 +767,137 @@ void Value::print() const {
     }
 }
 
-// TODO: Restructure this, with a switch and the should-print stuff at the end
 Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool from_prompt, bool in_loop) {
     Value expr_val = {};
 
-    if (ty == Stmt::Type::BLOCK) {
-        Environment new_env = {};
-        new_env.enclosing = env;
-        for (int i = 0; i < s_block.size; ++i) {
-            expr_val = s_block.stmts[i].evaluate(compiler, arena, &new_env, from_prompt, in_loop);
-            // continue statement stops current block from exeuting further, like a break.
-            if (expr_val.ty == Value::Type::BREAK ||
-                expr_val.ty == Value::Type::CONTINUE ||
-                compiler->hit_return
-            ) {
-                break;
+    switch (ty)
+    {
+        case Stmt::Type::EXPR: {
+            RuntimeError expr_err = s_expr.expr->evaluate(compiler, arena, env, expr_val);
+            if (!expr_err.is_ok()) {
+                compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
+            break;
         }
-        return expr_val;
-    }
-
-    if (ty == Stmt::Type::IF) {
-        Value test_expr_val = {};
-        RuntimeError expr_err = s_if.condition->evaluate(compiler, arena, env, test_expr_val);
-        if (!expr_err.is_ok()) {
-            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+        case Stmt::Type::VAR_DECL: {
+            if (s_var_decl.initializer != nullptr) {
+                RuntimeError expr_err = s_var_decl.initializer->evaluate(compiler, arena, env, expr_val);
+                if (!expr_err.is_ok()) {
+                    compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+                }
+            }
+            env->define(s_var_decl.name, expr_val);
+            break;
         }
-        if (test_expr_val.ty != Value::Type::BOOL) {
-            compiler->runtime_error(expr_err.token->m_line, "if test expression must evaluate to bool");
+        case Stmt::Type::BLOCK: {
+            Environment new_env = {};
+            new_env.enclosing = env;
+            for (int i = 0; i < s_block.size; ++i) {
+                expr_val = s_block.stmts[i].evaluate(compiler, arena, &new_env, from_prompt, in_loop);
+                // continue statement stops current block from exeuting further, like a break.
+                if (expr_val.ty == Value::Type::BREAK ||
+                    expr_val.ty == Value::Type::CONTINUE ||
+                    compiler->hit_return
+                ) {
+                    break;
+                }
+            }
+            break;
         }
-        bool if_result = test_expr_val.b;
-
-        if (if_result) {
-            expr_val = s_if.if_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
-        } else if (s_if.else_stmt->ty != Stmt::Type::ERR) {
-            expr_val = s_if.else_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
-        }
-
-        return expr_val;
-    }
-
-    if (ty == Stmt::Type::WHILE) {
-        while (true) {
+        case Stmt::Type::IF: {
             Value test_expr_val = {};
-            RuntimeError expr_err = s_while.condition->evaluate(compiler, arena, env, test_expr_val);
+            RuntimeError expr_err = s_if.condition->evaluate(compiler, arena, env, test_expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
             if (test_expr_val.ty != Value::Type::BOOL) {
-                compiler->runtime_error(expr_err.token->m_line, "while test expression must evaluate to bool");
+                compiler->runtime_error(expr_err.token->m_line, "if test expression must evaluate to bool");
             }
-            if(!test_expr_val.b) {
-                break;
+            bool if_result = test_expr_val.b;
+
+            if (if_result) {
+                expr_val = s_if.if_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
+            } else if (s_if.else_stmt->ty != Stmt::Type::ERR) {
+                expr_val = s_if.else_stmt->evaluate(compiler, arena, env, from_prompt, in_loop);
             }
 
-            expr_val = s_while.body->evaluate(compiler, arena, env, from_prompt, true);
-            if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
-                break;
+            break;
+        }
+        case Stmt::Type::WHILE: {
+            while (true) {
+                Value test_expr_val = {};
+                RuntimeError expr_err = s_while.condition->evaluate(compiler, arena, env, test_expr_val);
+                if (!expr_err.is_ok()) {
+                    compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+                }
+                if (test_expr_val.ty != Value::Type::BOOL) {
+                    compiler->runtime_error(expr_err.token->m_line, "while test expression must evaluate to bool");
+                }
+                if(!test_expr_val.b) {
+                    break;
+                }
+
+                expr_val = s_while.body->evaluate(compiler, arena, env, from_prompt, true);
+                if (expr_val.ty == Value::Type::BREAK || compiler->hit_return) {
+                    break;
+                }
             }
+            break;
         }
-        return expr_val;
-    }
-
-    if (ty == Stmt::Type::BREAK) {
-        if (!in_loop) {
-            compiler->runtime_error(s_break_continue.line, "'break' statement can only be used in a loop.");
+        case Stmt::Type::BREAK: {
+            if (!in_loop) {
+                compiler->runtime_error(s_break_continue.line, "'break' statement can only be used in a loop.");
+            }
+            expr_val = Value {
+                .ty = Value::Type::BREAK
+            };
+            break;
         }
-        return Value {
-            .ty = Value::Type::BREAK
-        };
-    }
-
-    if (ty == Stmt::Type::CONTINUE) {
-        if (!in_loop) {
-            compiler->runtime_error(s_break_continue.line, "'continue' statement can only be used in a loop.");
+        case Stmt::Type::CONTINUE: {
+            if (!in_loop) {
+                compiler->runtime_error(s_break_continue.line, "'continue' statement can only be used in a loop.");
+            }
+            expr_val = Value {
+                .ty = Value::Type::CONTINUE
+            };
+            break;
         }
-        return Value {
-            .ty = Value::Type::CONTINUE
-        };
-    }
+        case Stmt::Type::FN_DECLARATION: {
+            String fn_name = fn_declaration.name->m_lexeme;
+            FnDeclarationPayload fn = fn_declaration;
 
-    if (ty == Stmt::Type::RETURN) {
-        RuntimeError expr_err = s_return.expr->evaluate(compiler, arena, env, expr_val);
-        if (!expr_err.is_ok()) {
-            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
+            env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                Environment new_env = {};
+                new_env.enclosing = env;
+
+                for (size_t i = 0; i < fn.params_size; ++i) {
+                    new_env.define(fn.params[i], args[i]);
+                }
+
+                return fn.body->evaluate(compiler, arena, &new_env, false, false);
+            }));
+
+            break;
         }
-        compiler->hit_return = true;
-    }
-
-    // TODO: can maybe make this print/expr stuff better
-    if (ty == Stmt::Type::EXPR || ty == Stmt::Type::PRINT) {
-        RuntimeError expr_err = s_expr.expr->evaluate(compiler, arena, env, expr_val);
-        if (!expr_err.is_ok()) {
-            compiler->runtime_error(expr_err.token->m_line, expr_err.message);
-        }
-    }
-
-    if (ty == Stmt::Type::VAR_DECL) {
-        if (s_var_decl.initializer != nullptr) {
-            RuntimeError expr_err = s_var_decl.initializer->evaluate(compiler, arena, env, expr_val);
+        case Stmt::Type::RETURN: {
+            RuntimeError expr_err = s_return.expr->evaluate(compiler, arena, env, expr_val);
             if (!expr_err.is_ok()) {
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
+            compiler->hit_return = true;
+            break;
         }
-
-        env->define(s_var_decl.name, expr_val);
-    }
-
-    if (ty == Stmt::Type::FN_DECLARATION) {        
-        String fn_name = fn_declaration.name->m_lexeme;
-        FnDeclarationPayload fn = fn_declaration;
-        env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
-            Environment new_env = {};
-            new_env.enclosing = env;
-
-            for (size_t i = 0; i < fn.params_size; ++i) {
-                new_env.define(fn.params[i], args[i]);
+        case Stmt::Type::PRINT: {
+            RuntimeError expr_err = s_expr.expr->evaluate(compiler, arena, env, expr_val);
+            if (!expr_err.is_ok()) {
+                compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
-
-            return fn.body->evaluate(compiler, arena, &new_env, false, false);
-        }));
+            break;
+        }
+        case Stmt::Type::ERR: {
+            assert(false);
+            break;
+        }
     }
 
     if (ty == Stmt::Type::PRINT || from_prompt) {
