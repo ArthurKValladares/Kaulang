@@ -123,3 +123,6 @@ print("##### Test 14 #####");
         print(used);
     }
 }
+
+print("##### Test 15 #####");
+class Bagel {};

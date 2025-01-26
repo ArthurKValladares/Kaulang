@@ -127,13 +127,13 @@ namespace {
         return expr;
     }
 
-    Expr* new_fn_call(Expr* callee, const Token* paren, Expr** arguments, u64 arguments_len) {
+    Expr* new_fn_call(Expr* callee, const Token* paren, Expr** arguments, u64 arguments_count) {
         FnCallExpr* fn_call = (FnCallExpr*) malloc(sizeof(FnCallExpr));
         assert(fn_call != nullptr);
         fn_call->callee = callee;
         fn_call->paren = paren;
         fn_call->arguments = arguments;
-        fn_call->arguments_len = arguments_len;
+        fn_call->arguments_count = arguments_count;
 
         Expr* expr = new_expr(
             Expr::Type::FN_CALL,
@@ -221,14 +221,25 @@ namespace {
         };
     }
 
-    Stmt new_fn_declaration(Token* name, Token** params, int params_size, Stmt* body) {
+    Stmt new_fn_declaration(Token* name, Token** params, u64 params_count, Stmt* body) {
         return Stmt {
             .ty = Stmt::Type::FN_DECLARATION,
             .fn_declaration = FnDeclarationPayload{
                 name, 
                 params,
-                params_size,
+                params_count,
                 body
+            },
+        };
+    }
+
+    Stmt new_class_declaration(Token* name, Stmt* methods, u64 methods_count) {
+        return Stmt {
+            .ty = Stmt::Type::CLASS_DECLARATION,
+            .s_class = ClassDeclarationPayload{
+                name, 
+                methods,
+                methods_count
             },
         };
     }
@@ -251,13 +262,13 @@ Stmt* Parser::parse(Arena* arena, u64& input_len) {
 Stmt* Parser::program(Arena* arena, u64& input_len) {
     arena->child_arena = alloc_arena();
 
-    u64 stmts_len = 0;
+    u64 stmts_count = 0;
     Stmt* statements = (Stmt*) arena->push_no_zero(0);
     while (!is_at_end()) {
         arena->push_struct_no_zero<Stmt>();
-        statements[stmts_len++] = declaration(arena->child_arena);
+        statements[stmts_count++] = declaration(arena->child_arena);
     }
-    input_len = stmts_len;
+    input_len = stmts_count;
     return statements;
 }
 
@@ -267,6 +278,8 @@ Stmt Parser::declaration(Arena* arena) {
         ret = var_declaration(arena);
     } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
         ret = fn_declaration(arena);
+    } else if (match(std::initializer_list<TokenType>{TokenType::CLASS})) {
+        ret = class_declaration(arena);
     } else {
         ret = statement(arena);
     }
@@ -287,8 +300,7 @@ Stmt Parser::fn_declaration(Arena* arena) {
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
             arena->push_struct_no_zero<Token*>();
-            params[param_count] = consume(TokenType::IDENTIFIER, "Expecteded parameter name");
-            ++param_count;
+            params[param_count++] = consume(TokenType::IDENTIFIER, "Expecteded parameter name");
         } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
     }
     consume(TokenType::RIGHT_PAREN, "Expected ')' after function parameters");
@@ -299,6 +311,25 @@ Stmt Parser::fn_declaration(Arena* arena) {
     return new_fn_declaration(name, params, param_count, body);
 }
 
+Stmt Parser::class_declaration(Arena* arena) {
+    arena->child_arena = alloc_arena();
+
+    Token* name = consume(TokenType::IDENTIFIER, "Expected class name");
+
+    consume(TokenType::LEFT_BRACE, "Expected '{' after class name");
+
+    u64 methods_count = 0;
+    Stmt* methods = (Stmt*) arena->push_no_zero(0);
+    while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
+        arena->push_struct_no_zero<Stmt>();
+        methods[methods_count++] = fn_declaration(arena->child_arena);
+    }
+
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after class body");
+    consume(TokenType::SEMICOLON, "Expected ';' after class declaration");
+    
+    return new_class_declaration(name, methods, methods_count);
+}
 
 Stmt Parser::var_declaration(Arena* arena) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected variable name");
@@ -652,19 +683,19 @@ Expr* Parser::fn_call(Arena* arena) {
 Expr* Parser::finish_call(Arena* arena, Expr* callee) {
     arena->child_arena = alloc_arena();
 
-    u64 arguments_len = 0;
+    u64 arguments_count = 0;
     Expr** arguments = (Expr**) arena->push_no_zero(0);
 
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
             arena->push_struct_no_zero<Expr*>();
-            arguments[arguments_len++] = expression(arena->child_arena);
+            arguments[arguments_count++] = expression(arena->child_arena);
         } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
     }
 
     Token* paren = consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments");
 
-    return new_fn_call(callee, paren, arguments, arguments_len);
+    return new_fn_call(callee, paren, arguments, arguments_count);
 }
 
 Expr* Parser::primary(Arena* arena) {

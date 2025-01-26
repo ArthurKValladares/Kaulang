@@ -258,9 +258,9 @@ void Expr::print() const {
 
             fn_call->callee->print();
             std::print("(");
-            for (size_t i = 0; i < fn_call->arguments_len; ++i) {
+            for (size_t i = 0; i < fn_call->arguments_count; ++i) {
                 fn_call->arguments[i]->print();
-                if (i != fn_call->arguments_len - 1) {
+                if (i != fn_call->arguments_count - 1) {
                     std::print(", ");
                 }
             }
@@ -707,13 +707,13 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return err;
             }
 
-            if (callable.m_arity != fn_call->arguments_len) {
+            if (callable.m_arity != fn_call->arguments_count) {
                 return RuntimeError::wrong_number_arguments(callee_literal->val);
             }
 
             std::vector<Value> values;
-            values.resize(fn_call->arguments_len);
-            for (size_t i = 0; i < fn_call->arguments_len; ++i) {
+            values.resize(fn_call->arguments_count);
+            for (size_t i = 0; i < fn_call->arguments_count; ++i) {
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {
@@ -866,11 +866,11 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             String fn_name = fn_declaration.name->m_lexeme;
             FnDeclarationPayload fn = fn_declaration;
 
-            env->define_callable(fn_name, Callable(fn_declaration.params_size, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+            env->define_callable(fn_name, Callable(fn_declaration.params_count, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
                 Environment new_env = {};
                 new_env.enclosing = env;
 
-                for (size_t i = 0; i < fn.params_size; ++i) {
+                for (size_t i = 0; i < fn.params_count; ++i) {
                     new_env.define(fn.params[i], args[i]);
                 }
 

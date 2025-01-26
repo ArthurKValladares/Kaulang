@@ -131,8 +131,14 @@ struct BreakContinuePayload {
 struct FnDeclarationPayload {
     Token* name;
     Token** params;
-    int params_size;
+    u64 params_count;
     Stmt* body;
+};
+
+struct ClassDeclarationPayload {
+    Token* name;
+    Stmt* methods;
+    u64 methods_count;
 };
 
 // TODO: Review `Token` struct and add it to more payloads maybe if we need it for logging
@@ -154,6 +160,7 @@ struct Stmt {
         BREAK,
         CONTINUE,
         FN_DECLARATION,
+        CLASS_DECLARATION,
         RETURN,
     };
 
@@ -165,7 +172,8 @@ struct Stmt {
         IfPayload s_if;
         WhilePayload s_while;
         BreakContinuePayload s_break_continue;
-        FnDeclarationPayload fn_declaration;
+        FnDeclarationPayload fn_declaration;    
+        ClassDeclarationPayload s_class;
         ReturnPayload s_return;
     };
 
@@ -243,5 +251,5 @@ struct FnCallExpr {
     Expr* callee;
     const Token* paren;
     Expr** arguments;
-    u64 arguments_len;
+    u64 arguments_count;
 };

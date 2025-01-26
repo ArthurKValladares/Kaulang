@@ -2,8 +2,8 @@
 
 #include "compiler.h"
 
-void Resolver::resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len) {
-    for (u64 i = 0; i < stmts_len; ++i) {
+void Resolver::resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_count) {
+    for (u64 i = 0; i < stmts_count; ++i) {
         resolve_stmt(compiler, &stmts[i]);
     }
 }
@@ -32,6 +32,10 @@ void Resolver::resolve_stmt(KauCompiler* compiler, Stmt* stmt) {
         }
         case Stmt::Type::FN_DECLARATION: {
             visit_fn_stmt(compiler, stmt);
+            break;
+        }
+        case Stmt::Type::CLASS_DECLARATION: {
+            visit_class_stmt(compiler, stmt);
             break;
         }
         case Stmt::Type::RETURN: {
@@ -124,6 +128,10 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
     resolve_fn(compiler, stmt,  FunctionType::Function);
 }
 
+void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
+    // TODO
+}
+
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
     resolve_expr(compiler, stmt->s_if.condition);
     resolve_stmt(compiler, stmt->s_if.if_stmt);
@@ -176,7 +184,7 @@ void Resolver::visit_binary_expr(KauCompiler* compiler, Expr* expr) {
 void Resolver::visit_fn_call_expr(KauCompiler* compiler, Expr* expr) {
     resolve_expr(compiler, expr->expr.fn_call->callee);
 
-    for (u64 i = 0; i < expr->expr.fn_call->arguments_len; ++i) {
+    for (u64 i = 0; i < expr->expr.fn_call->arguments_count; ++i) {
         resolve_expr(compiler, expr->expr.fn_call->arguments[i]);
     }
 }
@@ -215,7 +223,7 @@ void Resolver::resolve_fn(KauCompiler* compiler, Stmt* stmt, FunctionType ty) {
     current_function = ty;
 
     begin_scope();
-    for (u64 i = 0; i < stmt->fn_declaration.params_size; ++i) {
+    for (u64 i = 0; i < stmt->fn_declaration.params_count; ++i) {
         Token* param = stmt->fn_declaration.params[i];
         declare(compiler, param);
         define(param);
