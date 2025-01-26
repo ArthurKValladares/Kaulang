@@ -23,7 +23,7 @@ long get_file_size(FILE* file) {
 
 KauCompiler::KauCompiler() {
     String clock_str = String {
-        .chars = "CLOCK",
+        .chars = "clock",
         .len = 5
     };
     global_env.define_callable(clock_str, Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Arena*, Environment* env) {
@@ -32,6 +32,17 @@ KauCompiler::KauCompiler() {
             .l = clock()
         };
     }));
+
+    String print_str = String {
+        .chars = "print",
+        .len = 5
+    };
+    global_env.define_callable(print_str, Callable(1, [](std::vector<Value> const &args, KauCompiler* compiler, Arena*, Environment* env) {
+        const Value& val = args[0];
+        val.print();
+        return val;
+    }));
+
     global_arena = alloc_arena();
 }
 

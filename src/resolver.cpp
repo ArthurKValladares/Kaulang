@@ -38,10 +38,6 @@ void Resolver::resolve_stmt(KauCompiler* compiler, Stmt* stmt) {
             visit_return_stmt(compiler, stmt);
             break;
         }
-        case Stmt::Type::PRINT: {
-            visit_print_stmt(compiler, stmt);
-            break;
-        }
         case Stmt::Type::BREAK: {
             break;
         }

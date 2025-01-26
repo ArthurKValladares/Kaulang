@@ -111,9 +111,6 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::OR: {
         return "or";
     }
-    case TokenType::PRINT: {
-        return "print";
-    }
     case TokenType::RETURN: {
         return "return";
     }

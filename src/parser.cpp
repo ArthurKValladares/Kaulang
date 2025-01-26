@@ -149,13 +149,6 @@ namespace {
         return ret;
     }
 
-    Stmt new_print_stmt(Expr* val) {
-        return Stmt {
-            .ty = Stmt::Type::PRINT,
-            .s_expr = ExprStmtPayload{val},
-        };
-    }
-
     Stmt new_block_stmt(Stmt* stmts, int size) {
         return Stmt {
             .ty = Stmt::Type::BLOCK,
@@ -329,9 +322,6 @@ Stmt Parser::statement(Arena* arena) {
     if (match(std::initializer_list<TokenType>{TokenType::FOR})) {
         return for_statement(arena);
     }
-    if (match(std::initializer_list<TokenType>{TokenType::PRINT})) {
-        return print_statement(arena);
-    }
     if (match(std::initializer_list<TokenType>{TokenType::LEFT_BRACE})) {
         return block_statement(arena);
     }
@@ -373,15 +363,6 @@ Stmt Parser::block_statement(Arena* arena) {
     return new_block_stmt(stmts, stmt_count);
 }
 
-Stmt Parser::print_statement(Arena* arena) {
-    Expr* val = expression(arena);
-    if (val == nullptr) {
-        return new_err_stmt();
-    }
-
-    consume(TokenType::SEMICOLON, "Expected ';' after value");
-    return new_print_stmt(val);
-}
 
 Stmt Parser::if_statement(Arena* arena) {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'if'");
@@ -778,7 +759,6 @@ void Parser::syncronize() {
             case TokenType::FOR:
             case TokenType::IF:
             case TokenType::WHILE:
-            case TokenType::PRINT:
             case TokenType::RETURN:
                 return;
         }

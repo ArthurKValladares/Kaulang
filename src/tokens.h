@@ -20,7 +20,7 @@ enum class TokenType {
 
     // Keywords
     AND, CLASS, ELSE, FALSE, FN, FOR, IF, NIL, OR,
-    PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    RETURN, SUPER, THIS, TRUE, VAR, WHILE,
     BREAK, CONTINUE,
 
     _EOF

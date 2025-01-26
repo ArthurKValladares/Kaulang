@@ -887,20 +887,13 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             compiler->hit_return = true;
             break;
         }
-        case Stmt::Type::PRINT: {
-            RuntimeError expr_err = s_expr.expr->evaluate(compiler, arena, env, expr_val);
-            if (!expr_err.is_ok()) {
-                compiler->runtime_error(expr_err.token->m_line, expr_err.message);
-            }
-            break;
-        }
         case Stmt::Type::ERR: {
             assert(false);
             break;
         }
     }
 
-    if (ty == Stmt::Type::PRINT || from_prompt) {
+    if (from_prompt) {
         expr_val.print();
     }
 
@@ -923,12 +916,6 @@ void Stmt::print() {
         }
         case Type::EXPR: {
             std::print("EXPR: ");
-            s_expr.expr->print();
-            std::println("");
-            break;
-        }
-        case Type::PRINT: {
-            std::print("PRINT: ");
             s_expr.expr->print();
             std::println("");
             break;

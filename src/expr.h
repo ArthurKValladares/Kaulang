@@ -155,7 +155,6 @@ struct Stmt {
         CONTINUE,
         FN_DECLARATION,
         RETURN,
-        PRINT,
     };
 
     Type ty;
