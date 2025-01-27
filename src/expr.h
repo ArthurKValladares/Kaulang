@@ -73,6 +73,18 @@ struct RuntimeError {
     std::string_view message;
 };
 
+struct Class {
+    Class() {}
+    Class(String name) 
+        : m_name(name)
+
+    {}
+
+    void print() const;
+
+    String m_name = String{};
+};
+
 struct Value {
     enum class Type {
         NIL,
@@ -84,6 +96,7 @@ struct Value {
         STRING,
         BREAK,
         CONTINUE,
+        CLASS,
     };
 
     Type ty;
@@ -94,6 +107,7 @@ struct Value {
         float f;
         double d;
         String str = {};
+        Class m_class;
     };
 
     void print() const;

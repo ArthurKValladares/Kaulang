@@ -7,7 +7,7 @@
 int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len);
 
 struct String {
-    const char* chars;
+    const char* chars = nullptr;
     size_t len = 0;
 
     bool operator==(const String& other) const

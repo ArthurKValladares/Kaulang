@@ -84,3 +84,7 @@ RuntimeError Environment::get_callable(const Token* token, Callable& in_callable
         return RuntimeError::undeclared_function(token);
     }
 }
+
+void Class::print() const {
+    std::println("{} instance", m_name.to_string_view());
+}

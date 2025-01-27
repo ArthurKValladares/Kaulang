@@ -764,6 +764,9 @@ void Value::print() const {
             std::println("{}", str.to_string_view());
             break;
         }
+        case Type::CLASS: {
+            m_class.print();
+        }
     }
 }
 
@@ -879,6 +882,16 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
             break;
         }
+        case Stmt::Type::CLASS_DECLARATION: {
+            String class_name = s_class.name->m_lexeme;
+            
+            env->define(s_class.name, Value {
+                .ty = Value::Type::CLASS,
+                .m_class = Class(class_name)
+            });
+
+            break;
+        }
         case Stmt::Type::RETURN: {
             RuntimeError expr_err = s_return.expr->evaluate(compiler, arena, env, expr_val);
             if (!expr_err.is_ok()) {
@@ -952,6 +965,24 @@ void Stmt::print() {
             std::print("RETURN");
             s_return.expr->print();
             std::println("");
+            break;
+        }
+        case Type::FN_DECLARATION: {
+            std::print("FN DECLARATION: ");
+            std::print("{} params:", fn_declaration.name->m_lexeme.to_string_view());
+            for (u64 i = 0; i < fn_declaration.params_count; ++i) {
+                std::print(" {}", fn_declaration.params[i]->m_lexeme.to_string_view());
+            }
+            std::println();
+            break;
+        }
+        case Type::CLASS_DECLARATION: {
+            std::print("CLASS DECLARATION: ");
+            std::println("{}", s_class.name->m_lexeme.to_string_view());
+            for (u64 i = 0; i < s_class.methods_count; ++i) {
+                s_class.methods[i].print();
+            }
+            std::println();
             break;
         }
         //

@@ -129,7 +129,9 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
-    // TODO
+    declare(compiler, stmt->s_class.name);
+    define(stmt->s_class.name);
+    // TODO: handle the actual methods
 }
 
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
