@@ -31,9 +31,13 @@ struct Environment {
     void define_callable(const String &str, Callable in_callable);
     RuntimeError get_callable(const Token* token, Callable& in_callable);
 
-    // TODO: Callable should just be a member of Value
+    void define_class(const Token* token, Class in_class);
+    void define_class(const String &str, Class in_class);
+    RuntimeError get_class(const Token* token, Class& in_class);
+
     std::unordered_map<String, Value, StringHasher> values;
     std::unordered_map<String, Callable, StringHasher> callables;
+    std::unordered_map<String, Class, StringHasher> classes;
 
     Environment* ancestor(u64 distance);
     

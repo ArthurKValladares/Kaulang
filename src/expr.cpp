@@ -883,12 +883,20 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             break;
         }
         case Stmt::Type::CLASS_DECLARATION: {
-            String class_name = s_class.name->m_lexeme;
-            
-            env->define(s_class.name, Value {
-                .ty = Value::Type::CLASS,
-                .m_class = Class(class_name)
-            });
+            Token* class_name_token = s_class.name;
+            String class_name = class_name_token->m_lexeme;
+
+            env->define_class(class_name_token, Class(class_name));
+
+            env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                Class in_class = {};
+                env->get_class(class_name_token, in_class);
+
+                return Value{
+                    .ty = Value::Type::CLASS,
+                    .m_class = in_class,
+                };
+            }));
 
             break;
         }

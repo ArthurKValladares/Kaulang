@@ -85,6 +85,30 @@ RuntimeError Environment::get_callable(const Token* token, Callable& in_callable
     }
 }
 
+void Environment::define_class(const Token* token, Class in_class) {
+    define_class(token->m_lexeme, in_class);
+}
+
+void Environment::define_class(const String &str, Class in_class) {
+    classes[str] = in_class;
+}
+
+RuntimeError Environment::get_class(const Token* token, Class& in_class) {
+    String lexeme = token->m_lexeme;
+
+    if (classes.contains(lexeme)) {
+        in_class = classes[lexeme];
+
+        return RuntimeError::ok();
+    } else {
+        if (enclosing != nullptr) {
+            return enclosing->get_class(token, in_class);
+        }
+
+        return RuntimeError::undeclared_function(token);
+    }
+}
+
 void Class::print() const {
     std::println("{} instance", m_name.to_string_view());
 }
