@@ -19,6 +19,7 @@ struct AssignmentExpr;
 struct LogicalBinaryExpr;
 struct FnCallExpr;
 struct GetExpr;
+struct SetExpr;
 
 struct Stmt;
 
@@ -34,6 +35,7 @@ union ExprPayload {
     LogicalBinaryExpr* logical_binary;
     FnCallExpr* fn_call;
     GetExpr* get;
+    SetExpr* set;
 };
 
 struct RuntimeError {
@@ -85,7 +87,9 @@ struct Class {
 
     {}
 
-    bool get(String field, Value& in_value);
+    bool contains(String field);
+    void get(String field, Value& in_value);
+    void set(String field, Value in_value);
 
     void print() const;
 
@@ -216,6 +220,7 @@ struct Expr {
         OR,
         FN_CALL,
         GET,
+        SET,
     };
 
     Type ty;
@@ -280,4 +285,9 @@ struct FnCallExpr {
 struct GetExpr {
     Expr* class_expr;
     Token* member;
+};
+
+struct SetExpr {
+    Expr* get;
+    Expr* right;
 };

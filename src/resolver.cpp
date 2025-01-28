@@ -100,6 +100,10 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             visit_get_expr(compiler, expr);
             break;
         }
+        case Expr::Type::SET: {
+            visit_set_expr(compiler, expr);
+            break;
+        }
         case Expr::Type::ERR: {
             assert(false);
             break;
@@ -216,6 +220,11 @@ void Resolver::visit_ternary_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::visit_get_expr(KauCompiler* compiler, Expr* expr) {
     resolve_expr(compiler, expr->expr.get->class_expr);
+}
+
+void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.set->get);
+    resolve_expr(compiler, expr->expr.set->right);
 }
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {

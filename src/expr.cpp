@@ -293,6 +293,16 @@ void Expr::print() const {
 
             break;
         }
+        case Type::SET: {
+            SetExpr* set = expr.set;
+
+            set->get->print();
+            std::print(" = ");
+            set->right->print();
+            std::println();
+
+            break;
+        }
     }
 }
 
@@ -767,8 +777,36 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            const bool has_field = expr_val.m_class.get(get->member->m_lexeme, in_value);
+            const bool has_field = expr_val.m_class.contains(get->member->m_lexeme);
             if (has_field) {
+                return RuntimeError::ok();
+            } else {
+                return RuntimeError::class_does_not_have_field(get->member);
+            }
+        }
+        case Type::SET: {
+            SetExpr* set = expr.set;
+            GetExpr* get = set->get->expr.get;
+
+            Value class_val = {};
+            RuntimeError expr_err = get->class_expr->evaluate(compiler, arena, env, class_val);
+            if (!expr_err.is_ok()) {
+                return expr_err;
+            }
+            if (class_val.ty != Value::Type::CLASS) {
+                return RuntimeError::object_must_be_struct(get->member);
+            }
+
+            const bool has_field = class_val.m_class.contains(get->member->m_lexeme);
+            if (has_field) {
+                Value right_val = {};
+                RuntimeError right_err = set->right->evaluate(compiler, arena, env, right_val);
+                if (!right_err.is_ok()) {
+                    return right_err;
+                }
+
+                class_val.m_class.set(get->member->m_lexeme, in_value);
+
                 return RuntimeError::ok();
             } else {
                 return RuntimeError::class_does_not_have_field(get->member);
@@ -1045,11 +1083,15 @@ void Stmt::print() {
     }
 }
 
-bool Class::get(String field, Value& in_value) {
-    if (fields.contains(field)) {
-        in_value = *((Value*)fields.get(field));
-        return true;
-    } else {
-        return false;
-    }
+bool Class::contains(String field) {
+    return fields.contains(field);
+}
+
+void Class::get(String field, Value& in_value) {
+    in_value = *((Value*)fields.get(field));
+}
+
+void Class::set(String field, Value in_value) {
+    Value* field_val = (Value*) fields.get(field);
+    *field_val = in_value;
 }

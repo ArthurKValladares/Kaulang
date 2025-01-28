@@ -157,6 +157,19 @@ namespace {
         return expr;
     }
 
+    Expr* new_set(Expr* get, Expr* right) {
+        SetExpr* set = (SetExpr*) malloc(sizeof(SetExpr));
+        set->get = get;
+        set->right = right;
+
+        Expr* expr = new_expr(
+            Expr::Type::SET,
+            ExprPayload{.set = set}
+        );
+
+        return expr;
+    }
+    
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -519,6 +532,8 @@ Expr* Parser::assignment(Arena* arena) {
         if (expr->ty == Expr::Type::LITERAL && expr->expr.literal->val->m_type == TokenType::IDENTIFIER) {
             const Token* id = expr->expr.literal->val;
             return new_assignment(id, right);
+        } else if (expr->ty == Expr::Type::GET) {
+            return new_set(expr, right);
         } else {
             error(peek(), "invalid assignment target.");
             return nullptr;

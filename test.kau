@@ -128,3 +128,4 @@ print("##### Test 15 #####");
 class Bagel {};
 var bagel = Bagel();
 bagel.test;
+bagel.test = 1;
