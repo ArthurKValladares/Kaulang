@@ -169,7 +169,7 @@ namespace {
 
         return expr;
     }
-    
+
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -349,6 +349,7 @@ Stmt Parser::class_declaration(Arena* arena) {
     Stmt* methods = (Stmt*) arena->push_no_zero(0);
     while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
         arena->push_struct_no_zero<Stmt>();
+        consume(TokenType::FN, "Expected function declaration inside class");
         methods[methods_count++] = fn_declaration(arena->child_arena);
     }
 

@@ -125,7 +125,10 @@ print("##### Test 14 #####");
 }
 
 print("##### Test 15 #####");
-class Bagel {};
-var bagel = Bagel();
-bagel.test;
-bagel.test = 1;
+class Bacon {
+    fn eat() {
+        print("Crunch Crunch Crunch");
+    }
+};
+var bacon = Bacon();
+bacon.eat();

@@ -12,4 +12,7 @@ struct StringMap {
     void* get(String key) {
         return nullptr;
     }
+
+    void insert(String key, void* object) {
+    }
 };

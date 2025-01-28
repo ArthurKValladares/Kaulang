@@ -82,9 +82,9 @@ struct RuntimeError {
 struct Value;
 struct Class {
     Class() {}
-    Class(String name) 
+    Class(String name, StringMap methods) 
         : m_name(name)
-
+        , m_methods(methods)
     {}
 
     bool contains(String field);
@@ -93,7 +93,9 @@ struct Class {
 
     void print() const;
 
-    StringMap fields;
+    StringMap m_fields;
+    StringMap m_methods;
+
     String m_name = String{};
 };
 

@@ -13,8 +13,9 @@ struct VariableStatus {
 using ScopeMap = std::unordered_map<String, VariableStatus, StringHasher>;
 
 enum class FunctionType {
-    None,
-    Function,
+    NONE,
+    FUNCTION,
+    METHOD,
 };
 
 struct KauCompiler;
@@ -58,5 +59,5 @@ private:
 
     // TOOD: using std structures for now
     std::vector<ScopeMap> scopes;
-    FunctionType current_function = FunctionType::None;
+    FunctionType current_function = FunctionType::NONE;
 };

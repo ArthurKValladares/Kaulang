@@ -133,13 +133,15 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->fn_declaration.name);
     define(stmt->fn_declaration.name);
 
-    resolve_fn(compiler, stmt,  FunctionType::Function);
+    resolve_fn(compiler, stmt,  FunctionType::FUNCTION);
 }
 
 void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
-    // TODO: handle the actual methods
+    for (u64 i = 0; i < stmt->s_class.methods_count; ++i) {
+        resolve_fn(compiler, &stmt->s_class.methods[i], FunctionType::METHOD);
+    }
 }
 
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
@@ -156,7 +158,7 @@ void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
-    if (current_function == FunctionType::None) {
+    if (current_function == FunctionType::NONE) {
         // TODO: Get actual line number
         compiler->error(0, "Can't return from top-level code");
         exit(-1);

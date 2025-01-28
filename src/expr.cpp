@@ -35,6 +35,21 @@ namespace {
         }
         return Value::Type::INT;
     }
+
+    Callable construct_callable(FnDeclarationPayload fn_declaration) {
+        String fn_name = fn_declaration.name->m_lexeme;
+
+        return Callable(fn_declaration.params_count, [fn_declaration](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+            Environment new_env = {};
+            new_env.enclosing = env;
+
+            for (size_t i = 0; i < fn_declaration.params_count; ++i) {
+                new_env.define(fn_declaration.params[i], args[i]);
+            }
+
+            return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
+        });
+    }
 };
 
 RuntimeError RuntimeError::ok() {
@@ -151,7 +166,7 @@ RuntimeError RuntimeError::invalid_function_identifier(const Token* token) {
     return RuntimeError {
         .ty = Type::INVALID_IDENTIFIER,
         .token = token,
-        .message = "invalid identifier"
+        .message = "invalid function identifier"
     };
 }
 
@@ -779,6 +794,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
             const bool has_field = expr_val.m_class.contains(get->member->m_lexeme);
             if (has_field) {
+                expr_val.m_class.get(get->member->m_lexeme, in_value);
                 return RuntimeError::ok();
             } else {
                 return RuntimeError::class_does_not_have_field(get->member);
@@ -951,16 +967,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             String fn_name = fn_declaration.name->m_lexeme;
             FnDeclarationPayload fn = fn_declaration;
 
-            env->define_callable(fn_name, Callable(fn_declaration.params_count, [fn = std::move(fn)](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
-                Environment new_env = {};
-                new_env.enclosing = env;
-
-                for (size_t i = 0; i < fn.params_count; ++i) {
-                    new_env.define(fn.params[i], args[i]);
-                }
-
-                return fn.body->evaluate(compiler, arena, &new_env, false, false);
-            }));
+            env->define_callable(fn_name, construct_callable(fn));
 
             break;
         }
@@ -968,7 +975,18 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             Token* class_name_token = s_class.name;
             String class_name = class_name_token->m_lexeme;
 
-            env->define_class(class_name_token, Class(class_name));
+            StringMap classes;
+            for (u64 i = 0; i < s_class.methods_count; ++i) {
+                Stmt* fn_stmt = &s_class.methods[i];
+                assert(fn_stmt->ty == Stmt::Type::FN_DECLARATION);
+                FnDeclarationPayload fn = fn_stmt->fn_declaration;
+                Callable callable = construct_callable(fn);
+                classes.insert(fn.name->m_lexeme, &callable);
+            }
+    
+            // TODO: Need to actually add support for field in class itself
+
+            env->define_class(class_name_token, Class(class_name, classes));
 
             env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
                 Class in_class = {};
@@ -1084,14 +1102,14 @@ void Stmt::print() {
 }
 
 bool Class::contains(String field) {
-    return fields.contains(field);
+    return m_fields.contains(field);
 }
 
 void Class::get(String field, Value& in_value) {
-    in_value = *((Value*)fields.get(field));
+    in_value = *((Value*)m_fields.get(field));
 }
 
 void Class::set(String field, Value in_value) {
-    Value* field_val = (Value*) fields.get(field);
+    Value* field_val = (Value*) m_fields.get(field);
     *field_val = in_value;
 }
