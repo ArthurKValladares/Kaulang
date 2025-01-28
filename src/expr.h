@@ -55,7 +55,7 @@ struct RuntimeError {
     static RuntimeError invalid_function_argument(const Token* token);
     static RuntimeError wrong_number_arguments(const Token* token);
     static RuntimeError object_must_be_struct(const Token* token);
-    static RuntimeError class_does_not_have_field();
+    static RuntimeError class_does_not_have_field(const Token* token);
 
     bool is_ok() const;
 
@@ -85,7 +85,7 @@ struct Class {
 
     {}
 
-    RuntimeError get(String field, Value& in_value);
+    bool get(String field, Value& in_value);
 
     void print() const;
 

@@ -686,7 +686,7 @@ Expr* Parser::fn_call(Arena* arena) {
     while (true) {
         if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
             expr = finish_call(arena, expr);
-        } else if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
+        } else if (match(std::initializer_list<TokenType>{TokenType::DOT})) {
             Token* name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
             expr = new_get(expr, name);
         } else {

@@ -171,9 +171,10 @@ RuntimeError RuntimeError::object_must_be_struct(const Token* token){
     };
 }
 
-RuntimeError RuntimeError::class_does_not_have_field() {
+RuntimeError RuntimeError::class_does_not_have_field(const Token* token) {
     return RuntimeError {
         .ty = Type::INVALID_ARGUMENT,
+        .token = token,
         .message = "class does not have field"
     };
 }
@@ -766,7 +767,12 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            return expr_val.m_class.get(get->member->m_lexeme, in_value);
+            const bool has_field = expr_val.m_class.get(get->member->m_lexeme, in_value);
+            if (has_field) {
+                return RuntimeError::ok();
+            } else {
+                return RuntimeError::class_does_not_have_field(get->member);
+            }
         }
     }
 }
@@ -1039,11 +1045,11 @@ void Stmt::print() {
     }
 }
 
-RuntimeError Class::get(String field, Value& in_value) {
+bool Class::get(String field, Value& in_value) {
     if (fields.contains(field)) {
         in_value = *((Value*)fields.get(field));
-        return RuntimeError::ok();
+        return true;
     } else {
-        return RuntimeError::class_does_not_have_field();
+        return false;
     }
 }
