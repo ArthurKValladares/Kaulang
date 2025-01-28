@@ -746,19 +746,38 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             FnCallExpr* fn_call = expr.fn_call;
             
             Expr* callee = fn_call->callee;
-            LiteralExpr* callee_literal = callee->expr.literal;
-            if (callee_literal->val->m_type != TokenType::IDENTIFIER) {
-                return RuntimeError::invalid_function_identifier(callee_literal->val);
-            }
-    
+
             Callable callable = {};
-            RuntimeError err = env->get_callable(callee_literal->val, callable);
-            if (!err.is_ok()) {
-                return err;
+            const Token* calllable_name;
+            if (callee->ty == Expr::Type::LITERAL) {
+                LiteralExpr* callee_literal = callee->expr.literal;
+                if (callee_literal->val->m_type != TokenType::IDENTIFIER) {
+                    return RuntimeError::invalid_function_identifier(callee_literal->val);
+                }
+
+                RuntimeError err = env->get_callable(callee_literal->val, callable);
+                if (!err.is_ok()) {
+                    return err;
+                }
+                calllable_name = callee_literal->val;
+            }
+            else if (callee->ty == Expr::Type::GET) {
+                Value get_value = {};
+                RuntimeError get_err = callee->evaluate(compiler, arena, env, get_value);
+                if (!get_err.is_ok()) {
+                    return get_err;
+                }
+                assert(get_value.ty == Value::Type::CALLABLE);
+
+                callable = *get_value.callable;
+                calllable_name = callee->expr.get->member;
+            }
+            else {
+                assert(false);
             }
 
             if (callable.m_arity != fn_call->arguments_count) {
-                return RuntimeError::wrong_number_arguments(callee_literal->val);
+                return RuntimeError::wrong_number_arguments(calllable_name);
             }
 
             std::vector<Value> values;
@@ -767,15 +786,15 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {
-                    return RuntimeError::invalid_function_argument(callee_literal->val);
+                    return RuntimeError::invalid_function_argument(calllable_name);
                 }
                 values[i] = arg_val;
             }
-            
-            
+
+
             const Value ret_value = callable.m_callback(values, compiler, arena, env);
             in_value = ret_value;
-            
+
             compiler->hit_return = false;
 
             return RuntimeError::ok();
@@ -792,9 +811,8 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            const bool has_field = expr_val.m_class.contains(get->member->m_lexeme);
+            const bool has_field = expr_val.m_class.get(get->member->m_lexeme, in_value);
             if (has_field) {
-                expr_val.m_class.get(get->member->m_lexeme, in_value);
                 return RuntimeError::ok();
             } else {
                 return RuntimeError::class_does_not_have_field(get->member);
@@ -813,7 +831,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            const bool has_field = class_val.m_class.contains(get->member->m_lexeme);
+            const bool has_field = class_val.m_class.contains_field(get->member->m_lexeme);
             if (has_field) {
                 Value right_val = {};
                 RuntimeError right_err = set->right->evaluate(compiler, arena, env, right_val);
@@ -821,7 +839,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return right_err;
                 }
 
-                class_val.m_class.set(get->member->m_lexeme, in_value);
+                class_val.m_class.set_field(get->member->m_lexeme, in_value);
 
                 return RuntimeError::ok();
             } else {
@@ -1101,15 +1119,27 @@ void Stmt::print() {
     }
 }
 
-bool Class::contains(String field) {
+bool Class::contains_field(String field) {
     return m_fields.contains(field);
 }
 
-void Class::get(String field, Value& in_value) {
-    in_value = *((Value*)m_fields.get(field));
-}
-
-void Class::set(String field, Value in_value) {
+void Class::set_field(String field, Value in_value) {
     Value* field_val = (Value*) m_fields.get(field);
     *field_val = in_value;
+}
+
+// TODO: Review usage of this later, its a bit weird, idk if these should really return bool or not
+bool Class::get(String field, Value& in_value) {
+    if (m_fields.contains(field)) {
+        in_value = *((Value*)m_fields.get(field));
+        return true;
+    } else if (m_methods.contains(field)) {
+        Callable* callable = (Callable*) m_methods.get(field);
+        in_value = Value {
+            .ty = Value::Type::CALLABLE,
+            .callable = callable,
+        };
+        return true;
+    }
+    return false;
 }

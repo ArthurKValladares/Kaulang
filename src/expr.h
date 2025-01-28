@@ -87,9 +87,10 @@ struct Class {
         , m_methods(methods)
     {}
 
-    bool contains(String field);
-    void get(String field, Value& in_value);
-    void set(String field, Value in_value);
+    bool contains_field(String field);
+    void set_field(String field, Value in_value);
+
+    bool get(String field, Value& in_value);
 
     void print() const;
 
@@ -99,6 +100,7 @@ struct Class {
     String m_name = String{};
 };
 
+struct Callable;
 struct Value {
     enum class Type {
         NIL,
@@ -111,6 +113,7 @@ struct Value {
         BREAK,
         CONTINUE,
         CLASS,
+        CALLABLE,
     };
 
     Type ty;
@@ -122,6 +125,7 @@ struct Value {
         double d;
         String str = {};
         Class m_class;
+        Callable* callable;
     };
 
     void print() const;
