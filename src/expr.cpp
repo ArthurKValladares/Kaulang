@@ -163,6 +163,20 @@ RuntimeError RuntimeError::invalid_function_argument(const Token* token) {
     };
 }
 
+RuntimeError RuntimeError::object_must_be_struct(const Token* token){
+    return RuntimeError {
+        .ty = Type::INVALID_ARGUMENT,
+        .token = token,
+        .message = "object must be struct"
+    };
+}
+
+RuntimeError RuntimeError::class_does_not_have_field() {
+    return RuntimeError {
+        .ty = Type::INVALID_ARGUMENT,
+        .message = "class does not have field"
+    };
+}
 
 // TODO: error messages will be better later, need to add a string param
 // so i can set `expected` and `found` numbers
@@ -265,6 +279,16 @@ void Expr::print() const {
                 }
             }
             std::print(")");
+
+            break;
+        }
+        case Type::GET: {
+            GetExpr* get = expr.get;
+
+            get->class_expr->print();
+            std::print(".");
+            get->member->print();
+            std::println();
 
             break;
         }
@@ -730,6 +754,20 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
             return RuntimeError::ok();
         }
+        case Type::GET: {
+            GetExpr* get = expr.get;
+
+            Value expr_val = {};
+            RuntimeError expr_err = get->class_expr->evaluate(compiler, arena, env, expr_val);
+            if (!expr_err.is_ok()) {
+                return expr_err;
+            }
+            if (expr_val.ty != Value::Type::CLASS) {
+                return RuntimeError::object_must_be_struct(get->member);
+            }
+
+            return expr_val.m_class.get(get->member->m_lexeme, in_value);
+        }
     }
 }
 
@@ -998,5 +1036,14 @@ void Stmt::print() {
             std::println("ERR");
             return;
         }
+    }
+}
+
+RuntimeError Class::get(String field, Value& in_value) {
+    if (fields.contains(field)) {
+        in_value = *((Value*)fields.get(field));
+        return RuntimeError::ok();
+    } else {
+        return RuntimeError::class_does_not_have_field();
     }
 }

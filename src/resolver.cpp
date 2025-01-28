@@ -96,6 +96,10 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             visit_fn_call_expr(compiler, expr);
             break;
         }
+        case Expr::Type::GET: {
+            visit_get_expr(compiler, expr);
+            break;
+        }
         case Expr::Type::ERR: {
             assert(false);
             break;
@@ -208,6 +212,10 @@ void Resolver::visit_ternary_expr(KauCompiler* compiler, Expr* expr) {
     resolve_expr(compiler, expr->expr.ternary->left);
     resolve_expr(compiler, expr->expr.ternary->middle);
     resolve_expr(compiler, expr->expr.ternary->right);
+}
+
+void Resolver::visit_get_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.get->class_expr);
 }
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {

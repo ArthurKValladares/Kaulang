@@ -143,6 +143,20 @@ namespace {
         return expr;
     }
 
+    Expr* new_get(Expr* class_expr, Token* member) {
+        GetExpr* get_expr = (GetExpr*) malloc(sizeof(GetExpr));
+        assert(get_expr != nullptr);
+        get_expr->class_expr = class_expr;
+        get_expr->member = member;
+
+        Expr* expr = new_expr(
+            Expr::Type::GET,
+            ExprPayload{.get = get_expr}
+        );
+
+        return expr;
+    }
+
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -672,6 +686,9 @@ Expr* Parser::fn_call(Arena* arena) {
     while (true) {
         if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
             expr = finish_call(arena, expr);
+        } else if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
+            Token* name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
+            expr = new_get(expr, name);
         } else {
             break;
         }

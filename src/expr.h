@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lib/string.h"
-
+#include "lib/map.h"
 #include "tokens.h"
 
 #include <string>
@@ -18,6 +18,7 @@ struct PrintExpr;
 struct AssignmentExpr;
 struct LogicalBinaryExpr;
 struct FnCallExpr;
+struct GetExpr;
 
 struct Stmt;
 
@@ -32,6 +33,7 @@ union ExprPayload {
     AssignmentExpr* assignment;
     LogicalBinaryExpr* logical_binary;
     FnCallExpr* fn_call;
+    GetExpr* get;
 };
 
 struct RuntimeError {
@@ -52,6 +54,8 @@ struct RuntimeError {
     static RuntimeError invalid_function_identifier(const Token* token);
     static RuntimeError invalid_function_argument(const Token* token);
     static RuntimeError wrong_number_arguments(const Token* token);
+    static RuntimeError object_must_be_struct(const Token* token);
+    static RuntimeError class_does_not_have_field();
 
     bool is_ok() const;
 
@@ -73,6 +77,7 @@ struct RuntimeError {
     std::string_view message;
 };
 
+struct Value;
 struct Class {
     Class() {}
     Class(String name) 
@@ -80,8 +85,11 @@ struct Class {
 
     {}
 
+    RuntimeError get(String field, Value& in_value);
+
     void print() const;
 
+    StringMap fields;
     String m_name = String{};
 };
 
@@ -207,6 +215,7 @@ struct Expr {
         AND,
         OR,
         FN_CALL,
+        GET,
     };
 
     Type ty;
@@ -266,4 +275,9 @@ struct FnCallExpr {
     const Token* paren;
     Expr** arguments;
     u64 arguments_count;
+};
+
+struct GetExpr {
+    Expr* class_expr;
+    Token* member;
 };

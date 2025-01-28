@@ -39,6 +39,7 @@ private:
     void visit_logical_expr(KauCompiler* compiler, Expr* expr);
     void visit_unary_expr(KauCompiler* compiler, Expr* expr);
     void visit_ternary_expr(KauCompiler* compiler, Expr* expr);
+    void visit_get_expr(KauCompiler* compiler, Expr* expr);
 
     void declare(KauCompiler* compiler, Token* name);
     void define(Token* name);
