@@ -1,8 +1,130 @@
-fn test() {
-    print("hello");
+print("##### Test 0 #####");
+var global_var = "global";
+print(global_var);
+{
+    var inner_var = "inner";
+    print(inner_var);
 }
-test();
 
+print("##### Test 1 #####");
+var count = 0;
+while (count < 10) {
+    print(count);
+    count = count + 1;
+}
+
+print("##### Test 2 #####");
+for (var i = 0; i < 10; i = i + 1) {
+    print(i);
+}
+
+print("##### Test 3 #####");
+for (var i = 0; i < 10; i = i + 1) {
+    print(i);
+    if (i == 5) {
+        break;
+    }
+}
+
+print("##### Test 4 #####");
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+    var a = "outer a";
+    var b = "outer b";
+    {
+        var a = "inner a";
+        print(a);
+        print(b);
+        print(c);
+        print("---");
+    }
+    print(a);
+    print(b);
+    print(c);
+    print("---");
+}
+print(a);
+print(b);
+print(c);
+
+print("##### Test 5 #####");
+var d = 10.5;
+var e = 15.4;
+print(d + e);
+
+print("##### Test 6 #####");
+print("test" + "string");
+
+print("##### Test 7 #####");
+fn fn_test_1() {
+    return 1;
+}
+print(fn_test_1());
+
+print("##### Test 8 #####");
+fn fn_test_2(arg_1) {
+    return arg_1 + 1;
+}
+print(fn_test_2(3));
+
+print("##### Test 9 #####");
+fn fn_test_3(arg_1, arg_2) {
+    return arg_1 * arg_2;
+}
+var fn_arg = 3;
+print(fn_test_3(2, fn_arg));
+
+print("##### Test 10 #####");
+fn fn_test_4(arg_1, arg_2) {
+    print("this should happen");
+    return arg_1 * arg_2;
+}
+print(fn_test_4(3, 4));
+
+print("##### Test 11 #####");
+fn fn_test_5(arg_1, arg_2) {
+    return arg_1 * arg_2;
+    print("this should not happen");
+}
+print(fn_test_5(3, 4));
+
+print("##### Test 12 #####");
+fn fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
+}
+
+for (var i = 0; i < 20; i = i + 1) {
+    print(fib(i));
+}
+
+print("##### Test 13 #####");
+var a = "global";
+{
+    fn show_a() {
+        print(a);
+    }
+
+    show_a();
+    var a = "block";
+    show_a();
+}
+
+print("##### Test 14 #####");
+{
+    var unused_1 = "unused";
+    {
+        var used = "used";
+        {
+            var unused_2 = "unused";
+        }
+        print(used);
+    }
+}
+
+print("##### Test 15 #####");
 class Bacon {
     fn eat() {
         print("Crunch Crunch Crunch");

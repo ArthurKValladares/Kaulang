@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
     src/resolver.cpp
     src/lib/string.cpp
     src/lib/arena.cpp
+    src/lib/map.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

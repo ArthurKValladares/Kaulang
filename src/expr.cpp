@@ -994,17 +994,21 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             String class_name = class_name_token->m_lexeme;
 
             StringMap classes;
+            classes.allocate(arena);
             for (u64 i = 0; i < s_class.methods_count; ++i) {
                 Stmt* fn_stmt = &s_class.methods[i];
                 assert(fn_stmt->ty == Stmt::Type::FN_DECLARATION);
                 FnDeclarationPayload fn = fn_stmt->fn_declaration;
-                Callable callable = construct_callable(fn);
-                classes.insert(fn.name->m_lexeme, &callable);
+                Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
+                *callable_ptr = construct_callable(fn);
+                classes.insert(arena, fn.name->m_lexeme, callable_ptr);
             }
     
+            StringMap fields;
+            fields.allocate(arena);
             // TODO: Need to actually add support for field in class itself
-
-            env->define_class(class_name_token, Class(class_name, classes));
+            
+            env->define_class(class_name_token, Class(class_name, fields, classes));
 
             env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
                 Class in_class = {};
@@ -1120,7 +1124,7 @@ void Stmt::print() {
 }
 
 bool Class::contains_field(String field) {
-    return m_fields.contains(field);
+    return m_fields.get(field) != nullptr;
 }
 
 void Class::set_field(String field, Value in_value) {
@@ -1128,18 +1132,22 @@ void Class::set_field(String field, Value in_value) {
     *field_val = in_value;
 }
 
-// TODO: Review usage of this later, its a bit weird, idk if these should really return bool or not
 bool Class::get(String field, Value& in_value) {
-    if (m_fields.contains(field)) {
-        in_value = *((Value*)m_fields.get(field));
+    void* field_ret = m_fields.get(field);
+    if (field_ret != nullptr) {
+        in_value = *((Value*) field_ret);
         return true;
-    } else if (m_methods.contains(field)) {
-        Callable* callable = (Callable*) m_methods.get(field);
+    }
+
+    void* method_ret = m_methods.get(field);
+    if (method_ret != nullptr) {
+        Callable* callable = (Callable*) method_ret;
         in_value = Value {
             .ty = Value::Type::CALLABLE,
             .callable = callable,
         };
         return true;
     }
+
     return false;
 }

@@ -46,10 +46,10 @@ void* Arena::push(u64 size) {
 
 void* Arena::push_no_zero(u64 size) {
     if (offset + size > commited_size) {
-        assert(size < page_size);
-        void* ret = VirtualAlloc((u8*)mem + (offset + size), page_size, MEM_COMMIT, PAGE_READWRITE);
+        u64 alloc_size = round_up_to_multiple(page_size, size);
+        void* ret = VirtualAlloc((u8*)mem + (offset + size), alloc_size, MEM_COMMIT, PAGE_READWRITE);
         assert(ret);
-        commited_size += page_size;
+        commited_size += alloc_size;
     }
 
     void* start_address = (void*) (((u8*) mem) + offset);

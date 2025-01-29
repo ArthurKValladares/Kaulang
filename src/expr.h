@@ -82,8 +82,9 @@ struct RuntimeError {
 struct Value;
 struct Class {
     Class() {}
-    Class(String name, StringMap methods) 
+    Class(String name, StringMap fields, StringMap methods) 
         : m_name(name)
+        , m_fields(fields)
         , m_methods(methods)
     {}
 

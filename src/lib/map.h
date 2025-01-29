@@ -1,18 +1,24 @@
 #pragma once
 
 #include "string.h"
+#include "arena.h"
+
+// TODO: Not a particularly good map implementation, but it works for now
+#define STRING_MAP_NUM_BUCKETS 1024
+
+struct MapNode  {
+    String key;
+    void* value;
+    MapNode* next;
+};
 
 struct StringMap {
     StringMap() {}
 
-    bool contains(String key) {
-        return false;
-    }
+    void allocate(Arena* arena);
 
-    void* get(String key) {
-        return nullptr;
-    }
+    void* get(String key);
+    void insert(Arena* arena, String key, void* object);
 
-    void insert(String key, void* object) {
-    }
+    MapNode** buckets;
 };
