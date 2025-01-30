@@ -839,7 +839,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return right_err;
                 }
 
-                class_val.m_class.set_field(get->member->m_lexeme, in_value);
+                class_val.m_class.set_field(get->member->m_lexeme, right_val);
 
                 return RuntimeError::ok();
             } else {
