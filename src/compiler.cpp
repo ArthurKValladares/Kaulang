@@ -62,16 +62,16 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     scanner.scan_tokens(*this, global_arena);
 
     Parser parser(scanner.m_tokens, scanner.m_tokens_len);
-    u64 stmts_len;
-    Stmt* stmts = parser.parse(global_arena, stmts_len);
+    u64 stmts_count;
+    Stmt* stmts = parser.parse(global_arena, stmts_count);
 
     Resolver resolver = {};
-    resolver.resolve(this, stmts, stmts_len);
+    resolver.resolve(this, stmts, stmts_count);
     if (m_had_error) {
         return -1;
     }
     
-    for (u64 i = 0; i < stmts_len; ++i) {
+    for (u64 i = 0; i < stmts_count; ++i) {
         Stmt& stmt = stmts[i];
 
 #ifdef DEBUG_PRINT

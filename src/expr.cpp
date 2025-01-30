@@ -50,6 +50,32 @@ namespace {
             return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
         });
     }
+
+    // TODO: Messy, pass in as optimal param to funnction above or something like that
+    Callable construct_callable_class(FnDeclarationPayload fn_declaration, Class* class_ptr) {
+        String fn_name = fn_declaration.name->m_lexeme;
+
+        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+            Environment new_env = {};
+            new_env.enclosing = env;
+            new_env.define(
+                String{
+                    "this",
+                    4
+                },
+                Value{
+                    .ty = Value::Type::CLASS,
+                    .m_class = class_ptr
+                }
+            );
+
+            for (size_t i = 0; i < fn_declaration.params_count; ++i) {
+                new_env.define(fn_declaration.params[i], args[i]);
+            }
+
+            return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
+        });
+    }
 };
 
 RuntimeError RuntimeError::ok() {
@@ -815,7 +841,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            const bool has_field = expr_val.m_class.get(get->member->m_lexeme, in_value);
+            const bool has_field = expr_val.m_class->get(get->member->m_lexeme, in_value);
             if (has_field) {
                 return RuntimeError::ok();
             } else {
@@ -835,7 +861,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::object_must_be_struct(get->member);
             }
 
-            const bool has_field = class_val.m_class.contains_field(get->member->m_lexeme);
+            const bool has_field = class_val.m_class->contains_field(get->member->m_lexeme);
             if (has_field) {
                 Value right_val = {};
                 RuntimeError right_err = set->right->evaluate(compiler, arena, env, right_val);
@@ -843,7 +869,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return right_err;
                 }
 
-                class_val.m_class.set_field(get->member->m_lexeme, right_val);
+                class_val.m_class->set_field(get->member->m_lexeme, right_val);
 
                 return RuntimeError::ok();
             } else {
@@ -851,10 +877,10 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             }
         }
         case Type::THIS: {
-            // TODO: This doesn't work yet because `this` hasn't been added to the environment
-            // Need to figure out how to properly do it in a way that returns the `Class` its supposed to refer to.
             ThisExpr* this_expr = expr.this_expr;
-            return compiler->lookup_variable(env, this_expr->val, this, in_value);
+            // TODO: The resolver for this is not quite right yet I don't think
+            return env->get(this_expr->val, in_value);
+            //return compiler->lookup_variable(env, this_expr->val, this, in_value);
         }
     }
 }
@@ -891,7 +917,7 @@ void Value::print() const {
             break;
         }
         case Type::CLASS: {
-            m_class.print();
+            m_class->print();
         }
     }
 }
@@ -1002,20 +1028,24 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         case Stmt::Type::CLASS_DECLARATION: {
             Token* class_name_token = s_class.name;
             String class_name = class_name_token->m_lexeme;
-
-            StringMap classes;
-            classes.allocate(arena);
-
-            StringMap fields;
-            fields.allocate(arena);
+            
+            env->define_class(class_name_token, Class());
+            Class* new_class = nullptr;
+            env->get_class(class_name_token, &new_class);
+            assert(new_class != nullptr);
+            new_class->m_name = class_name;
+            new_class->m_methods.allocate(arena);
+            new_class->m_fields.allocate(arena);
 
             for (u64 i = 0; i < s_class.members_count; ++i) {
                 Stmt* stmt = &s_class.members[i];
                 if (stmt->ty == Stmt::Type::FN_DECLARATION) {
                     FnDeclarationPayload fn = stmt->fn_declaration;
                     Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
-                    *callable_ptr = construct_callable(fn);
-                    classes.insert(arena, fn.name->m_lexeme, callable_ptr);
+
+                    *callable_ptr = construct_callable_class(fn, new_class);
+
+                    new_class->m_methods.insert(arena, fn.name->m_lexeme, callable_ptr);
                 } else if (stmt->ty == Stmt::Type::VAR_DECL) {
                     VarDeclPayload var_decl = stmt->s_var_decl;
                     Value* value_ptr = (Value*) arena->push_struct_no_zero<Value>();
@@ -1026,17 +1056,15 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                             compiler->runtime_error(var_err.token->m_line, var_err.message);
                         }
                     }
-                    fields.insert(arena, var_decl.name->m_lexeme, value_ptr);
+                    new_class->m_fields.insert(arena, var_decl.name->m_lexeme, value_ptr);
                 } else {
                     assert(false);
                 }
             }
-            
-            env->define_class(class_name_token, Class(class_name, fields, classes));
 
             env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
-                Class in_class = {};
-                env->get_class(class_name_token, in_class);
+                Class* in_class = nullptr;
+                env->get_class(class_name_token, &in_class);
 
                 return Value{
                     .ty = Value::Type::CLASS,

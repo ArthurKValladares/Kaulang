@@ -20,8 +20,10 @@ struct Callable {
     CallableCallback m_callback;
 };
 
+// TODO: A lot of these refs should maybe be ptrs?
 struct Environment {
     void define(const Token* token, Value value);
+    void define(String str, Value value);
     bool contains(const Token* token) const;
     RuntimeError set(const Token* token, Value value);
     RuntimeError get(const Token* token, Value& in_value);
@@ -33,7 +35,7 @@ struct Environment {
 
     void define_class(const Token* token, Class in_class);
     void define_class(const String &str, Class in_class);
-    RuntimeError get_class(const Token* token, Class& in_class);
+    RuntimeError get_class(const Token* token, Class** in_class);
 
     std::unordered_map<String, Value, StringHasher> values;
     std::unordered_map<String, Callable, StringHasher> callables;

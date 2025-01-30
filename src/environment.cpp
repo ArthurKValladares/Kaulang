@@ -1,7 +1,11 @@
 #include "environment.h"
 
 void Environment::define(const Token* token, Value value) {
-    values[token->m_lexeme] = value;
+    define(token->m_lexeme, value);
+}
+
+void Environment::define(String str, Value value) {
+    values[str] = value;
 }
 
 bool Environment::contains(const Token* token) const {
@@ -93,11 +97,11 @@ void Environment::define_class(const String &str, Class in_class) {
     classes[str] = in_class;
 }
 
-RuntimeError Environment::get_class(const Token* token, Class& in_class) {
+RuntimeError Environment::get_class(const Token* token, Class** in_class) {
     String lexeme = token->m_lexeme;
 
     if (classes.contains(lexeme)) {
-        in_class = classes[lexeme];
+        *in_class = &classes[lexeme];
 
         return RuntimeError::ok();
     } else {

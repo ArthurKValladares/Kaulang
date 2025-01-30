@@ -158,7 +158,7 @@ void Scanner::identifier(Arena* arena) {
     const std::string_view id_view = id.to_string_view();
 
     if (keywords.contains(id_view)) {
-        add_token(arena, keywords.at(id_view));
+        add_token(arena, keywords.at(id_view), id);
     } else {
         // TODO: This add_token stuff is a bit messy atm imo, specially the subcstring stuff.
         // MAybe just handle it all explicitly

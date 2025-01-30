@@ -59,7 +59,6 @@ namespace {
     Expr* new_this(const Token* val) {
         ThisExpr* this_expr = (ThisExpr*) malloc(sizeof(ThisExpr));
         this_expr->val = val;
-
         Expr* expr = new_expr(
             Expr::Type::THIS,
             ExprPayload{.this_expr = this_expr}

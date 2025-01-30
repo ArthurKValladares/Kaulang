@@ -84,15 +84,11 @@ struct RuntimeError {
 struct Value;
 struct Class {
     Class() {}
-    Class(String name, StringMap fields, StringMap methods) 
-        : m_name(name)
-        , m_fields(fields)
-        , m_methods(methods)
-    {}
 
     bool contains_field(String field);
     void set_field(String field, Value in_value);
 
+    // TODO: Maybe ptr?
     bool get(String field, Value& in_value);
 
     void print() const;
@@ -127,7 +123,7 @@ struct Value {
         float f;
         double d;
         String str = {};
-        Class m_class;
+        Class* m_class;
         Callable* callable;
     };
 
