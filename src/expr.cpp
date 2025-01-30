@@ -318,6 +318,10 @@ void Expr::print() const {
 
             break;
         }
+        case Type::THIS: {
+            std::println("this");
+            break;
+        }
     }
 }
 
@@ -786,7 +790,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {
-                    return RuntimeError::invalid_function_argument(calllable_name);
+                    return err;
                 }
                 values[i] = arg_val;
             }
@@ -845,6 +849,12 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             } else {
                 return RuntimeError::class_does_not_have_field(get->member);
             }
+        }
+        case Type::THIS: {
+            // TODO: This doesn't work yet because `this` hasn't been added to the environment
+            // Need to figure out how to properly do it in a way that returns the `Class` its supposed to refer to.
+            ThisExpr* this_expr = expr.this_expr;
+            return compiler->lookup_variable(env, this_expr->val, this, in_value);
         }
     }
 }

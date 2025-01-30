@@ -140,3 +140,16 @@ class IceCream {
 var ice_cream = IceCream();
 ice_cream.flavor = "German Chocolate";
 print(ice_cream.flavor);
+
+print("##### Test 17 #####");
+class Cake {
+    fn taste() {
+        print("The " + this.flavor + " cake is " + this.adjective + "!");
+    }
+    var flavor;
+    var adjective;
+};
+var cake = Cake();
+cake.flavor = "German Chocolate";
+cake.adjective = "delicious";
+cake.taste();

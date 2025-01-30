@@ -9,6 +9,7 @@
 
 struct Expr;
 struct LiteralExpr;
+struct ThisExpr;
 struct GroupingExpr;
 struct UnaryExpr;
 struct BinaryExpr;
@@ -25,6 +26,7 @@ struct Stmt;
 
 union ExprPayload {
     LiteralExpr* literal;
+    ThisExpr* this_expr;
     GroupingExpr* grouping;
     UnaryExpr* unary;
     BinaryExpr* binary;
@@ -228,6 +230,7 @@ struct Expr {
         FN_CALL,
         GET,
         SET,
+        THIS,
     };
 
     Type ty;
@@ -239,6 +242,10 @@ struct Expr {
 
 // TODO: review these Token*'s later
 struct LiteralExpr {
+    const Token* val;
+};
+
+struct ThisExpr {
     const Token* val;
 };
 

@@ -104,6 +104,10 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             visit_set_expr(compiler, expr);
             break;
         }
+        case Expr::Type::THIS: {
+            visit_this_expr(compiler, expr);
+            break;
+        }
         case Expr::Type::ERR: {
             assert(false);
             break;
@@ -139,6 +143,19 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
 void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
+
+    begin_scope();
+
+    String this_str = String {
+        "this",
+        4
+    };
+    scopes.back()[this_str] = 
+    VariableStatus {
+        .defined = true,
+        .uses = 1
+    };
+
     for (u64 i = 0; i < stmt->s_class.members_count; ++i) {
         Stmt* class_stmt = &stmt->s_class.members[i];
         if (class_stmt->ty == Stmt::Type::FN_DECLARATION) {
@@ -150,6 +167,8 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
         }
         
     }
+
+    end_scope();
 }
 
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
@@ -235,6 +254,10 @@ void Resolver::visit_get_expr(KauCompiler* compiler, Expr* expr) {
 void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
     resolve_expr(compiler, expr->expr.set->get);
     resolve_expr(compiler, expr->expr.set->right);
+}
+
+void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_local(compiler, expr, expr->expr.this_expr->val);
 }
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {

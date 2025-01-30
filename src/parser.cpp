@@ -56,6 +56,18 @@ namespace {
         return expr;
     }
 
+    Expr* new_this(const Token* val) {
+        ThisExpr* this_expr = (ThisExpr*) malloc(sizeof(ThisExpr));
+        this_expr->val = val;
+
+        Expr* expr = new_expr(
+            Expr::Type::THIS,
+            ExprPayload{.this_expr = this_expr}
+        );
+
+        return expr;
+    }
+
     Expr* new_grouping(Expr* grouping_expr) {
         GroupingExpr* grouping = (GroupingExpr*) malloc(sizeof(GroupingExpr));
         grouping->expr = grouping_expr;
@@ -743,6 +755,10 @@ Expr* Parser::primary(Arena* arena) {
         TokenType::STRING
     })) {
         return new_literal(previous());
+    }
+
+    if (match(std::initializer_list<TokenType>{TokenType::THIS})) {
+        return new_this(previous());
     }
 
     if (match(std::initializer_list<TokenType>{TokenType::IDENTIFIER})) {
