@@ -995,18 +995,32 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
             StringMap classes;
             classes.allocate(arena);
-            for (u64 i = 0; i < s_class.methods_count; ++i) {
-                Stmt* fn_stmt = &s_class.methods[i];
-                assert(fn_stmt->ty == Stmt::Type::FN_DECLARATION);
-                FnDeclarationPayload fn = fn_stmt->fn_declaration;
-                Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
-                *callable_ptr = construct_callable(fn);
-                classes.insert(arena, fn.name->m_lexeme, callable_ptr);
-            }
-    
+
             StringMap fields;
             fields.allocate(arena);
-            // TODO: Need to actually add support for field in class itself
+
+            for (u64 i = 0; i < s_class.members_count; ++i) {
+                Stmt* stmt = &s_class.members[i];
+                if (stmt->ty == Stmt::Type::FN_DECLARATION) {
+                    FnDeclarationPayload fn = stmt->fn_declaration;
+                    Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
+                    *callable_ptr = construct_callable(fn);
+                    classes.insert(arena, fn.name->m_lexeme, callable_ptr);
+                } else if (stmt->ty == Stmt::Type::VAR_DECL) {
+                    VarDeclPayload var_decl = stmt->s_var_decl;
+                    Value* value_ptr = (Value*) arena->push_struct_no_zero<Value>();
+                    *value_ptr = Value{};
+                    if (var_decl.initializer != nullptr) {
+                        RuntimeError var_err = var_decl.initializer->evaluate(compiler, arena, env, *value_ptr);
+                        if (!var_err.is_ok()) {
+                            compiler->runtime_error(var_err.token->m_line, var_err.message);
+                        }
+                    }
+                    fields.insert(arena, var_decl.name->m_lexeme, value_ptr);
+                } else {
+                    assert(false);
+                }
+            }
             
             env->define_class(class_name_token, Class(class_name, fields, classes));
 
@@ -1109,8 +1123,8 @@ void Stmt::print() {
         case Type::CLASS_DECLARATION: {
             std::print("CLASS DECLARATION: ");
             std::println("{}", s_class.name->m_lexeme.to_string_view());
-            for (u64 i = 0; i < s_class.methods_count; ++i) {
-                s_class.methods[i].print();
+            for (u64 i = 0; i < s_class.members_count; ++i) {
+                s_class.members[i].print();
             }
             std::println();
             break;

@@ -132,3 +132,11 @@ class Bacon {
 };
 var bacon = Bacon();
 bacon.eat();
+
+print("##### Test 16 #####");
+class IceCream {
+    var flavor;
+};
+var ice_cream = IceCream();
+ice_cream.flavor = "German Chocolate";
+print(ice_cream.flavor);

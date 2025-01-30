@@ -260,13 +260,13 @@ namespace {
         };
     }
 
-    Stmt new_class_declaration(Token* name, Stmt* methods, u64 methods_count) {
+    Stmt new_class_declaration(Token* name, Stmt* members, u64 members_count) {
         return Stmt {
             .ty = Stmt::Type::CLASS_DECLARATION,
             .s_class = ClassDeclarationPayload{
                 name, 
-                methods,
-                methods_count
+                members,
+                members_count
             },
         };
     }
@@ -349,8 +349,13 @@ Stmt Parser::class_declaration(Arena* arena) {
     Stmt* methods = (Stmt*) arena->push_no_zero(0);
     while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
         arena->push_struct_no_zero<Stmt>();
-        consume(TokenType::FN, "Expected function declaration inside class");
-        methods[methods_count++] = fn_declaration(arena->child_arena);
+        if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+            methods[methods_count++] = var_declaration(arena->child_arena);
+        } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
+            methods[methods_count++] = fn_declaration(arena->child_arena);
+        } else {
+            error(peek(), "Statements inside class declaration must either be functions or variables.");
+        }
     }
 
     consume(TokenType::RIGHT_BRACE, "Expected '}' after class body");

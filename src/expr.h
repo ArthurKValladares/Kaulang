@@ -170,8 +170,8 @@ struct FnDeclarationPayload {
 
 struct ClassDeclarationPayload {
     Token* name;
-    Stmt* methods;
-    u64 methods_count;
+    Stmt* members;
+    u64 members_count;
 };
 
 // TODO: Review `Token` struct and add it to more payloads maybe if we need it for logging

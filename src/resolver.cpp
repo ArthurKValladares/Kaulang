@@ -139,8 +139,16 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
 void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
-    for (u64 i = 0; i < stmt->s_class.methods_count; ++i) {
-        resolve_fn(compiler, &stmt->s_class.methods[i], FunctionType::METHOD);
+    for (u64 i = 0; i < stmt->s_class.members_count; ++i) {
+        Stmt* class_stmt = &stmt->s_class.members[i];
+        if (class_stmt->ty == Stmt::Type::FN_DECLARATION) {
+            resolve_fn(compiler, class_stmt, FunctionType::METHOD);
+        } else if (class_stmt->ty == Stmt::Type::VAR_DECL) {
+            // TODO: Think about this.
+        } else {
+            assert(false);
+        }
+        
     }
 }
 
