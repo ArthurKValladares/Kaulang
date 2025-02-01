@@ -18,6 +18,11 @@ enum class FunctionType {
     METHOD,
 };
 
+enum class ClassType {
+    NONE,
+    CLASS,
+};
+
 struct KauCompiler;
 struct Resolver {
     void resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len);
@@ -60,5 +65,7 @@ private:
 
     // TOOD: using std structures for now
     std::vector<ScopeMap> scopes;
+
     FunctionType current_function = FunctionType::NONE;
+    ClassType current_class = ClassType::NONE;
 };

@@ -141,6 +141,9 @@ void Resolver::visit_fn_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
+    ClassType enclosing_class = current_class;
+    current_class = ClassType::CLASS;
+
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
 
@@ -169,6 +172,8 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     }
 
     end_scope();
+
+    current_class = enclosing_class;
 }
 
 void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
@@ -257,6 +262,10 @@ void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
 }
 
 void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
+    if (current_class == ClassType::NONE) {
+        compiler->error(0, "Can't use `this` outside of class");
+        return;
+    }
     resolve_local(compiler, expr, expr->expr.this_expr->val);
 }
 
