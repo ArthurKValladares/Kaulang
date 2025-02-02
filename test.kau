@@ -168,3 +168,18 @@ class FooBar {
 };
 var foo_bar = FooBar();
 foo_bar.print();
+
+print("##### Test 19 #####");
+class FooBaz {
+    fn init(foo_val, baz_val) {
+        this.foo = foo_val;
+        this.baz = baz_val;
+    }
+    fn print() {
+        print(this.foo + this.baz);
+    }
+    var foo;
+    var baz;
+};
+var foo_baz = FooBaz("Foo", "Baz");
+foo_baz.print();
