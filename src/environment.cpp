@@ -98,6 +98,18 @@ RuntimeError Environment::get_callable(const Token* token, Callable& in_callable
     }
 }
 
+Callable* Environment::get_callable(String name) {
+    if (callables.contains(name)) {
+        return &callables[name];
+    } else {
+        if (enclosing != nullptr) {
+            return enclosing->get_callable(name);
+        }
+
+        return nullptr;
+    }
+}
+
 void Environment::define_class(const Token* token, Class in_class) {
     define_class(token->m_lexeme, in_class);
 }

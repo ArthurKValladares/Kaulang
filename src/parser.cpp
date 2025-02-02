@@ -181,6 +181,20 @@ namespace {
         return expr;
     }
 
+    Expr* new_static_fn_call(Expr* class_expr, Token* colons, Token* fn_name) {
+        StaticFnCallExpr* static_fn_call = (StaticFnCallExpr*) malloc(sizeof(StaticFnCallExpr));
+        static_fn_call->class_expr = class_expr;
+        static_fn_call->colons = colons;
+        static_fn_call->fn_name = fn_name;
+
+        Expr* expr = new_expr(
+            Expr::Type::STATIC_FN_CALL,
+            ExprPayload{.static_fn_call = static_fn_call}
+        );
+
+        return expr;
+    }
+
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -725,6 +739,10 @@ Expr* Parser::fn_call(Arena* arena) {
         } else if (match(std::initializer_list<TokenType>{TokenType::DOT})) {
             Token* name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
             expr = new_get(expr, name);
+        } else if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+            Token* colons = consume(TokenType::COLON, "Expected `::` after class name when calling static function");
+            Token* fn_name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
+            expr = new_static_fn_call(expr, colons, fn_name);
         } else {
             break;
         }

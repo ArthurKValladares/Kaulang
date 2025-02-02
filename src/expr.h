@@ -19,6 +19,7 @@ struct PrintExpr;
 struct AssignmentExpr;
 struct LogicalBinaryExpr;
 struct FnCallExpr;
+struct StaticFnCallExpr;
 struct GetExpr;
 struct SetExpr;
 
@@ -36,6 +37,7 @@ union ExprPayload {
     AssignmentExpr* assignment;
     LogicalBinaryExpr* logical_binary;
     FnCallExpr* fn_call;
+    StaticFnCallExpr* static_fn_call;
     GetExpr* get;
     SetExpr* set;
 };
@@ -226,6 +228,7 @@ struct Expr {
         AND,
         OR,
         FN_CALL,
+        STATIC_FN_CALL,
         GET,
         SET,
         THIS,
@@ -292,6 +295,12 @@ struct FnCallExpr {
     const Token* paren;
     Expr** arguments;
     u64 arguments_count;
+};
+
+struct StaticFnCallExpr {
+    Expr* class_expr;
+    Token* colons;
+    Token* fn_name;
 };
 
 struct GetExpr {

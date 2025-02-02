@@ -21,6 +21,7 @@ struct Callable {
 };
 
 // TODO: A lot of these refs should maybe be ptrs?
+// TODO: these should all just return ptrs and i handle the error later
 struct Environment {
     void define(const Token* token, Value value);
     void define(String str, Value value);
@@ -33,6 +34,7 @@ struct Environment {
     void define_callable(const Token* token, Callable in_callable);
     void define_callable(const String &str, Callable in_callable);
     RuntimeError get_callable(const Token* token, Callable& in_callable);
+    Callable* get_callable(String name);
 
     void define_class(const Token* token, Class in_class);
     void define_class(const String &str, Class in_class);

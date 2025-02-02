@@ -96,6 +96,9 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             visit_fn_call_expr(compiler, expr);
             break;
         }
+        case Expr::Type::STATIC_FN_CALL: {
+            break;
+        }
         case Expr::Type::GET: {
             visit_get_expr(compiler, expr);
             break;

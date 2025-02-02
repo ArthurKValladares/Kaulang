@@ -84,6 +84,12 @@ namespace {
             }
         });
     }
+
+    String mangled_name(Arena* arena, String left, String right) {
+        // TODO: This double concatenation is bad, can be optimized
+        String dot = String{".", 1};
+        return concatenated_string(arena, concatenated_string(arena, left, dot), right);
+    }
 };
 
 RuntimeError RuntimeError::ok() {
@@ -785,6 +791,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             
             Expr* callee = fn_call->callee;
 
+            // THIs should maybe be a pointer form the start and i deal with pointers all the time
             Callable callable = {};
             const Token* calllable_name;
             if (callee->ty == Expr::Type::LITERAL) {
@@ -798,8 +805,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return err;
                 }
                 calllable_name = callee_literal->val;
-            }
-            else if (callee->ty == Expr::Type::GET) {
+            } else if (callee->ty == Expr::Type::GET) {
                 Value get_value = {};
                 RuntimeError get_err = callee->evaluate(compiler, arena, env, get_value);
                 if (!get_err.is_ok()) {
@@ -810,7 +816,21 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 callable = *get_value.callable;
                 calllable_name = callee->expr.get->member;
             }
-            else {
+            else if (callee->ty == Expr::Type::STATIC_FN_CALL) {
+                StaticFnCallExpr* static_fn = callee->expr.static_fn_call;
+                assert(static_fn->class_expr->ty == Expr::Type::LITERAL);
+                Expr* class_expr = static_fn->class_expr;
+                const Token* class_name = class_expr->expr.literal->val;
+
+                String static_fn_name = mangled_name(arena, class_name->m_lexeme, static_fn->fn_name->m_lexeme);
+                Callable* class_callable = compiler->global_env.get_callable(static_fn_name);
+                if (class_callable == nullptr) {
+                    return RuntimeError::undeclared_function(static_fn->fn_name);
+                }
+
+                callable = *class_callable;
+                calllable_name = static_fn->fn_name;
+            } else {
                 assert(false);
             }
 
@@ -1050,7 +1070,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 if (stmt->ty == Stmt::Type::FN_DECLARATION) {
                     FnDeclarationPayload fn = stmt->fn_declaration;
                     if (fn.is_static) {
-                        // TODO:
+                        String fn_name = mangled_name(arena, new_class->m_name, fn_declaration.name->m_lexeme);
+                        compiler->global_env.define_callable(fn_name, construct_callable(fn));
                     } else {
                         Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
 
