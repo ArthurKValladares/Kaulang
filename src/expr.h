@@ -165,6 +165,7 @@ struct FnDeclarationPayload {
     Token** params;
     u64 params_count;
     Stmt* body;
+    bool is_static;
 };
 
 struct ClassDeclarationPayload {

@@ -183,3 +183,11 @@ class FooBaz {
 };
 var foo_baz = FooBaz("Foo", "Baz");
 foo_baz.print();
+
+print("##### Test 20 #####");
+class StaticFn {
+    static fn test() {
+        print("Static test!");
+    }
+}
+StaticFn.test();

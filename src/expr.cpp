@@ -1049,11 +1049,15 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 Stmt* stmt = &s_class.members[i];
                 if (stmt->ty == Stmt::Type::FN_DECLARATION) {
                     FnDeclarationPayload fn = stmt->fn_declaration;
-                    Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
+                    if (fn.is_static) {
+                        // TODO:
+                    } else {
+                        Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
 
-                    *callable_ptr = construct_callable_class(fn, new_class);
+                        *callable_ptr = construct_callable_class(fn, new_class);
 
-                    new_class->m_methods.insert(arena, fn.name->m_lexeme, callable_ptr);
+                        new_class->m_methods.insert(arena, fn.name->m_lexeme, callable_ptr);
+                    }
                 } else if (stmt->ty == Stmt::Type::VAR_DECL) {
                     VarDeclPayload var_decl = stmt->s_var_decl;
                     Value* value_ptr = (Value*) arena->push_struct_no_zero<Value>();

@@ -11,6 +11,7 @@ const std::unordered_map<std::string_view, TokenType> keywords = {
     {"class", TokenType::CLASS},
     {"else", TokenType::ELSE},
     {"fn", TokenType::FN},
+    {"static", TokenType::STATIC},
     {"for", TokenType::FOR},
     {"if", TokenType::IF},
     {"nil", TokenType::NIL},

@@ -22,7 +22,7 @@ private:
     Stmt* program(Arena* arena, u64& input_count);
     Stmt declaration(Arena* arena);
     Stmt var_declaration(Arena* arena);
-    Stmt fn_declaration(Arena* arena);
+    Stmt fn_declaration(Arena* arena, bool is_static);
     Stmt class_declaration(Arena* arena);
     Stmt statement(Arena* arena);
     Stmt expr_statement(Arena* arena);

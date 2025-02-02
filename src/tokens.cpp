@@ -99,6 +99,9 @@ const char* token_type_to_string(TokenType ty) {
     case TokenType::FN: {
         return "fn";
     }
+    case TokenType::STATIC: {
+        return "static";
+    }
     case TokenType::FOR: {
         return "for";
     }

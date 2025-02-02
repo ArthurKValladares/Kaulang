@@ -259,14 +259,15 @@ namespace {
         };
     }
 
-    Stmt new_fn_declaration(Token* name, Token** params, u64 params_count, Stmt* body) {
+    Stmt new_fn_declaration(Token* name, Token** params, u64 params_count, Stmt* body, bool is_static) {
         return Stmt {
             .ty = Stmt::Type::FN_DECLARATION,
             .fn_declaration = FnDeclarationPayload{
                 name, 
                 params,
                 params_count,
-                body
+                body,
+                is_static
             },
         };
     }
@@ -315,7 +316,7 @@ Stmt Parser::declaration(Arena* arena) {
     if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
         ret = var_declaration(arena);
     } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
-        ret = fn_declaration(arena);
+        ret = fn_declaration(arena, false);
     } else if (match(std::initializer_list<TokenType>{TokenType::CLASS})) {
         ret = class_declaration(arena);
     } else {
@@ -329,7 +330,7 @@ Stmt Parser::declaration(Arena* arena) {
     return ret;
 }
 
-Stmt Parser::fn_declaration(Arena* arena) {
+Stmt Parser::fn_declaration(Arena* arena, bool is_static) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected function name");
     consume(TokenType::LEFT_PAREN, "Expected '(' after function name");
 
@@ -346,7 +347,7 @@ Stmt Parser::fn_declaration(Arena* arena) {
     consume(TokenType::LEFT_BRACE, "Expected '{' before function body.");
     Stmt* body = allocated_stmt(block_statement(arena));
 
-    return new_fn_declaration(name, params, param_count, body);
+    return new_fn_declaration(name, params, param_count, body, is_static);
 }
 
 Stmt Parser::class_declaration(Arena* arena) {
@@ -363,7 +364,10 @@ Stmt Parser::class_declaration(Arena* arena) {
         if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
             methods[methods_count++] = var_declaration(arena->child_arena);
         } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
-            methods[methods_count++] = fn_declaration(arena->child_arena);
+            methods[methods_count++] = fn_declaration(arena->child_arena, false);
+        }  else if (match(std::initializer_list<TokenType>{TokenType::STATIC})) {
+            consume(TokenType::FN, "Expected 'fn' after 'static'");
+            methods[methods_count++] = fn_declaration(arena->child_arena, true);
         } else {
             error(peek(), "Statements inside class declaration must either be functions or variables.");
         }
