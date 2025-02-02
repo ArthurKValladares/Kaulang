@@ -82,12 +82,14 @@ struct RuntimeError {
 };
 
 struct Value;
+struct Callable;
 struct Class {
     Class() {}
 
     bool contains_field(String field);
     void set_field(String field, Value in_value);
 
+    Callable* get_method(String name);
     // TODO: Maybe ptr?
     bool get(String field, Value& in_value);
 
@@ -99,7 +101,6 @@ struct Class {
     String m_name = String{};
 };
 
-struct Callable;
 struct Value {
     enum class Type {
         NIL,

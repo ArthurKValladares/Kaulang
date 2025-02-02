@@ -1062,15 +1062,30 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 }
             }
 
-            env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
-                Class* in_class = nullptr;
-                env->get_class(class_name_token, &in_class);
+            Callable* class_init = new_class->get_method(String{"init", 4});
+            if (class_init != nullptr) {
+                env->define_callable(class_name, Callable(class_init->m_arity, [class_name_token, class_init](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                    Class* in_class = nullptr;
+                    env->get_class(class_name_token, &in_class);
 
-                return Value{
-                    .ty = Value::Type::CLASS,
-                    .m_class = in_class,
-                };
-            }));
+                    const Value init_value = class_init->m_callback(args, compiler, arena, env);
+
+                    return Value{
+                        .ty = Value::Type::CLASS,
+                        .m_class = in_class,
+                    };
+                }));
+            } else {
+                env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                    Class* in_class = nullptr;
+                    env->get_class(class_name_token, &in_class);
+
+                    return Value{
+                        .ty = Value::Type::CLASS,
+                        .m_class = in_class,
+                    };
+                }));
+            }
 
             break;
         }
@@ -1182,6 +1197,10 @@ bool Class::contains_field(String field) {
 void Class::set_field(String field, Value in_value) {
     Value* field_val = (Value*) m_fields.get(field);
     *field_val = in_value;
+}
+
+Callable* Class::get_method(String name) {
+    return (Callable*) m_methods.get(name);
 }
 
 bool Class::get(String field, Value& in_value) {

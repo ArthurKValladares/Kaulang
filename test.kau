@@ -153,3 +153,18 @@ var cake = Cake();
 cake.flavor = "German Chocolate";
 cake.adjective = "delicious";
 cake.taste();
+
+print("##### Test 18 #####");
+class FooBar {
+    fn init() {
+        this.foo = "Foo";
+        this.bar = "Bar";
+    }
+    fn print() {
+        print(this.foo + this.bar);
+    }
+    var foo;
+    var bar;
+};
+var foo_bar = FooBar();
+foo_bar.print();
