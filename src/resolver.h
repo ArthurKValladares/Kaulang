@@ -15,6 +15,7 @@ using ScopeMap = std::unordered_map<String, VariableStatus, StringHasher>;
 enum class FunctionType {
     NONE,
     FUNCTION,
+    INITIALIZER,
     METHOD,
 };
 

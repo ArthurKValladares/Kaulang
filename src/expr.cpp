@@ -54,15 +54,18 @@ namespace {
     // TODO: Messy, pass in as optimal param to funnction above or something like that
     Callable construct_callable_class(FnDeclarationPayload fn_declaration, Class* class_ptr) {
         String fn_name = fn_declaration.name->m_lexeme;
+        bool is_initializer = fn_name == String{"init", 4};
 
-        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+            String this_str = String{
+                "this",
+                4
+            };
+
             Environment new_env = {};
             new_env.enclosing = env;
             new_env.define(
-                String{
-                    "this",
-                    4
-                },
+                this_str,
                 Value{
                     .ty = Value::Type::CLASS,
                     .m_class = class_ptr
@@ -73,7 +76,12 @@ namespace {
                 new_env.define(fn_declaration.params[i], args[i]);
             }
 
-            return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
+            Value body_val = fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
+            if (is_initializer) {
+                return new_env.get_unchecked(this_str);
+            } else {
+                return body_val;
+            }
         });
     }
 };

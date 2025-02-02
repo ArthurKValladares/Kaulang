@@ -53,6 +53,15 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
     }
 }
 
+// TODO: Maybe version without the check, get at root.
+Value Environment::get_unchecked(String name) {
+    if (values.contains(name)) {
+        return values.at(name);
+    } else {
+        return enclosing->get_unchecked(name);
+    }
+}
+
 Environment* Environment::ancestor(u64 distance) {
     Environment* env = this;
     for (u64 i = 0; i < distance; ++i) {

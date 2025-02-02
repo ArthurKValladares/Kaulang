@@ -162,7 +162,11 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     for (u64 i = 0; i < stmt->s_class.members_count; ++i) {
         Stmt* class_stmt = &stmt->s_class.members[i];
         if (class_stmt->ty == Stmt::Type::FN_DECLARATION) {
-            resolve_fn(compiler, class_stmt, FunctionType::METHOD);
+            FunctionType fn_type = FunctionType::METHOD;
+            if (class_stmt->fn_declaration.name->m_lexeme == String{"init", 4}) {
+                fn_type = FunctionType::INITIALIZER;
+            }
+            resolve_fn(compiler, class_stmt, fn_type);
         } else if (class_stmt->ty == Stmt::Type::VAR_DECL) {
             // TODO: Think about this.
         } else {
@@ -196,7 +200,14 @@ void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
         exit(-1);
     }
 
-    resolve_expr(compiler, stmt->s_return.expr);
+    if (stmt->s_return.expr != nullptr) {
+        if (current_function == FunctionType::INITIALIZER) {
+            // TODO: Get actual line number
+            compiler->error(0, "Can't return value fron initializer");
+            exit(-1);
+        }
+        resolve_expr(compiler, stmt->s_return.expr);
+    }
 }
 
 void Resolver::visit_while_stmt(KauCompiler* compiler, Stmt* stmt) {

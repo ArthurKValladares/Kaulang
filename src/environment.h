@@ -27,6 +27,7 @@ struct Environment {
     bool contains(const Token* token) const;
     RuntimeError set(const Token* token, Value value);
     RuntimeError get(const Token* token, Value& in_value);
+    Value get_unchecked(String name);
     RuntimeError get_at(const Token* token, u64 distance, Value& in_value);
 
     void define_callable(const Token* token, Callable in_callable);
