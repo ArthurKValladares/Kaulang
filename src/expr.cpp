@@ -1070,7 +1070,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 if (stmt->ty == Stmt::Type::FN_DECLARATION) {
                     FnDeclarationPayload fn = stmt->fn_declaration;
                     if (fn.is_static) {
-                        String fn_name = mangled_name(arena, new_class->m_name, fn_declaration.name->m_lexeme);
+                        String fn_name = mangled_name(arena, new_class->m_name, fn.name->m_lexeme);
                         compiler->global_env.define_callable(fn_name, construct_callable(fn));
                     } else {
                         Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();

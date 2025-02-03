@@ -189,5 +189,5 @@ class StaticFn {
     static fn test() {
         print("Static function test!");
     }
-}
+};
 StaticFn::test();

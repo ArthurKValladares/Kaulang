@@ -97,6 +97,7 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             break;
         }
         case Expr::Type::STATIC_FN_CALL: {
+            // TODO
             break;
         }
         case Expr::Type::GET: {
