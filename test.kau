@@ -155,6 +155,21 @@ cake.adjective = "delicious";
 cake.taste();
 
 print("##### Test 18 #####");
+class Pie {
+    fn taste() {
+        {
+            print("The " + this.flavor + " pie is " + this.adjective + "!");
+        }
+    }
+    var flavor;
+    var adjective;
+};
+var pie = Pie();
+pie.flavor = "Apple";
+pie.adjective = "delicious";
+pie.taste();
+
+print("##### Test 19 #####");
 class FooBar {
     fn init() {
         this.foo = "Foo";
@@ -169,7 +184,7 @@ class FooBar {
 var foo_bar = FooBar();
 foo_bar.print();
 
-print("##### Test 19 #####");
+print("##### Test 20 #####");
 class FooBaz {
     fn init(foo_val, baz_val) {
         this.foo = foo_val;
@@ -184,7 +199,7 @@ class FooBaz {
 var foo_baz = FooBaz("Foo", "Baz");
 foo_baz.print();
 
-print("##### Test 20 #####");
+print("##### Test 21 #####");
 class StaticFn {
     static fn test() {
         print("Static function test!");

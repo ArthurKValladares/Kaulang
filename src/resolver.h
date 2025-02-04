@@ -42,6 +42,7 @@ private:
     void visit_assign_expr(KauCompiler* compiler, Expr* expr);
     void visit_binary_expr(KauCompiler* compiler, Expr* expr);
     void visit_fn_call_expr(KauCompiler* compiler, Expr* expr);
+    void visit_static_fn_call_expr(KauCompiler* compiler, Expr* expr);
     void visit_grouping_expr(KauCompiler* compiler, Expr* expr);
     void visit_logical_expr(KauCompiler* compiler, Expr* expr);
     void visit_unary_expr(KauCompiler* compiler, Expr* expr);

@@ -97,7 +97,7 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             break;
         }
         case Expr::Type::STATIC_FN_CALL: {
-            // TODO
+            visit_static_fn_call_expr(compiler, expr);
             break;
         }
         case Expr::Type::GET: {
@@ -246,6 +246,10 @@ void Resolver::visit_fn_call_expr(KauCompiler* compiler, Expr* expr) {
     for (u64 i = 0; i < expr->expr.fn_call->arguments_count; ++i) {
         resolve_expr(compiler, expr->expr.fn_call->arguments[i]);
     }
+}
+
+void Resolver::visit_static_fn_call_expr(KauCompiler* compiler, Expr* expr) {
+    resolve_expr(compiler, expr->expr.static_fn_call->class_expr);
 }
 
 void Resolver::visit_grouping_expr(KauCompiler* compiler, Expr* expr) {
