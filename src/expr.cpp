@@ -54,17 +54,14 @@ namespace {
     // TODO: Messy, pass in as optimal param to funnction above or something like that
     Callable construct_callable_class(FnDeclarationPayload fn_declaration, Class* class_ptr) {
         String fn_name = fn_declaration.name->m_lexeme;
-        bool is_initializer = fn_name == String{"init", 4};
+        String this_str = String{
+            "this",
+            4
+        };
+        bool is_initializer = fn_name == this_str;
 
-        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
-            String this_str = String{
-                "this",
-                4
-            };
-
-            Environment new_env = {};
-            new_env.enclosing = env;
-            new_env.define(
+        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr, this_str, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+            env->define(
                 this_str,
                 Value{
                     .ty = Value::Type::CLASS,
@@ -72,13 +69,16 @@ namespace {
                 }
             );
 
+            Environment new_env = {};
+            new_env.enclosing = env;
+
             for (size_t i = 0; i < fn_declaration.params_count; ++i) {
                 new_env.define(fn_declaration.params[i], args[i]);
             }
 
             Value body_val = fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
             if (is_initializer) {
-                return new_env.get_unchecked(this_str);
+                return env->get_unchecked(this_str);
             } else {
                 return body_val;
             }
@@ -906,9 +906,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
         }
         case Type::THIS: {
             ThisExpr* this_expr = expr.this_expr;
-            // TODO: The resolver for this is not quite right yet I don't think
-            return env->get(this_expr->val, in_value);
-            //return compiler->lookup_variable(env, this_expr->val, this, in_value);
+            return compiler->lookup_variable(env, this_expr->val, this, in_value);
         }
     }
 }
