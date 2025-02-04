@@ -151,6 +151,15 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
 
+    if (stmt->s_class.superclass != nullptr) {
+        if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
+            // TODO: Get actual line number
+            compiler->error(0, "Class can't inherit from itself");
+            exit(-1);
+        }
+        resolve_expr(compiler, stmt->s_class.superclass);
+    }
+
     begin_scope();
 
     String this_str = String {

@@ -206,3 +206,9 @@ class StaticFn {
     }
 };
 StaticFn::test();
+
+print("##### Test 22 #####");
+class Superclass {
+};
+class Subclass : Superclass {
+};

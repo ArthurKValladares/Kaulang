@@ -172,6 +172,7 @@ struct FnDeclarationPayload {
 
 struct ClassDeclarationPayload {
     Token* name;
+    Expr* superclass;
     Stmt* members;
     u64 members_count;
 };

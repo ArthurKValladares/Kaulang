@@ -1055,6 +1055,19 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             Token* class_name_token = s_class.name;
             String class_name = class_name_token->m_lexeme;
             
+            if (s_class.superclass != nullptr) {
+                Value superclass_val = {};
+                RuntimeError superclass_err = s_class.superclass->evaluate(compiler, arena, env, superclass_val);
+                const Token* superclass_token = s_class.superclass->expr.literal->val;
+                if (!superclass_err.is_ok()) {
+                    compiler->runtime_error(superclass_token->m_line, superclass_err.message);
+                }
+                if (superclass_val.ty != Value::Type::CLASS) {
+                    compiler->runtime_error(superclass_token->m_line, "superclass must be a class.");
+                }
+                // TODO: more stuff
+            }
+
             env->define_class(class_name_token, Class());
             Class* new_class = nullptr;
             env->get_class(class_name_token, &new_class);
@@ -1206,7 +1219,12 @@ void Stmt::print() {
         }
         case Type::CLASS_DECLARATION: {
             std::print("CLASS DECLARATION: ");
-            std::println("{}", s_class.name->m_lexeme.to_string_view());
+            std::print("{}", s_class.name->m_lexeme.to_string_view());
+            if (s_class.superclass != nullptr) {
+                std::print(" : ");
+                s_class.superclass->print();
+            }
+            std::println();
             for (u64 i = 0; i < s_class.members_count; ++i) {
                 s_class.members[i].print();
             }

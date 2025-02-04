@@ -286,11 +286,12 @@ namespace {
         };
     }
 
-    Stmt new_class_declaration(Token* name, Stmt* members, u64 members_count) {
+    Stmt new_class_declaration(Token* name, Expr* superclass, Stmt* members, u64 members_count) {
         return Stmt {
             .ty = Stmt::Type::CLASS_DECLARATION,
             .s_class = ClassDeclarationPayload{
-                name, 
+                name,
+                superclass,
                 members,
                 members_count
             },
@@ -369,6 +370,12 @@ Stmt Parser::class_declaration(Arena* arena) {
 
     Token* name = consume(TokenType::IDENTIFIER, "Expected class name");
 
+    Expr* superclass = nullptr;
+    if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+        consume(TokenType::IDENTIFIER, "Expected superclass name");
+        superclass = new_literal(previous());
+    }
+
     consume(TokenType::LEFT_BRACE, "Expected '{' after class name");
 
     u64 methods_count = 0;
@@ -390,7 +397,7 @@ Stmt Parser::class_declaration(Arena* arena) {
     consume(TokenType::RIGHT_BRACE, "Expected '}' after class body");
     consume(TokenType::SEMICOLON, "Expected ';' after class declaration");
     
-    return new_class_declaration(name, methods, methods_count);
+    return new_class_declaration(name, superclass, methods, methods_count);
 }
 
 Stmt Parser::var_declaration(Arena* arena) {
