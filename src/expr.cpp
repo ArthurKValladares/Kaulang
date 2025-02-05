@@ -68,6 +68,20 @@ namespace {
                     .m_class = class_ptr
                 }
             );
+            if (class_ptr->superclass != nullptr) {
+                String super_str = String{
+                    "super",
+                    5
+                };
+
+                env->define(
+                    super_str,
+                    Value{
+                        .ty = Value::Type::CLASS,
+                        .m_class = class_ptr->superclass
+                    }
+                );
+            }
 
             Environment new_env = {};
             new_env.enclosing = env;
@@ -344,7 +358,6 @@ void Expr::print() const {
             get->class_expr->print();
             std::print(".");
             get->member->print();
-            std::println();
 
             break;
         }
@@ -354,12 +367,17 @@ void Expr::print() const {
             set->get->print();
             std::print(" = ");
             set->right->print();
-            std::println();
 
             break;
         }
         case Type::THIS: {
-            std::println("this");
+            std::print("this");
+            break;
+        }
+        case Type::SUPER: {
+            expr.super_expr->keyword->print();
+            std::print(".");
+            expr.super_expr->method->print();
             break;
         }
     }
@@ -830,6 +848,9 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
                 callable = *class_callable;
                 calllable_name = static_fn->fn_name;
+            }
+            else if (callee->ty == Expr::Type::SUPER) {
+                // TODO:
             } else {
                 assert(false);
             }
@@ -907,6 +928,9 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
         case Type::THIS: {
             ThisExpr* this_expr = expr.this_expr;
             return compiler->lookup_variable(env, this_expr->val, this, in_value);
+        }
+        case Type::SUPER: {
+            // TODO:
         }
     }
 }

@@ -216,3 +216,25 @@ class Superclass {
 class Subclass : Superclass {
 };
 Subclass().print();
+
+print("##### Test 23 #####");
+class A {
+    fn method() {
+        print("A method");
+    }
+};
+
+class B : A {
+    fn method() {
+        print("B method");
+    }
+
+    fn test() {
+        super.method();
+    }
+};
+
+class C : B {
+};
+
+C().test();

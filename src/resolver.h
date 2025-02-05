@@ -50,6 +50,7 @@ private:
     void visit_get_expr(KauCompiler* compiler, Expr* expr);
     void visit_set_expr(KauCompiler* compiler, Expr* expr);
     void visit_this_expr(KauCompiler* compiler, Expr* expr);
+    void visit_super_expr(KauCompiler* compiler, Expr* expr);
 
     void declare(KauCompiler* compiler, Token* name);
     void define(Token* name);

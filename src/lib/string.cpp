@@ -10,7 +10,7 @@ int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len)
         ++i2;
     }
     const unsigned char c1 = i1 < s1_len ? s1[i1] : '\0';
-    const unsigned char c2 = i1 < s1_len ? s1[i1] : '\0';
+    const unsigned char c2 = i2 < s2_len ? s2[i2] : '\0';
     return c1 - c2;
 }
 

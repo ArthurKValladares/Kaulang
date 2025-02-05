@@ -10,6 +10,7 @@
 struct Expr;
 struct LiteralExpr;
 struct ThisExpr;
+struct SuperExpr;
 struct GroupingExpr;
 struct UnaryExpr;
 struct BinaryExpr;
@@ -28,6 +29,7 @@ struct Stmt;
 union ExprPayload {
     LiteralExpr* literal;
     ThisExpr* this_expr;
+    SuperExpr* super_expr;
     GroupingExpr* grouping;
     UnaryExpr* unary;
     BinaryExpr* binary;
@@ -235,6 +237,7 @@ struct Expr {
         GET,
         SET,
         THIS,
+        SUPER,
     };
 
     Type ty;
@@ -251,6 +254,11 @@ struct LiteralExpr {
 
 struct ThisExpr {
     const Token* val;
+};
+
+struct SuperExpr {
+    const Token* keyword;
+    const Token* method;
 };
 
 struct GroupingExpr {

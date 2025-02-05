@@ -195,6 +195,19 @@ namespace {
         return expr;
     }
 
+    Expr* new_superclass(Token* keyword, Token* method) {
+        SuperExpr* super_expr = (SuperExpr*) malloc(sizeof(SuperExpr));
+        super_expr->keyword = keyword;
+        super_expr->method = method;
+
+        Expr* expr = new_expr(
+            Expr::Type::SUPER,
+            ExprPayload{.super_expr = super_expr}
+        );
+
+        return expr;
+    }
+
     Stmt* allocated_stmt(Stmt stmt) {
         Stmt* ret = (Stmt*) malloc(sizeof(Stmt));
         *ret = stmt;
@@ -783,6 +796,13 @@ Expr* Parser::primary(Arena* arena) {
         TokenType::STRING
     })) {
         return new_literal(previous());
+    }
+
+    if (match(std::initializer_list<TokenType>{TokenType::SUPER})) {
+        Token* keyword = previous();
+        consume(TokenType::DOT, "Expected '.' after 'super'");
+        Token* method = consume(TokenType::IDENTIFIER, "Expected superclass method name");
+        return new_superclass(keyword, method);
     }
 
     if (match(std::initializer_list<TokenType>{TokenType::THIS})) {

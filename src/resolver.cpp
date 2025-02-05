@@ -112,6 +112,10 @@ void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
             visit_this_expr(compiler, expr);
             break;
         }
+        case Expr::Type::SUPER: {
+            visit_super_expr(compiler, expr);
+            break;
+        }
         case Expr::Type::ERR: {
             assert(false);
             break;
@@ -151,17 +155,28 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
 
+    begin_scope();
+
     if (stmt->s_class.superclass != nullptr) {
         if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
             // TODO: Get actual line number
             compiler->error(0, "Class can't inherit from itself");
             exit(-1);
         }
+
         resolve_expr(compiler, stmt->s_class.superclass);
+
+        String super_str = String {
+            "super",
+            5
+        };
+        scopes.back()[super_str] = 
+        VariableStatus {
+            .defined = true,
+            .uses = 1
+        };
     }
-
-    begin_scope();
-
+    
     String this_str = String {
         "this",
         4
@@ -295,6 +310,14 @@ void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
         return;
     }
     resolve_local(compiler, expr, expr->expr.this_expr->val);
+}
+
+void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
+    if (current_class == ClassType::NONE) {
+        compiler->error(0, "Can't use `super` outside of class");
+        return;
+    }
+    resolve_local(compiler, expr, expr->expr.super_expr->keyword);
 }
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {
