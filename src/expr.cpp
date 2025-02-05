@@ -1054,18 +1054,16 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         case Stmt::Type::CLASS_DECLARATION: {
             Token* class_name_token = s_class.name;
             String class_name = class_name_token->m_lexeme;
-            
+            Class* superclass = nullptr;
+
             if (s_class.superclass != nullptr) {
                 Value superclass_val = {};
-                RuntimeError superclass_err = s_class.superclass->evaluate(compiler, arena, env, superclass_val);
+                assert(s_class.superclass->ty == Expr::Type::LITERAL);
                 const Token* superclass_token = s_class.superclass->expr.literal->val;
-                if (!superclass_err.is_ok()) {
-                    compiler->runtime_error(superclass_token->m_line, superclass_err.message);
-                }
-                if (superclass_val.ty != Value::Type::CLASS) {
+                env->get_class(superclass_token, &superclass);
+                if (superclass == nullptr) {
                     compiler->runtime_error(superclass_token->m_line, "superclass must be a class.");
                 }
-                // TODO: more stuff
             }
 
             env->define_class(class_name_token, Class());
@@ -1075,6 +1073,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             new_class->m_name = class_name;
             new_class->m_methods.allocate(arena);
             new_class->m_fields.allocate(arena);
+            new_class->superclass = superclass;
 
             for (u64 i = 0; i < s_class.members_count; ++i) {
                 Stmt* stmt = &s_class.members[i];
@@ -1249,7 +1248,14 @@ void Class::set_field(String field, Value in_value) {
 }
 
 Callable* Class::get_method(String name) {
-    return (Callable*) m_methods.get(name);
+    Callable* method = (Callable*) m_methods.get(name);
+    if (method != nullptr) {
+        return method;
+    }
+    if (superclass != nullptr) {
+        return superclass->get_method(name);
+    }
+    return nullptr;
 }
 
 bool Class::get(String field, Value& in_value) {
@@ -1259,12 +1265,11 @@ bool Class::get(String field, Value& in_value) {
         return true;
     }
 
-    void* method_ret = m_methods.get(field);
+    Callable* method_ret = (Callable*) get_method(field);
     if (method_ret != nullptr) {
-        Callable* callable = (Callable*) method_ret;
         in_value = Value {
             .ty = Value::Type::CALLABLE,
-            .callable = callable,
+            .callable = method_ret,
         };
         return true;
     }

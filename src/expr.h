@@ -101,6 +101,8 @@ struct Class {
     StringMap m_methods;
 
     String m_name = String{};
+
+    Class* superclass = nullptr;
 };
 
 struct Value {

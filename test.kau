@@ -209,6 +209,10 @@ StaticFn::test();
 
 print("##### Test 22 #####");
 class Superclass {
+    fn print() {
+        print("Superclass!");
+    }
 };
 class Subclass : Superclass {
 };
+Subclass().print();
