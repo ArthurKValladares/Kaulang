@@ -808,20 +808,21 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             FnCallExpr* fn_call = expr.fn_call;
             
             Expr* callee = fn_call->callee;
-
-            // THIs should maybe be a pointer form the start and i deal with pointers all the time
-            Callable callable = {};
-            const Token* calllable_name;
+            
+            Callable* callable = nullptr;
+            const Token* calllable_name = nullptr;
             if (callee->ty == Expr::Type::LITERAL) {
                 LiteralExpr* callee_literal = callee->expr.literal;
                 if (callee_literal->val->m_type != TokenType::IDENTIFIER) {
                     return RuntimeError::invalid_function_identifier(callee_literal->val);
                 }
 
-                RuntimeError err = env->get_callable(callee_literal->val, callable);
-                if (!err.is_ok()) {
-                    return err;
+                Callable* literal_callable = env->get_callable(callee_literal->val->m_lexeme);
+                if (literal_callable == nullptr) {
+                    return RuntimeError::undeclared_function(callee_literal->val);
                 }
+
+                callable = literal_callable;
                 calllable_name = callee_literal->val;
             } else if (callee->ty == Expr::Type::GET) {
                 Value get_value = {};
@@ -831,7 +832,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 }
                 assert(get_value.ty == Value::Type::CALLABLE);
 
-                callable = *get_value.callable;
+                callable = get_value.callable;
                 calllable_name = callee->expr.get->member;
             }
             else if (callee->ty == Expr::Type::STATIC_FN_CALL) {
@@ -846,7 +847,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return RuntimeError::undeclared_function(static_fn->fn_name);
                 }
 
-                callable = *class_callable;
+                callable = class_callable;
                 calllable_name = static_fn->fn_name;
             }
             else if (callee->ty == Expr::Type::SUPER) {
@@ -867,13 +868,13 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                     return RuntimeError::undeclared_function(super_expr->method);
                 }
 
-                callable = *super_method;
+                callable = super_method;
                 calllable_name = super_expr->method;
             } else {
                 assert(false);
             }
 
-            if (callable.m_arity != fn_call->arguments_count) {
+            if (callable->m_arity != fn_call->arguments_count) {
                 return RuntimeError::wrong_number_arguments(calllable_name);
             }
 
@@ -889,7 +890,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             }
 
 
-            const Value ret_value = callable.m_callback(values, compiler, arena, env);
+            const Value ret_value = callable->m_callback(values, compiler, arena, env);
             in_value = ret_value;
 
             compiler->hit_return = false;
