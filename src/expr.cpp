@@ -850,7 +850,25 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 calllable_name = static_fn->fn_name;
             }
             else if (callee->ty == Expr::Type::SUPER) {
-                // TODO:
+                SuperExpr* super_expr = callee->expr.super_expr;
+
+                Value super_value = {};
+                RuntimeError super_err = compiler->lookup_variable(env, super_expr->keyword, this, super_value);
+                if (!super_err.is_ok()) {
+                    return super_err;
+                }
+                assert(super_value.ty == Value::Type::CLASS);
+                Class* super_class = super_value.m_class;
+
+                Callable* super_method = super_class->get_method(super_expr->method->m_lexeme);
+                if (super_method == nullptr) {
+                    // TODO: THis is not quite right, i can report a better error.
+                    // And the name sould be better too, not just the method name but include super, i can do this later
+                    return RuntimeError::undeclared_function(super_expr->method);
+                }
+
+                callable = *super_method;
+                calllable_name = super_expr->method;
             } else {
                 assert(false);
             }
