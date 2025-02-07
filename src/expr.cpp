@@ -3,7 +3,7 @@
 #include "environment.h"
 #include "compiler.h"
 
-#define TEST_BINARY_OP(VALUE_IN_TYPE, VALUE_IN_FIELD, VALUE_OUT_TYPE, VALUE_OUT_FIELD, OPERATOR) {\
+#define TEST_BINARY_OP(VALUE_IN_TYPE, VALUE_IN_FIELD, VALUE_OUT_TYPE, VALUE_OUT_FIELD, OPERATOR) do {\
     if (left_val.ty == Value::Type::VALUE_IN_TYPE) {\
         in_value = Value {\
             .ty = Value::Type::VALUE_OUT_TYPE,\
@@ -11,7 +11,14 @@
         };\
         return RuntimeError::ok();\
     }\
-}
+} while(0)
+
+#define CHECK_ERR(err) do {\
+    RuntimeError err_binding = err;\
+    if (!err_binding.is_ok()) {\
+        return err_binding;\
+    }\
+} while(0)
 
 namespace {
     bool is_numeric(Value::Type ty) {
@@ -459,10 +466,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             UnaryExpr* unary = expr.unary;
 
             Value right_val = {};
-            RuntimeError right_err = unary->right->evaluate(compiler, arena, env, right_val);
-            if (!right_err.is_ok()) {
-                return right_err;
-            }
+            CHECK_ERR(unary->right->evaluate(compiler, arena, env, right_val));
 
             switch (unary->op->m_type)
             {
@@ -492,16 +496,10 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             BinaryExpr* binary = expr.binary;
 
             Value left_val = {};
-            RuntimeError left_err = binary->left->evaluate(compiler, arena, env, left_val);
-            if (!left_err.is_ok()) {
-                return left_err;
-            }
+            CHECK_ERR(binary->left->evaluate(compiler, arena, env, left_val));
 
             Value right_val = {};
-            RuntimeError right_err = binary->right->evaluate(compiler, arena, env, right_val);
-            if (!right_err.is_ok()) {
-                return right_err;
-            }
+            CHECK_ERR(binary->right->evaluate(compiler, arena, env, right_val));
 
             switch (binary->op->m_type)
             {
@@ -693,10 +691,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             TernaryExpr* ternary = expr.ternary;
 
             Value left_val = {};
-            RuntimeError left_err = ternary->left->evaluate(compiler, arena, env, left_val);
-            if (!left_err.is_ok()) {
-                return left_err;
-            }
+            CHECK_ERR(ternary->left->evaluate(compiler, arena, env, left_val));
 
             if (left_val.ty != Value::Type::BOOL) {
                 return RuntimeError::operand_must_be_bool(ternary->left_op);
@@ -704,20 +699,14 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
             if (left_val.b) {
                 Value middle_val = {};
-                RuntimeError middle_err = ternary->middle->evaluate(compiler, arena, env, middle_val);
-                if (!middle_err.is_ok()) {
-                    return middle_err;
-                }
+                CHECK_ERR(ternary->middle->evaluate(compiler, arena, env, middle_val));
 
                 in_value = middle_val;
 
                 return RuntimeError::ok();
             } else {
                 Value right_val = {};
-                RuntimeError right_err = ternary->right->evaluate(compiler, arena, env, right_val);
-                if (!right_err.is_ok()) {
-                    return right_err;
-                }
+                CHECK_ERR(ternary->right->evaluate(compiler, arena, env, right_val));
 
                 in_value = right_val;
                 
@@ -730,10 +719,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             AssignmentExpr* assignment = expr.assignment;
 
             Value right_val = {};
-            RuntimeError right_err = assignment->right->evaluate(compiler, arena, env, right_val);
-            if (!right_err.is_ok()) {
-                return right_err;
-            }
+            CHECK_ERR(assignment->right->evaluate(compiler, arena, env, right_val));
 
             in_value = right_val;
 
@@ -750,10 +736,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             LogicalBinaryExpr* logical_and = expr.logical_binary;
 
             Value left_val = {};
-            RuntimeError left_err = logical_and->left->evaluate(compiler, arena, env, left_val);
-            if (!left_err.is_ok()) {
-                return left_err;
-            }
+            CHECK_ERR(logical_and->left->evaluate(compiler, arena, env, left_val));
             if (left_val.ty != Value::Type::BOOL) {
                 return RuntimeError::operand_must_be_bool(logical_and->op);
             }
@@ -763,10 +746,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             // than bool in the case the left-side is false. Think about that.
             if (left_val.b == true) {
                 Value right_val = {};
-                RuntimeError right_err = logical_and->right->evaluate(compiler, arena, env, right_val);
-                if (!right_err.is_ok()) {
-                    return right_err;
-                }
+                CHECK_ERR(logical_and->right->evaluate(compiler, arena, env, right_val));
                 if (right_val.ty != Value::Type::BOOL) {
                     return RuntimeError::operand_must_be_bool(logical_and->op);
                 }
@@ -780,19 +760,14 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             LogicalBinaryExpr* logical_or = expr.logical_binary;
 
             Value left_val = {};
-            RuntimeError left_err = logical_or->left->evaluate(compiler, arena, env, left_val);
-            if (!left_err.is_ok()) {
-                return left_err;
-            }
+            CHECK_ERR(logical_or->left->evaluate(compiler, arena, env, left_val));
             if (left_val.ty != Value::Type::BOOL) {
                 return RuntimeError::operand_must_be_bool(logical_or->op);
             }
 
             Value right_val = {};
-            RuntimeError right_err = logical_or->right->evaluate(compiler, arena, env, right_val);
-            if (!right_err.is_ok()) {
-                return right_err;
-            }
+            CHECK_ERR(logical_or->right->evaluate(compiler, arena, env, right_val));
+
             if (right_val.ty != Value::Type::BOOL) {
                 return RuntimeError::operand_must_be_bool(logical_or->op);
             }
@@ -826,10 +801,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 calllable_name = callee_literal->val;
             } else if (callee->ty == Expr::Type::GET) {
                 Value get_value = {};
-                RuntimeError get_err = callee->evaluate(compiler, arena, env, get_value);
-                if (!get_err.is_ok()) {
-                    return get_err;
-                }
+                CHECK_ERR(callee->evaluate(compiler, arena, env, get_value));
                 assert(get_value.ty == Value::Type::CALLABLE);
 
                 callable = get_value.callable;
@@ -854,10 +826,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 SuperExpr* super_expr = callee->expr.super_expr;
 
                 Value super_value = {};
-                RuntimeError super_err = compiler->lookup_variable(env, super_expr->keyword, this, super_value);
-                if (!super_err.is_ok()) {
-                    return super_err;
-                }
+                CHECK_ERR(compiler->lookup_variable(env, super_expr->keyword, this, super_value));
                 assert(super_value.ty == Value::Type::CLASS);
                 Class* super_class = super_value.m_class;
 
@@ -901,10 +870,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             GetExpr* get = expr.get;
 
             Value expr_val = {};
-            RuntimeError expr_err = get->class_expr->evaluate(compiler, arena, env, expr_val);
-            if (!expr_err.is_ok()) {
-                return expr_err;
-            }
+            CHECK_ERR(get->class_expr->evaluate(compiler, arena, env, expr_val));
             if (expr_val.ty != Value::Type::CLASS) {
                 return RuntimeError::object_must_be_struct(get->member);
             }
@@ -921,10 +887,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             GetExpr* get = set->get->expr.get;
 
             Value class_val = {};
-            RuntimeError expr_err = get->class_expr->evaluate(compiler, arena, env, class_val);
-            if (!expr_err.is_ok()) {
-                return expr_err;
-            }
+            CHECK_ERR(get->class_expr->evaluate(compiler, arena, env, class_val));
             if (class_val.ty != Value::Type::CLASS) {
                 return RuntimeError::object_must_be_struct(get->member);
             }
@@ -932,10 +895,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             const bool has_field = class_val.m_class->contains_field(get->member->m_lexeme);
             if (has_field) {
                 Value right_val = {};
-                RuntimeError right_err = set->right->evaluate(compiler, arena, env, right_val);
-                if (!right_err.is_ok()) {
-                    return right_err;
-                }
+                CHECK_ERR(set->right->evaluate(compiler, arena, env, right_val));
 
                 class_val.m_class->set_field(get->member->m_lexeme, right_val);
 
