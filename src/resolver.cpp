@@ -164,6 +164,8 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
             exit(-1);
         }
 
+        current_class = ClassType::SUBCLASS;
+
         resolve_expr(compiler, stmt->s_class.superclass);
 
         String super_str = String {
@@ -315,6 +317,9 @@ void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
 void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
     if (current_class == ClassType::NONE) {
         compiler->error(0, "Can't use `super` outside of class");
+        return;
+    } else if (current_class != ClassType::SUBCLASS) {
+        compiler->error(0, "Can't use `super` in a class with no superclass.");
         return;
     }
     resolve_local(compiler, expr, expr->expr.super_expr->keyword);
