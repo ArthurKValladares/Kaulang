@@ -46,7 +46,7 @@ namespace {
     Callable construct_callable(FnDeclarationPayload fn_declaration) {
         String fn_name = fn_declaration.name->m_lexeme;
 
-        return Callable(fn_declaration.params.size(), [fn_declaration](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+        return Callable(fn_declaration.params.size(), [fn_declaration](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
             Environment new_env = {};
             new_env.enclosing = env;
 
@@ -67,7 +67,7 @@ namespace {
         };
         bool is_initializer = fn_name == this_str;
 
-        return Callable(fn_declaration.params.size(), [fn_declaration, class_ptr, this_str, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+        return Callable(fn_declaration.params.size(), [fn_declaration, class_ptr, this_str, is_initializer](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
             env->define(
                 this_str,
                 Value{
@@ -847,8 +847,8 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 return RuntimeError::wrong_number_arguments(calllable_name);
             }
 
-            std::vector<Value> values;
-            values.resize(fn_call->arguments.size());
+            Array<Value> values;
+            values.init(arena, fn_call->arguments.size());
             for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
@@ -1110,7 +1110,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
             Callable* class_init = new_class->get_method(String{"init", 4});
             if (class_init != nullptr) {
-                env->define_callable(class_name, Callable(class_init->m_arity, [class_name_token, class_init](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                env->define_callable(class_name, Callable(class_init->m_arity, [class_name_token, class_init](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
                     Class* in_class = nullptr;
                     env->get_class(class_name_token, &in_class);
 
@@ -1122,7 +1122,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     };
                 }));
             } else {
-                env->define_callable(class_name, Callable(0, [class_name_token](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                env->define_callable(class_name, Callable(0, [class_name_token](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
                     Class* in_class = nullptr;
                     env->get_class(class_name_token, &in_class);
 

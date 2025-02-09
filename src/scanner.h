@@ -7,8 +7,6 @@
 #include "tokens.h"
 #include "compiler.h"
 
-#include <vector>
-
 struct Scanner {
     Scanner(Arena* arena, char* source, int len) 
         : m_source(source)

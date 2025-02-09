@@ -26,7 +26,7 @@ KauCompiler::KauCompiler() {
         .chars = "clock",
         .len = 5
     };
-    global_env.define_callable(clock_str, Callable(0, [](std::vector<Value> const &args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(clock_str, Callable(0, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()
@@ -37,7 +37,7 @@ KauCompiler::KauCompiler() {
         .chars = "print",
         .len = 5
     };
-    global_env.define_callable(print_str, Callable(1, [](std::vector<Value> const &args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(print_str, Callable(1, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         const Value& val = args[0];
         val.print();
         return val;

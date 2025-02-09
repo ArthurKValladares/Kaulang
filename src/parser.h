@@ -6,7 +6,6 @@
 #include "expr.h"
 #include "scanner.h"
 
-#include <vector>
 #include <span>
 
 struct Parser {

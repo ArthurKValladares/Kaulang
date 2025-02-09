@@ -1,14 +1,14 @@
 #pragma once
 
 #include "lib/string.h"
+#include "lib/array.h"
 
 #include "expr.h"
 
 #include <unordered_map>
-#include <vector>
 #include <functional>
 
-using CallableCallback = std::function<Value(std::vector<Value> const&, KauCompiler*, Arena*, Environment*)>;
+using CallableCallback = std::function<Value(Array<Value>, KauCompiler*, Arena*, Environment*)>;
 struct Callable {
     Callable() {}
     Callable(int arity, CallableCallback callback) 

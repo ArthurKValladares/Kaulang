@@ -7,7 +7,6 @@
 #include "tokens.h"
 
 #include <string>
-#include <vector>
 
 struct Expr;
 struct LiteralExpr;
