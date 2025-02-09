@@ -2,6 +2,7 @@
 
 #include "lib/string.h"
 #include "lib/arena.h"
+#include "lib/array.h"
 
 #include "tokens.h"
 #include "compiler.h"
@@ -13,8 +14,7 @@ struct Scanner {
         : m_source(source)
         , m_source_len(len)
     {
-        m_tokens = (Token*) arena->push_no_zero(0);
-        m_tokens_len = 0;
+        m_tokens.init(arena);
     }
 
     void scan_tokens(KauCompiler& compiler, Arena* arena);
@@ -23,8 +23,7 @@ struct Scanner {
     void print_tokens();
 #endif
 
-    Token* m_tokens;
-    u64 m_tokens_len;
+    Array<Token> m_tokens;
     
 private:
     void scan_token(KauCompiler& compiler, Arena* arena);

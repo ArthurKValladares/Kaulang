@@ -27,7 +27,7 @@ enum class ClassType {
 
 struct KauCompiler;
 struct Resolver {
-    void resolve(KauCompiler* compiler, Stmt* stmts, u64 stmts_len);
+    void resolve(KauCompiler* compiler, Array<Stmt> stmts);
 private:
     void visit_expr_stmt(KauCompiler* compiler, Stmt* stmt);
     void visit_block_stmt(KauCompiler* compiler, Stmt* stmt);

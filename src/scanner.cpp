@@ -62,13 +62,12 @@ String Scanner::get_substring(int start_offset, int end_offset) const {
 }
 
 void Scanner::add_token(Arena* arena, TokenType token_type, TokenData data) {
-    arena->push_struct_no_zero<Token>();
-    m_tokens[m_tokens_len++] = Token{
+    m_tokens.push(Token{
         token_type,
         String{},
         m_current_line,
         data
-    };
+    });
 }
 
 void Scanner::add_token(Arena* arena, TokenType token_type, String substr, TokenData data) {
@@ -77,13 +76,14 @@ void Scanner::add_token(Arena* arena, TokenType token_type, String substr, Token
         lexeme = get_substring(m_start_char_offset, m_current_char_offset);
     }
 
-    arena->push_struct_no_zero<Token>();
-    m_tokens[m_tokens_len++] = Token{
-        token_type,
-        lexeme,
-        m_current_line,
-        data
-    };
+    m_tokens.push(
+        Token{
+            token_type,
+            lexeme,
+            m_current_line,
+            data
+        }
+    );
 }
 
 void Scanner::string(KauCompiler& compiler, Arena* arena) {
@@ -305,17 +305,18 @@ void Scanner::scan_tokens(KauCompiler& compiler, Arena* arena) {
         scan_token(compiler, arena);
     }
 
-    arena->push_struct_no_zero<Token>();
-    m_tokens[m_tokens_len++] = Token{
-        TokenType::_EOF,
-        String{"", 0},
-        m_current_line,
-    };
+    m_tokens.push(
+        Token{
+            TokenType::_EOF,
+            String{"", 0},
+            m_current_line,
+        }
+    );
 }
 
 #ifdef DEBUG
 void Scanner::print_tokens() {
-    for (size_t i = 0; i < m_tokens_len; ++i) {
+    for (size_t i = 0; i < m_tokens.size(); ++i) {
         Token& token = m_tokens[i];
         token.print();
         std::println("");

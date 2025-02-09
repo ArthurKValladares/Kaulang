@@ -61,17 +61,16 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     // TODO: fix this kinda circular dependency thing later
     scanner.scan_tokens(*this, global_arena);
 
-    Parser parser(scanner.m_tokens, scanner.m_tokens_len);
-    u64 stmts_count;
-    Stmt* stmts = parser.parse(global_arena, stmts_count);
+    Parser parser(scanner.m_tokens);
+    Array<Stmt> stmts = parser.parse(global_arena);
 
     Resolver resolver = {};
-    resolver.resolve(this, stmts, stmts_count);
+    resolver.resolve(this, stmts);
     if (m_had_error) {
         return -1;
     }
     
-    for (u64 i = 0; i < stmts_count; ++i) {
+    for (u64 i = 0; i < stmts.size(); ++i) {
         Stmt& stmt = stmts[i];
 
 #ifdef DEBUG_PRINT

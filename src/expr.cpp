@@ -46,11 +46,11 @@ namespace {
     Callable construct_callable(FnDeclarationPayload fn_declaration) {
         String fn_name = fn_declaration.name->m_lexeme;
 
-        return Callable(fn_declaration.params_count, [fn_declaration](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+        return Callable(fn_declaration.params.size(), [fn_declaration](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
             Environment new_env = {};
             new_env.enclosing = env;
 
-            for (size_t i = 0; i < fn_declaration.params_count; ++i) {
+            for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
                 new_env.define(fn_declaration.params[i], args[i]);
             }
 
@@ -67,7 +67,7 @@ namespace {
         };
         bool is_initializer = fn_name == this_str;
 
-        return Callable(fn_declaration.params_count, [fn_declaration, class_ptr, this_str, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
+        return Callable(fn_declaration.params.size(), [fn_declaration, class_ptr, this_str, is_initializer](std::vector<Value> const& args, KauCompiler* compiler, Arena* arena, Environment* env) {
             env->define(
                 this_str,
                 Value{
@@ -93,7 +93,7 @@ namespace {
             Environment new_env = {};
             new_env.enclosing = env;
 
-            for (size_t i = 0; i < fn_declaration.params_count; ++i) {
+            for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
                 new_env.define(fn_declaration.params[i], args[i]);
             }
 
@@ -349,9 +349,9 @@ void Expr::print() const {
 
             fn_call->callee->print();
             std::print("(");
-            for (size_t i = 0; i < fn_call->arguments_count; ++i) {
+            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 fn_call->arguments[i]->print();
-                if (i != fn_call->arguments_count - 1) {
+                if (i != fn_call->arguments.size() - 1) {
                     std::print(", ");
                 }
             }
@@ -843,13 +843,13 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
                 assert(false);
             }
 
-            if (callable->m_arity != fn_call->arguments_count) {
+            if (callable->m_arity != fn_call->arguments.size()) {
                 return RuntimeError::wrong_number_arguments(calllable_name);
             }
 
             std::vector<Value> values;
-            values.resize(fn_call->arguments_count);
-            for (size_t i = 0; i < fn_call->arguments_count; ++i) {
+            values.resize(fn_call->arguments.size());
+            for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 Value arg_val = {};
                 RuntimeError err = fn_call->arguments[i]->evaluate(compiler, arena, env, arg_val);
                 if (!err.is_ok()) {
@@ -976,7 +976,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         case Stmt::Type::BLOCK: {
             Environment new_env = {};
             new_env.enclosing = env;
-            for (int i = 0; i < s_block.size; ++i) {
+            for (int i = 0; i < s_block.stmts.size(); ++i) {
                 expr_val = s_block.stmts[i].evaluate(compiler, arena, &new_env, from_prompt, in_loop);
                 // continue statement stops current block from exeuting further, like a break.
                 if (expr_val.ty == Value::Type::BREAK ||
@@ -1078,7 +1078,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             new_class->m_fields.allocate(arena);
             new_class->superclass = superclass;
 
-            for (u64 i = 0; i < s_class.members_count; ++i) {
+            for (u64 i = 0; i < s_class.members.size(); ++i) {
                 Stmt* stmt = &s_class.members[i];
                 if (stmt->ty == Stmt::Type::FN_DECLARATION) {
                     FnDeclarationPayload fn = stmt->fn_declaration;
@@ -1178,7 +1178,7 @@ void Stmt::print() {
         }
         case Type::BLOCK: {
             std::println("BLOCK");
-            for (int i = 0; i < s_block.size; ++i) {
+            for (int i = 0; i < s_block.stmts.size(); ++i) {
                 s_block.stmts[i].print();
             }
             break;
@@ -1213,7 +1213,7 @@ void Stmt::print() {
         case Type::FN_DECLARATION: {
             std::print("FN DECLARATION: ");
             std::print("{} params:", fn_declaration.name->m_lexeme.to_string_view());
-            for (u64 i = 0; i < fn_declaration.params_count; ++i) {
+            for (u64 i = 0; i < fn_declaration.params.size(); ++i) {
                 std::print(" {}", fn_declaration.params[i]->m_lexeme.to_string_view());
             }
             std::println();
@@ -1227,7 +1227,7 @@ void Stmt::print() {
                 s_class.superclass->print();
             }
             std::println();
-            for (u64 i = 0; i < s_class.members_count; ++i) {
+            for (u64 i = 0; i < s_class.members.size(); ++i) {
                 s_class.members[i].print();
             }
             std::println();

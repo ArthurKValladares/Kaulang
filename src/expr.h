@@ -2,6 +2,8 @@
 
 #include "lib/string.h"
 #include "lib/map.h"
+#include "lib/array.h"
+
 #include "tokens.h"
 
 #include <string>
@@ -147,8 +149,7 @@ struct VarDeclPayload {
 };
 
 struct BlockPayload {
-    Stmt* stmts;
-    int size;
+    Array<Stmt> stmts;
 };
 
 struct IfPayload {
@@ -168,8 +169,7 @@ struct BreakContinuePayload {
 
 struct FnDeclarationPayload {
     Token* name;
-    Token** params;
-    u64 params_count;
+    Array<Token*> params;
     Stmt* body;
     bool is_static;
 };
@@ -177,8 +177,7 @@ struct FnDeclarationPayload {
 struct ClassDeclarationPayload {
     Token* name;
     Expr* superclass;
-    Stmt* members;
-    u64 members_count;
+    Array<Stmt> members;
 };
 
 // TODO: Review `Token` struct and add it to more payloads maybe if we need it for logging
@@ -304,8 +303,7 @@ struct LogicalBinaryExpr {
 struct FnCallExpr {
     Expr* callee;
     const Token* paren;
-    Expr** arguments;
-    u64 arguments_count;
+    Array<Expr*> arguments;
 };
 
 struct StaticFnCallExpr {

@@ -10,16 +10,15 @@
 #include <span>
 
 struct Parser {
-    Parser(Token* tokens, u64 tokens_size)
+    Parser(Array<Token> tokens)
         : m_tokens(tokens)
-        , m_tokens_size(tokens_size)
     {}
-    Stmt* parse(Arena* arena, u64& input_count);
+    Array<Stmt> parse(Arena* arena);
 
 private:
     void error(const Token* token, std::string_view message);
 
-    Stmt* program(Arena* arena, u64& input_count);
+    Array<Stmt> program(Arena* arena);
     Stmt declaration(Arena* arena);
     Stmt var_declaration(Arena* arena);
     Stmt fn_declaration(Arena* arena, bool is_static);
@@ -61,8 +60,7 @@ private:
 
     void syncronize();
 
-    Token* m_tokens;
-    u64 m_tokens_size;
+    Array<Token> m_tokens;
     int m_current = 0;
 
     bool m_had_error = false;
