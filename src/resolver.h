@@ -4,12 +4,16 @@
 #include <vector>
 #include <unordered_map>
 
+#include "lib/map.h"
+#include "lib/array.h"
+
 #include "parser.h"
 
 struct VariableStatus {
     bool defined = false;
     u64 uses = 0;
 };
+// TODO: using std structures for now
 using ScopeMap = std::unordered_map<String, VariableStatus, StringHasher>;
 
 enum class FunctionType {
@@ -27,6 +31,8 @@ enum class ClassType {
 
 struct KauCompiler;
 struct Resolver {
+    void init(Arena *arena);
+
     void resolve(KauCompiler* compiler, Array<Stmt> stmts);
 private:
     void visit_expr_stmt(KauCompiler* compiler, Stmt* stmt);
@@ -67,8 +73,7 @@ private:
 
     void mark_resolved(KauCompiler* compiler, Expr* expr, int depth);
 
-    // TOOD: using std structures for now
-    std::vector<ScopeMap> scopes;
+    Array<ScopeMap> scopes;
 
     FunctionType current_function = FunctionType::NONE;
     ClassType current_class = ClassType::NONE;

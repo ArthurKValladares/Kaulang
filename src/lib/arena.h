@@ -2,6 +2,8 @@
 
 #include "../defs.h"
 
+// TODO: in general for this arena and for the array that uses it,
+// I think I'm not worrying enough about memory-aligment
 struct Arena {
     void release();
 

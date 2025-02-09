@@ -2,6 +2,10 @@
 
 #include "compiler.h"
 
+void Resolver::init(Arena* arena) {
+    scopes.init(arena);
+}
+
 void Resolver::resolve(KauCompiler* compiler, Array<Stmt> stmts) {
     for (u64 i = 0; i < stmts.size(); ++i) {
         resolve_stmt(compiler, &stmts[i]);
@@ -377,7 +381,11 @@ void Resolver::define(Token* name) {
 }
 
 void Resolver::begin_scope() {
-    scopes.push_back(ScopeMap());
+    // TODO: This needs to be aligned
+    ScopeMap* curr = scopes.curr_ptr();
+    scopes.advance();
+
+    curr = new(curr) ScopeMap();
 }
 
 void Resolver::end_scope() {
@@ -386,7 +394,7 @@ void Resolver::end_scope() {
             std::println("Warn: unused variable {}", name.to_string_view());
         }
     }
-    scopes.pop_back();
+    scopes.pop();
 }
 
 void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, int depth) {

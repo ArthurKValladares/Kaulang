@@ -65,6 +65,7 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     Array<Stmt> stmts = parser.parse(global_arena);
 
     Resolver resolver = {};
+    resolver.init(global_arena);
     resolver.resolve(this, stmts);
     if (m_had_error) {
         return -1;
