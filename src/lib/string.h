@@ -6,6 +6,7 @@
 
 int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len);
 
+// TODO: Constructor that takes a constepxr array and knows the size
 struct String {
     const char* chars = nullptr;
     size_t len = 0;

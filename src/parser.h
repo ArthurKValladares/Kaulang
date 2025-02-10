@@ -15,7 +15,7 @@ struct Parser {
     Array<Stmt> parse(Arena* arena);
 
 private:
-    void error(const Token* token, std::string_view message);
+    void error(const Token* token, String message);
 
     Array<Stmt> program(Arena* arena);
     Stmt declaration(Arena* arena);
@@ -49,7 +49,7 @@ private:
 
     bool match(Span<const TokenType> types);
     bool match(const TokenType ty);
-    
+
     Token* advance();
 
     bool check(TokenType ty);
@@ -57,7 +57,7 @@ private:
     const Token* peek() const;
     Token* previous();
 
-    Token* consume(TokenType ty, std::string_view message);
+    Token* consume(TokenType ty, String message);
 
     void syncronize();
 
