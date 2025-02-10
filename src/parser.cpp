@@ -336,11 +336,11 @@ Array<Stmt> Parser::program(Arena* arena) {
 
 Stmt Parser::declaration(Arena* arena) {
     Stmt ret;
-    if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+    if (match(TokenType::VAR)) {
         ret = var_declaration(arena);
-    } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
+    } else if (match(TokenType::FN)) {
         ret = fn_declaration(arena, false);
-    } else if (match(std::initializer_list<TokenType>{TokenType::CLASS})) {
+    } else if (match(TokenType::CLASS)) {
         ret = class_declaration(arena);
     } else {
         ret = statement(arena);
@@ -362,7 +362,7 @@ Stmt Parser::fn_declaration(Arena* arena, bool is_static) {
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
             params.push(consume(TokenType::IDENTIFIER, "Expecteded parameter name"));
-        } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
+        } while(match(TokenType::COMMA));
     }
     consume(TokenType::RIGHT_PAREN, "Expected ')' after function parameters");
 
@@ -378,7 +378,7 @@ Stmt Parser::class_declaration(Arena* arena) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected class name");
 
     Expr* superclass = nullptr;
-    if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+    if (match(TokenType::COLON)) {
         consume(TokenType::IDENTIFIER, "Expected superclass name");
         superclass = new_literal(previous());
     }
@@ -388,11 +388,11 @@ Stmt Parser::class_declaration(Arena* arena) {
     Array<Stmt> members;
     members.init(arena);
     while (!check(TokenType::RIGHT_BRACE) && !is_at_end()) {
-        if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+        if (match(TokenType::VAR)) {
             members.push(var_declaration(arena->child_arena));
-        } else if (match(std::initializer_list<TokenType>{TokenType::FN})) {
+        } else if (match(TokenType::FN)) {
             members.push(fn_declaration(arena->child_arena, false));
-        }  else if (match(std::initializer_list<TokenType>{TokenType::STATIC})) {
+        }  else if (match(TokenType::STATIC)) {
             consume(TokenType::FN, "Expected 'fn' after 'static'");
             members.push(fn_declaration(arena->child_arena, true));
         } else {
@@ -409,8 +409,9 @@ Stmt Parser::class_declaration(Arena* arena) {
 Stmt Parser::var_declaration(Arena* arena) {
     Token* name = consume(TokenType::IDENTIFIER, "Expected variable name");
 
+    const TokenType equal_test[] = {TokenType::EQUAL};
     Expr* initializer = nullptr;
-    if (match(std::initializer_list<TokenType>{TokenType::EQUAL})) {
+    if (match(Span<const TokenType>(equal_test, 1))) {
         initializer = expression(arena);
     }
 
@@ -419,25 +420,25 @@ Stmt Parser::var_declaration(Arena* arena) {
 }
 
 Stmt Parser::statement(Arena* arena) {
-    if (match(std::initializer_list<TokenType>{TokenType::IF})) {
+    if (match(TokenType::IF)) {
         return if_statement(arena);
     }
-    if (match(std::initializer_list<TokenType>{TokenType::WHILE})) {
+    if (match(TokenType::WHILE)) {
         return while_statement(arena);
     }
-    if (match(std::initializer_list<TokenType>{TokenType::FOR})) {
+    if (match(TokenType::FOR)) {
         return for_statement(arena);
     }
-    if (match(std::initializer_list<TokenType>{TokenType::LEFT_BRACE})) {
+    if (match(TokenType::LEFT_BRACE)) {
         return block_statement(arena);
     }
-    if (match(std::initializer_list<TokenType>{TokenType::BREAK})) {
+    if (match(TokenType::BREAK)) {
         return break_statement();
     }
-    if (match(std::initializer_list<TokenType>{TokenType::CONTINUE})) {
+    if (match(TokenType::CONTINUE)) {
         return continue_statement();
     }
-    if (match(std::initializer_list<TokenType>{TokenType::RETURN})) {
+    if (match(TokenType::RETURN)) {
         return return_statement(arena);
     }
     return expr_statement(arena);
@@ -478,7 +479,7 @@ Stmt Parser::if_statement(Arena* arena) {
     Stmt if_stmt = statement(arena);
 
     Stmt else_stmt = {};
-    if (match(std::initializer_list<TokenType>{TokenType::ELSE})) {
+    if (match(TokenType::ELSE)) {
         else_stmt = statement(arena);
     }
 
@@ -499,8 +500,8 @@ Stmt Parser::for_statement(Arena* arena) {
     consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'");
 
     Stmt initializer = {};
-    if (match(std::initializer_list<TokenType>{TokenType::SEMICOLON})) {
-    } else if (match(std::initializer_list<TokenType>{TokenType::VAR})) {
+    if (match(TokenType::SEMICOLON)) {
+    } else if (match(TokenType::VAR)) {
         initializer = var_declaration(arena);
     } else {
         initializer = expr_statement(arena);
@@ -573,7 +574,7 @@ Expr* Parser::expression(Arena* arena) {
 Expr* Parser::assignment(Arena* arena) {
     Expr* expr = logic_or(arena);
 
-    if (match(std::initializer_list<TokenType>{TokenType::EQUAL})) {
+    if (match(TokenType::EQUAL)) {
         Token* equals = previous();
         Expr* right = assignment(arena);
 
@@ -594,7 +595,7 @@ Expr* Parser::assignment(Arena* arena) {
 Expr* Parser::logic_or(Arena* arena) {
     Expr* expr = logic_and(arena);
 
-    while (match(std::initializer_list<TokenType>{TokenType::OR})) {
+    while (match(TokenType::OR)) {
         Token* op = previous();
         Expr* right = logic_and(arena);
         return new_or(expr, op, right);
@@ -606,7 +607,7 @@ Expr* Parser::logic_or(Arena* arena) {
 Expr* Parser::logic_and(Arena* arena) {
     Expr* expr = ternary(arena);
 
-    while (match(std::initializer_list<TokenType>{TokenType::AND})) {
+    while (match(TokenType::AND)) {
         Token* op = previous();
         Expr* right = ternary(arena);
         return new_and(expr, op, right);
@@ -618,11 +619,11 @@ Expr* Parser::logic_and(Arena* arena) {
 Expr* Parser::ternary(Arena* arena) {
     Expr* expr = equality(arena);
 
-    if (match(std::initializer_list<TokenType>{TokenType::QUESTION_MARK})) {
+    if (match(TokenType::QUESTION_MARK)) {
         Token* left_op = previous();
         Expr* middle = ternary(arena);
 
-        if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+        if (match(TokenType::COLON)) {
             Token* right_op = previous();
             Expr* right = ternary(arena);
             return new_ternary(expr, left_op, middle, right_op, right);
@@ -638,8 +639,9 @@ Expr* Parser::ternary(Arena* arena) {
 
 Expr* Parser::equality(Arena* arena) {
     constexpr TokenType TOKEN_TYPES[2] = {TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL};
+    Span<const TokenType> token_types_span = Span<const TokenType>(TOKEN_TYPES, 2);
 
-    if (match(TOKEN_TYPES)) {
+    if (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
 
@@ -650,7 +652,7 @@ Expr* Parser::equality(Arena* arena) {
 
     Expr* expr = comparison(arena);
 
-    while (match(TOKEN_TYPES)) {
+    while (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
         Expr* binary = new_binary(expr, op, right);
@@ -662,8 +664,9 @@ Expr* Parser::equality(Arena* arena) {
 
 Expr* Parser::comparison(Arena* arena) {
     constexpr TokenType TOKEN_TYPES[4] = {TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESSER, TokenType::LESSER_EQUAL};
+    Span<const TokenType> token_types_span = Span<const TokenType>(TOKEN_TYPES, 4);
 
-    if (match(TOKEN_TYPES)) {
+    if (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
 
@@ -674,7 +677,7 @@ Expr* Parser::comparison(Arena* arena) {
 
     Expr* expr = term(arena);
 
-    while (match(TOKEN_TYPES)) {
+    while (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
         Expr* binary = new_binary(expr, op, right);
@@ -686,8 +689,9 @@ Expr* Parser::comparison(Arena* arena) {
 
 Expr* Parser::term(Arena* arena) {
     constexpr TokenType TOKEN_TYPES[2] = {TokenType::MINUS, TokenType::PLUS};
+    Span<const TokenType> token_types_span = Span<const TokenType>(TOKEN_TYPES, 2);
 
-    if (match(TOKEN_TYPES)) {
+    if (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
 
@@ -699,7 +703,7 @@ Expr* Parser::term(Arena* arena) {
 
     Expr* expr = factor(arena);
 
-    while (match(TOKEN_TYPES)) {
+    while (match(token_types_span)) {
         Token* op = previous();
         Expr* right = factor(arena);
         Expr* binary = new_binary(expr, op, right);
@@ -711,8 +715,9 @@ Expr* Parser::term(Arena* arena) {
 
 Expr* Parser::factor(Arena* arena) {
     constexpr TokenType TOKEN_TYPES[2] = {TokenType::SLASH, TokenType::STAR};
+    Span<const TokenType> token_types_span = Span<const TokenType>(TOKEN_TYPES, 2);
 
-    if (match(TOKEN_TYPES)) {
+    if (match(token_types_span)) {
         Token* op = previous();
         Expr* right = term(arena);
 
@@ -723,7 +728,7 @@ Expr* Parser::factor(Arena* arena) {
 
     Expr* expr = unary(arena);
 
-    while (match(TOKEN_TYPES)) {
+    while (match(token_types_span)) {
         Token* op = previous();
         Expr* right = unary(arena);
         Expr* binary = new_binary(expr, op, right);
@@ -734,7 +739,8 @@ Expr* Parser::factor(Arena* arena) {
 }
 
 Expr* Parser::unary(Arena* arena) {
-    if (match(std::initializer_list<TokenType>{TokenType::BANG, TokenType::MINUS})) {
+    const TokenType token_types[2] = {TokenType::BANG, TokenType::MINUS};
+    if (match(Span<const TokenType>(token_types, 2))) {
         Token* op = previous();
         Expr* right = unary(arena);
         return new_unary(op, right);
@@ -747,12 +753,12 @@ Expr* Parser::fn_call(Arena* arena) {
     Expr* expr = primary(arena);
 
     while (true) {
-        if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
+        if (match(TokenType::LEFT_PAREN)) {
             expr = finish_call(arena, expr);
-        } else if (match(std::initializer_list<TokenType>{TokenType::DOT})) {
+        } else if (match(TokenType::DOT)) {
             Token* name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
             expr = new_get(expr, name);
-        } else if (match(std::initializer_list<TokenType>{TokenType::COLON})) {
+        } else if (match(TokenType::COLON)) {
             Token* colons = consume(TokenType::COLON, "Expected `::` after class name when calling static function");
             Token* fn_name = consume(TokenType::IDENTIFIER, "Expected identifier after '.'");
             expr = new_static_fn_call(expr, colons, fn_name);
@@ -772,7 +778,7 @@ Expr* Parser::finish_call(Arena* arena, Expr* callee) {
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
             arguments.push(expression(arena->child_arena));
-        } while(match(std::initializer_list<TokenType>{TokenType::COMMA}));
+        } while(match(TokenType::COMMA));
     }
 
     Token* paren = consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments");
@@ -781,31 +787,32 @@ Expr* Parser::finish_call(Arena* arena, Expr* callee) {
 }
 
 Expr* Parser::primary(Arena* arena) {
-    if (match(std::initializer_list<TokenType>{
+    const TokenType token_types[7] = {
         TokenType::FALSE, TokenType::TRUE, TokenType::NIL, 
         TokenType::NUMBER_INT, TokenType::NUMBER_FLOAT, TokenType::NUMBER_DOUBLE,
         TokenType::STRING
-    })) {
+    };
+    if (match(Span<const TokenType>(token_types, 7))) {
         return new_literal(previous());
     }
 
-    if (match(std::initializer_list<TokenType>{TokenType::SUPER})) {
+    if (match(TokenType::SUPER)) {
         Token* keyword = previous();
         consume(TokenType::DOT, "Expected '.' after 'super'");
         Token* method = consume(TokenType::IDENTIFIER, "Expected superclass method name");
         return new_superclass(keyword, method);
     }
 
-    if (match(std::initializer_list<TokenType>{TokenType::THIS})) {
+    if (match(TokenType::THIS)) {
         return new_this(previous());
     }
 
-    if (match(std::initializer_list<TokenType>{TokenType::IDENTIFIER})) {
+    if (match(TokenType::IDENTIFIER)) {
         Token* id = previous();
         return new_literal(id);
     }
 
-    if (match(std::initializer_list<TokenType>{TokenType::LEFT_PAREN})) {
+    if (match(TokenType::LEFT_PAREN)) {
         Expr* expr = expression(arena);
         consume(TokenType::RIGHT_PAREN, "Expected ')' after expression");
         return new_grouping(expr);
@@ -820,16 +827,30 @@ bool Parser::is_at_end() const {
     return peek()->m_type == TokenType::_EOF;
 }
 
-bool Parser::match(std::span<const TokenType> types) {
+bool Parser::match(Span<const TokenType> types) {
     if (is_at_end()) {
         return false;
     }
 
-    for (const TokenType ty : types) {
+    for (u64 i = 0; i < types.len; ++i) {
+        const TokenType ty = types[i];
         if (check(ty)) {
             advance();
             return true;
         }
+    }
+
+    return false;
+}
+
+bool Parser::match(const TokenType ty) {
+    if (is_at_end()) {
+        return false;
+    }
+
+    if (check(ty)) {
+        advance();
+        return true;
     }
 
     return false;

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "lib/arena.h"
+#include  "lib/span.h"
 
 #include "tokens.h"
 #include "expr.h"
 #include "scanner.h"
 
-#include <span>
 
 struct Parser {
     Parser(Array<Token> tokens)
@@ -47,7 +47,9 @@ private:
 
     Expr* finish_call(Arena* arena, Expr* callee);
 
-    bool match(std::span<const TokenType> types);
+    bool match(Span<const TokenType> types);
+    bool match(const TokenType ty);
+    
     Token* advance();
 
     bool check(TokenType ty);
