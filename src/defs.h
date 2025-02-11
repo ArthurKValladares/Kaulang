@@ -17,6 +17,6 @@ typedef int64_t i64;
 
 inline void debug_log(const char* message) {
 #ifdef DEBUG
-    std::println("LOG: %s", message);
+    fprintf(stdout, "LOG: %s\n", message);
 #endif
 }

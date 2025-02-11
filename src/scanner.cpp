@@ -2,8 +2,6 @@
 
 #include <ctype.h>
 
-#include <print>
-
 // TODO: better way to do this lookup table
 #include <unordered_map>
 const std::unordered_map<std::string_view, TokenType> keywords = {
@@ -319,7 +317,7 @@ void Scanner::print_tokens() {
     for (size_t i = 0; i < m_tokens.size(); ++i) {
         Token& token = m_tokens[i];
         token.print();
-        std::println("");
+        fprintf(stdout, "\n");
     }
 }
 #endif

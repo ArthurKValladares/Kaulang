@@ -391,7 +391,7 @@ void Resolver::begin_scope() {
 void Resolver::end_scope() {
     for (auto const& [name, status] : scopes.back()) {
         if (status.uses == 0) {
-            std::println("Warn: unused variable {}", name.to_string_view());
+            fprintf(stdout, "Warn: unused variable %.*s\n", name.len, name.chars);
         }
     }
     scopes.pop();

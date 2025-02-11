@@ -311,11 +311,11 @@ namespace {
 
 void Parser::error(const Token* token, String message) {
     if (token->m_type == TokenType::_EOF) {
-        std::println(stderr, "Parser Error: {} at end.", message.to_string_view());
+        fprintf(stderr, "Parser Error: %.*s at end.\n", message.len, message.chars);
     } else {
-        std::println(stderr, "Parser Error: {} of token: {} at {}.", 
-            message.to_string_view(),
-            token->m_lexeme.to_string_view(),
+        fprintf(stderr, "Parser Error: %.*s of token: %.*s at %d.\n", 
+            message.len, message.chars,
+            token->m_lexeme.len, token->m_lexeme.chars,
             token->m_line);
     }
     m_had_error = true;

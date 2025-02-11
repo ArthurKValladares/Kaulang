@@ -135,5 +135,5 @@ RuntimeError Environment::get_class(const Token* token, Class** in_class) {
 }
 
 void Class::print() const {
-    std::println("{} instance", m_name.to_string_view());
+    fprintf(stdout, "%.*s instance\n", m_name.len, m_name.chars);
 }

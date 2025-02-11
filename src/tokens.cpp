@@ -145,21 +145,21 @@ const char* token_type_to_string(TokenType ty) {
 }
 
 void Token::print() const {
-    std::print("{}", token_type_to_string(m_type));
+    fprintf(stdout, "%s", token_type_to_string(m_type));
     if (!m_lexeme.empty()) {
-        std::print(" -> {}", m_lexeme.to_string_view());
+        fprintf(stdout, " -> %.*s", m_lexeme.len, m_lexeme.chars);
     }
     switch (data.ty) {
         case TokenData::Type::FLOAT: {
-            std::print(" -> {}", data.data.f);
+            fprintf(stdout, " -> %f", data.data.f);
             break;
         }
         case TokenData::Type::DOUBLE: {
-            std::print(" -> {}", data.data.d);
+            fprintf(stdout, " -> %lf", data.data.d);
             break;
         }
         case TokenData::Type::INT: {
-            std::print(" -> {}", data.data.i);
+            fprintf(stdout, " -> %d", data.data.i);
             break;
         }
         default: {

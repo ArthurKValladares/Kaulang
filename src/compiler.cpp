@@ -90,7 +90,7 @@ int KauCompiler::run_prompt() {
     char line_char_buffer[max_line_size];
 
     while (true) {
-        std::print("> ");
+        fprintf(stdout, "> ");
 
         std::cin.getline(line_char_buffer, max_line_size);
         const int line_size = strlen(line_char_buffer);
@@ -113,7 +113,7 @@ int KauCompiler::run_file(const char* file_path) {
     FILE* script_file;
     script_file = fopen(file_path, "r");
     if (script_file == NULL) {
-        std::println(stderr, "Failed to open kau script at: {}", file_path);
+        fprintf(stderr, "Failed to open kau script at: %s\n", file_path);
         return -1;
     }
     const long file_size_bytes = get_file_size(script_file);
@@ -121,7 +121,7 @@ int KauCompiler::run_file(const char* file_path) {
     // NOTE: Making it null-terminated for convenience, probably don't need to do it.
     char* byte_buffer = (char*)malloc(file_size_bytes + 1);
     if (byte_buffer == NULL) {
-        std::println(stderr, "Could not allocate byte buffer to store file data.");
+        fprintf(stderr, "Could not allocate byte buffer to store file data.\n");
         return -1;
     }
     const int end = fread(byte_buffer, 1, file_size_bytes, script_file);

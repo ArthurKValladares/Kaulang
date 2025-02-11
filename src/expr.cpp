@@ -283,7 +283,7 @@ void Expr::print() const {
             UnaryExpr* unary = expr.unary;
 
             unary->op->print();
-            std::print(" ");
+            fprintf(stdout, " ");
             unary->right->print();
 
             break;
@@ -292,9 +292,9 @@ void Expr::print() const {
             BinaryExpr* binary = expr.binary;
 
             binary->left->print();
-            std::print(" ");
+            fprintf(stdout, " ");
             binary->op->print();
-            std::print(" ");
+            fprintf(stdout, " ");
             binary->right->print();
 
             break;
@@ -310,9 +310,9 @@ void Expr::print() const {
             TernaryExpr* ternary = expr.ternary;
 
             ternary->left->print();
-            std::print(" ? ");
+            fprintf(stdout, " ? ");
             ternary->middle->print();
-            std::print(" : ");
+            fprintf(stdout, " : ");
             ternary->right->print();
 
             break;
@@ -321,7 +321,7 @@ void Expr::print() const {
             AssignmentExpr* assingment = expr.assignment;
 
             assingment->id->print();
-            std::print(" = ");
+            fprintf(stdout, " = ");
             assingment->right->print();
 
             break;
@@ -330,7 +330,7 @@ void Expr::print() const {
             LogicalBinaryExpr* logical_and = expr.logical_binary;
 
             logical_and->left->print();
-            std::print(" and ");
+            fprintf(stdout, " and ");
             logical_and->right->print();
 
             break;
@@ -339,7 +339,7 @@ void Expr::print() const {
             LogicalBinaryExpr* logical_or = expr.logical_binary;
 
             logical_or->left->print();
-            std::print(" or ");
+            fprintf(stdout, " or ");
             logical_or->right->print();
 
             break;
@@ -348,14 +348,14 @@ void Expr::print() const {
             FnCallExpr* fn_call = expr.fn_call;
 
             fn_call->callee->print();
-            std::print("(");
+            fprintf(stdout, "(");
             for (size_t i = 0; i < fn_call->arguments.size(); ++i) {
                 fn_call->arguments[i]->print();
                 if (i != fn_call->arguments.size() - 1) {
-                    std::print(", ");
+                    fprintf(stdout, ", ");
                 }
             }
-            std::print(")");
+            fprintf(stdout, ")");
 
             break;
         }
@@ -363,7 +363,7 @@ void Expr::print() const {
             GetExpr* get = expr.get;
 
             get->class_expr->print();
-            std::print(".");
+            fprintf(stdout, ".");
             get->member->print();
 
             break;
@@ -372,18 +372,18 @@ void Expr::print() const {
             SetExpr* set = expr.set;
 
             set->get->print();
-            std::print(" = ");
+            fprintf(stdout, " = ");
             set->right->print();
 
             break;
         }
         case Type::THIS: {
-            std::print("this");
+            fprintf(stdout, "this");
             break;
         }
         case Type::SUPER: {
             expr.super_expr->keyword->print();
-            std::print(".");
+            fprintf(stdout, ".");
             expr.super_expr->method->print();
             break;
         }
@@ -918,31 +918,31 @@ void Value::print() const {
     switch (ty)
     {
         case Type::NIL: {
-            std::println("nil");
+            fprintf(stdout, "nil\n");
             break;
         }
         case Type::BOOL: {
-            std::println("{}", b);
+            fprintf(stdout, "%s\n", b ? "true" : "false");
             break;
         }
         case Type::FLOAT: {
-            std::println("{}", f);
+            fprintf(stdout, "%f\n", f);
             break;
         }
         case Type::DOUBLE: {
-            std::println("{}", d);
+            fprintf(stdout, "%lf\n", d);
             break;
         }
         case Type::INT: {
-            std::println("{}", i);
+            fprintf(stdout, "%d\n", i);
             break;
         }
         case Type::LONG: {
-            std::println("{}", l);
+            fprintf(stdout, "%ld\n", l);
             break;
         }
         case Type::STRING: {
-            std::println("{}", str.to_string_view());
+            fprintf(stdout, "%.*s\n", str.len, str.chars);
             break;
         }
         case Type::CLASS: {
@@ -1161,30 +1161,27 @@ void Stmt::print() {
     switch (ty)
     {
         case Type::VAR_DECL: {
-            std::print("VAR DECL: ");
-            std::print("{}", s_var_decl.name->m_lexeme.to_string_view());
+            fprintf(stdout, "VAR DECL: %.*s", s_var_decl.name->m_lexeme.len, s_var_decl.name->m_lexeme.chars);
             if (s_var_decl.initializer != nullptr) {
-                std::print(" = ");
+                fprintf(stdout, " = ");
                 s_var_decl.initializer->print();
             }
-            std::println("");
             break;
         }
         case Type::EXPR: {
-            std::print("EXPR: ");
+            fprintf(stdout, "EXPR: ");
             s_expr.expr->print();
-            std::println("");
             break;
         }
         case Type::BLOCK: {
-            std::println("BLOCK");
+            fprintf(stdout, "BLOCK: ");
             for (int i = 0; i < s_block.stmts.size(); ++i) {
                 s_block.stmts[i].print();
             }
             break;
         }
         case Type::IF: {
-            std::print("IF: ");
+            fprintf(stdout, "IF: ");
             s_if.if_stmt->print();
             if (s_if.else_stmt->ty != Stmt::Type::ERR) {
                 s_if.else_stmt->print();
@@ -1192,50 +1189,46 @@ void Stmt::print() {
             break;
         }
         case Type::WHILE: {
-            std::print("WHILE: ");
+            fprintf(stdout, "WHILE: ");
             s_while.body->print();
             break;
         }
         case Type::BREAK: {
-            std::println("BREAK");
+            fprintf(stdout, "BREAK");
             break;
         }
         case Type::CONTINUE: {
-            std::println("CONTINUE");
+            fprintf(stdout, "CONTINUE");
             break;
         }
         case Type::RETURN: {
-            std::print("RETURN");
+            fprintf(stdout, "RETURN");
             s_return.expr->print();
-            std::println("");
             break;
         }
         case Type::FN_DECLARATION: {
-            std::print("FN DECLARATION: ");
-            std::print("{} params:", fn_declaration.name->m_lexeme.to_string_view());
+            fprintf(stdout, "FN DECLARATION: ");
+            fprintf(stdout, "%.*s params:", fn_declaration.name->m_lexeme.len, fn_declaration.name->m_lexeme.chars);
             for (u64 i = 0; i < fn_declaration.params.size(); ++i) {
-                std::print(" {}", fn_declaration.params[i]->m_lexeme.to_string_view());
+                fprintf(stdout, " %.*s", fn_declaration.params[i]->m_lexeme.len,fn_declaration.params[i]->m_lexeme.chars);
             }
-            std::println();
             break;
         }
         case Type::CLASS_DECLARATION: {
-            std::print("CLASS DECLARATION: ");
-            std::print("{}", s_class.name->m_lexeme.to_string_view());
+            fprintf(stdout, "CLASS DECLARATION: ");
+            fprintf(stdout, "%.*s", s_class.name->m_lexeme.len, s_class.name->m_lexeme.chars);
             if (s_class.superclass != nullptr) {
-                std::print(" : ");
+                fprintf(stdout, " : ");
                 s_class.superclass->print();
             }
-            std::println();
             for (u64 i = 0; i < s_class.members.size(); ++i) {
                 s_class.members[i].print();
             }
-            std::println();
             break;
         }
         //
         case Type::ERR: {
-            std::println("ERR");
+            fprintf(stdout, "ERR");
             return;
         }
     }

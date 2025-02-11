@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
             break;
         }
         default: {
-            std::println(stderr, "Usage: kau <path-to-script>");
+            fprintf(stderr, "Usage: kau <path-to-script>\n");
             return -1;
         }
     }
