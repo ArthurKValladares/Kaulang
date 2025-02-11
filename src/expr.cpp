@@ -995,7 +995,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
             if (test_expr_val.ty != Value::Type::BOOL) {
-                compiler->runtime_error(expr_err.token->m_line, "if test expression must evaluate to bool");
+                compiler->runtime_error(expr_err.token->m_line, String{"if test expression must evaluate to bool", 41});
             }
             bool if_result = test_expr_val.b;
 
@@ -1015,7 +1015,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     compiler->runtime_error(expr_err.token->m_line, expr_err.message);
                 }
                 if (test_expr_val.ty != Value::Type::BOOL) {
-                    compiler->runtime_error(expr_err.token->m_line, "while test expression must evaluate to bool");
+                    compiler->runtime_error(expr_err.token->m_line, String{"while test expression must evaluate to bool", 44});
                 }
                 if(!test_expr_val.b) {
                     break;
@@ -1030,7 +1030,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::BREAK: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, "'break' statement can only be used in a loop.");
+                compiler->runtime_error(s_break_continue.line, String{"'break' statement can only be used in a loop.", 46});
             }
             expr_val = Value {
                 .ty = Value::Type::BREAK
@@ -1039,7 +1039,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::CONTINUE: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, "'continue' statement can only be used in a loop.");
+                compiler->runtime_error(s_break_continue.line, String{"'continue' statement can only be used in a loop.", 49});
             }
             expr_val = Value {
                 .ty = Value::Type::CONTINUE
@@ -1065,7 +1065,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 const Token* superclass_token = s_class.superclass->expr.literal->val;
                 env->get_class(superclass_token, &superclass);
                 if (superclass == nullptr) {
-                    compiler->runtime_error(superclass_token->m_line, "superclass must be a class.");
+                    compiler->runtime_error(superclass_token->m_line, String{"superclass must be a class.", 28});
                 }
             }
 

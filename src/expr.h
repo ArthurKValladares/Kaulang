@@ -83,7 +83,7 @@ struct RuntimeError {
 
     Type ty;
     const Token* token;
-    std::string_view message;
+    String message;
 };
 
 struct Value;

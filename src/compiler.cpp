@@ -46,13 +46,13 @@ KauCompiler::KauCompiler() {
     global_arena = alloc_arena();
 }
 
-void KauCompiler::error(int line, std::string_view message) {
-    std::println(stderr, "[Line {}] Error: {}", line, message);
+void KauCompiler::error(int line, String message) {
+    fprintf(stderr, "[Line %d] Error: %.*s\n", line, message.len, message.chars);
     m_had_error = true;
 }
 
-void KauCompiler::runtime_error(int line, std::string_view message) {
-    std::println(stderr, "[Line {}] Runtime Error: {}", line, message);
+void KauCompiler::runtime_error(int line, String message) {
+    fprintf(stderr, "[Line %d] Runtime Error: %.*s\n", line, message.len, message.chars);
     m_had_runtime_error = true;
 }
 

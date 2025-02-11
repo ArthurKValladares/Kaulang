@@ -16,8 +16,8 @@ struct KauCompiler {
 
     RuntimeError lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value);
 
-    void error(int line, std::string_view message);
-    void runtime_error(int line, std::string_view message);
+    void error(int line, String message);
+    void runtime_error(int line, String message);
 
     int run(char* program, int size, bool from_prompt);
 

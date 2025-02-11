@@ -164,7 +164,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     if (stmt->s_class.superclass != nullptr) {
         if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
             // TODO: Get actual line number
-            compiler->error(0, "Class can't inherit from itself");
+            compiler->error(0, String{"Class can't inherit from itself", 32});
             exit(-1);
         }
 
@@ -230,14 +230,14 @@ void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
     if (current_function == FunctionType::NONE) {
         // TODO: Get actual line number
-        compiler->error(0, "Can't return from top-level code");
+        compiler->error(0, String{"Can't return from top-level code", 33});
         exit(-1);
     }
 
     if (stmt->s_return.expr != nullptr) {
         if (current_function == FunctionType::INITIALIZER) {
             // TODO: Get actual line number
-            compiler->error(0, "Can't return value fron initializer");
+            compiler->error(0, String{"Can't return value fron initializer", 36});
             exit(-1);
         }
         resolve_expr(compiler, stmt->s_return.expr);
@@ -254,7 +254,7 @@ void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     if (!scopes.empty() &&
         scopes.back().contains(token->m_lexeme) &&
         scopes.back().at(token->m_lexeme).defined == false) {
-        compiler->error(0, "Can't read local varaible in its own initializer");
+        compiler->error(0, String{"Can't read local varaible in its own initializer", 49});
         return;
     }
     resolve_local(compiler, expr, token);
@@ -312,7 +312,7 @@ void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
     if (current_class == ClassType::NONE) {
-        compiler->error(0, "Can't use `this` outside of class");
+        compiler->error(0, String{"Can't use `this` outside of class", 34});
         return;
     }
     resolve_local(compiler, expr, expr->expr.this_expr->val);
@@ -320,10 +320,10 @@ void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
     if (current_class == ClassType::NONE) {
-        compiler->error(0, "Can't use `super` outside of class");
+        compiler->error(0, String{"Can't use `super` outside of class", 35});
         return;
     } else if (current_class != ClassType::SUBCLASS) {
-        compiler->error(0, "Can't use `super` in a class with no superclass.");
+        compiler->error(0, String{"Can't use `super` in a class with no superclass.", 49});
         return;
     }
     resolve_local(compiler, expr, expr->expr.super_expr->keyword);
@@ -362,7 +362,7 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
 
     ScopeMap& scope = scopes.back();
     if (scope.contains(name->m_lexeme)) {
-        compiler->error(0, "Already a variable with this name in this scope");
+        compiler->error(0, String{"Already a variable with this name in this scope", 48});
         return;
     }
     scope[name->m_lexeme] = VariableStatus{
