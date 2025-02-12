@@ -43,6 +43,8 @@ struct String {
     }
 };
 
+#define CREATE_STRING(static_str) String{static_str, ArrayCount(static_str) - 1}
+
 String concatenated_string(Arena* arena, String left, String right);
 
 struct StringHasher {

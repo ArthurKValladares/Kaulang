@@ -92,7 +92,7 @@ void Scanner::string(KauCompiler& compiler, Arena* arena) {
         advance();
     }
     if (is_at_end()) {
-        compiler.error(m_current_line, String{"unterminated string", 20});
+        compiler.error(m_current_line, CREATE_STRING("unterminated string"));
         return;
     }
 
@@ -142,7 +142,7 @@ void Scanner::number(KauCompiler& compiler, Arena* arena) {
         char* err;
         const double fractional = strtod(m_source + m_start_char_offset, &err);
         if (err == nullptr) {
-            compiler.error(m_current_line, String{"could not convert string to double", 35});
+            compiler.error(m_current_line, CREATE_STRING("could not convert string to double"));
         }
         add_token(arena, TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
     }
@@ -174,7 +174,7 @@ void Scanner::block_comment(KauCompiler& compiler) {
     }
 
     if (is_at_end()) {
-        compiler.error(m_current_line, String{"unterminated block-comment", 27});
+        compiler.error(m_current_line, CREATE_STRING("unterminated block-comment"));
         return;
     }
 
@@ -290,7 +290,7 @@ void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
             } else if (isalpha(c) || c == '_') {
                 identifier(arena);
             } else {
-                compiler.error(m_current_line,  concatenated_string(arena, String{"unexpected character ", 22}, String{&c, 1}));
+                compiler.error(m_current_line,  concatenated_string(arena, CREATE_STRING("unexpected character "), String{&c, 1}));
             }
             break;
         }
@@ -306,7 +306,7 @@ void Scanner::scan_tokens(KauCompiler& compiler, Arena* arena) {
     m_tokens.push(
         Token{
             TokenType::_EOF,
-            String{"", 0},
+            CREATE_STRING(""),
             m_current_line,
         }
     );

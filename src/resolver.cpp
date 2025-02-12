@@ -164,7 +164,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     if (stmt->s_class.superclass != nullptr) {
         if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
             // TODO: Get actual line number
-            compiler->error(0, String{"Class can't inherit from itself", 32});
+            compiler->error(0, CREATE_STRING("Class can't inherit from itself"));
             exit(-1);
         }
 
@@ -172,10 +172,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
 
         resolve_expr(compiler, stmt->s_class.superclass);
 
-        String super_str = String {
-            "super",
-            5
-        };
+        String super_str =CREATE_STRING("super");
         scopes.back()[super_str] = 
         VariableStatus {
             .defined = true,
@@ -183,10 +180,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
         };
     }
     
-    String this_str = String {
-        "this",
-        4
-    };
+    String this_str = CREATE_STRING("this");
     scopes.back()[this_str] = 
     VariableStatus {
         .defined = true,
@@ -197,7 +191,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
         Stmt* class_stmt = &stmt->s_class.members[i];
         if (class_stmt->ty == Stmt::Type::FN_DECLARATION) {
             FunctionType fn_type = FunctionType::METHOD;
-            if (class_stmt->fn_declaration.name->m_lexeme == String{"init", 4}) {
+            if (class_stmt->fn_declaration.name->m_lexeme == CREATE_STRING("init")) {
                 fn_type = FunctionType::INITIALIZER;
             }
             resolve_fn(compiler, class_stmt, fn_type);
@@ -230,14 +224,14 @@ void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
     if (current_function == FunctionType::NONE) {
         // TODO: Get actual line number
-        compiler->error(0, String{"Can't return from top-level code", 33});
+        compiler->error(0, CREATE_STRING("Can't return from top-level code"));
         exit(-1);
     }
 
     if (stmt->s_return.expr != nullptr) {
         if (current_function == FunctionType::INITIALIZER) {
             // TODO: Get actual line number
-            compiler->error(0, String{"Can't return value fron initializer", 36});
+            compiler->error(0, CREATE_STRING("Can't return value fron initializer"));
             exit(-1);
         }
         resolve_expr(compiler, stmt->s_return.expr);
@@ -254,7 +248,7 @@ void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     if (!scopes.empty() &&
         scopes.back().contains(token->m_lexeme) &&
         scopes.back().at(token->m_lexeme).defined == false) {
-        compiler->error(0, String{"Can't read local varaible in its own initializer", 49});
+        compiler->error(0, CREATE_STRING("Can't read local varaible in its own initializer"));
         return;
     }
     resolve_local(compiler, expr, token);
@@ -312,7 +306,7 @@ void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
     if (current_class == ClassType::NONE) {
-        compiler->error(0, String{"Can't use `this` outside of class", 34});
+        compiler->error(0, CREATE_STRING("Can't use `this` outside of class"));
         return;
     }
     resolve_local(compiler, expr, expr->expr.this_expr->val);
@@ -320,10 +314,10 @@ void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
     if (current_class == ClassType::NONE) {
-        compiler->error(0, String{"Can't use `super` outside of class", 35});
+        compiler->error(0, CREATE_STRING("Can't use `super` outside of class"));
         return;
     } else if (current_class != ClassType::SUBCLASS) {
-        compiler->error(0, String{"Can't use `super` in a class with no superclass.", 49});
+        compiler->error(0, CREATE_STRING("Can't use `super` in a class with no superclass."));
         return;
     }
     resolve_local(compiler, expr, expr->expr.super_expr->keyword);
@@ -362,7 +356,7 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
 
     ScopeMap& scope = scopes.back();
     if (scope.contains(name->m_lexeme)) {
-        compiler->error(0, String{"Already a variable with this name in this scope", 48});
+        compiler->error(0, CREATE_STRING("Already a variable with this name in this scope"));
         return;
     }
     scope[name->m_lexeme] = VariableStatus{
@@ -391,7 +385,7 @@ void Resolver::begin_scope() {
 void Resolver::end_scope() {
     for (auto const& [name, status] : scopes.back()) {
         if (status.uses == 0) {
-            fprintf(stdout, "Warn: unused variable %.*s\n", name.len, name.chars);
+            fprintf(stdout, "Warn: unused variable %.*s\n", (u32) name.len, name.chars);
         }
     }
     scopes.pop();

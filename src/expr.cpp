@@ -61,10 +61,7 @@ namespace {
     // TODO: Messy, pass in as optimal param to funnction above or something like that
     Callable construct_callable_class(FnDeclarationPayload fn_declaration, Class* class_ptr) {
         String fn_name = fn_declaration.name->m_lexeme;
-        String this_str = String{
-            "this",
-            4
-        };
+        String this_str = CREATE_STRING("this");
         bool is_initializer = fn_name == this_str;
 
         return Callable(fn_declaration.params.size(), [fn_declaration, class_ptr, this_str, is_initializer](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
@@ -76,10 +73,7 @@ namespace {
                 }
             );
             if (class_ptr->superclass != nullptr) {
-                String super_str = String{
-                    "super",
-                    5
-                };
+                String super_str = CREATE_STRING("super");
 
                 env->define(
                     super_str,
@@ -108,7 +102,7 @@ namespace {
 
     String mangled_name(Arena* arena, String left, String right) {
         // TODO: This double concatenation is bad, can be optimized
-        String dot = String{".", 1};
+        String dot = CREATE_STRING(".");
         return concatenated_string(arena, concatenated_string(arena, left, dot), right);
     }
 };
@@ -123,7 +117,7 @@ RuntimeError RuntimeError::unsupported_literal(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_LITERAL,
         .token = token,
-        .message = "Unsupported literal"
+        .message = CREATE_STRING("Unsupported literal")
     };
 }
 
@@ -131,7 +125,7 @@ RuntimeError RuntimeError::unsupported_binary_op(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
-        .message = "Unsupported binary operation"
+        .message = CREATE_STRING("Unsupported binary operation")
     };
 }
 
@@ -139,7 +133,7 @@ RuntimeError RuntimeError::unsupported_unary_op(const Token* token) {
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
-        .message = "Unsupported unary operation"
+        .message = CREATE_STRING("Unsupported unary operation")
     };
 }
 
@@ -147,7 +141,7 @@ RuntimeError RuntimeError::operands_must_be_equal(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
-        .message = "Operands must be equal"
+        .message = CREATE_STRING("Operands must be equal")
     };
 }
 
@@ -155,7 +149,7 @@ RuntimeError RuntimeError::operands_must_be_floats(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
-        .message = "Operands must be floats"
+        .message = CREATE_STRING("Operands must be floats")
     };
 }
 
@@ -163,7 +157,7 @@ RuntimeError RuntimeError::operands_must_be_strings(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
-        .message = "Operands must be strings"
+        .message = CREATE_STRING("Operands must be strings")
     };
 }
 
@@ -171,7 +165,7 @@ RuntimeError RuntimeError::operand_must_be_float(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
-        .message = "Operand must be float"
+        .message = CREATE_STRING("Operand must be float")
     };
 }
 
@@ -179,7 +173,7 @@ RuntimeError RuntimeError::operand_must_be_bool(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_OPERANDS,
         .token = token,
-        .message = "Operand must be bool"
+        .message = CREATE_STRING("Operand must be bool")
     };
 }
 
@@ -187,7 +181,7 @@ RuntimeError RuntimeError::divide_by_zero(const Token* token) {
     return RuntimeError {
         .ty = Type::DIVIDE_BY_ZERO,
         .token = token,
-        .message = "Divide by zero"
+        .message = CREATE_STRING("Divide by zero")
     };
 }
 
@@ -195,7 +189,7 @@ RuntimeError RuntimeError::operands_do_not_support_operator(const Token* token) 
     return RuntimeError {
         .ty = Type::UNSUPPORTED_OPERATOR,
         .token = token,
-        .message = "Operands do not support operator"
+        .message = CREATE_STRING("Operands do not support operator")
     };
 }
 
@@ -203,7 +197,7 @@ RuntimeError RuntimeError::undeclared_variable(const Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
         .token = token,
-        .message = "Undeclared variable"
+        .message = CREATE_STRING("Undeclared variable")
     };
 }
 
@@ -211,7 +205,7 @@ RuntimeError RuntimeError::undefined_variable(const Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
         .token = token,
-        .message = "Undefined variable"
+        .message = CREATE_STRING("Undefined variable")
     };
 }
 
@@ -219,7 +213,7 @@ RuntimeError RuntimeError::undeclared_function(const Token* token) {
     return RuntimeError {
         .ty = Type::UNDEFINED_VARIABLE,
         .token = token,
-        .message = "Undeclared function"
+        .message = CREATE_STRING("Undeclared function")
     };
 }
 
@@ -227,7 +221,7 @@ RuntimeError RuntimeError::invalid_function_identifier(const Token* token) {
     return RuntimeError {
         .ty = Type::INVALID_IDENTIFIER,
         .token = token,
-        .message = "invalid function identifier"
+        .message = CREATE_STRING("invalid function identifier")
     };
 }
 
@@ -235,7 +229,7 @@ RuntimeError RuntimeError::invalid_function_argument(const Token* token) {
     return RuntimeError {
         .ty = Type::INVALID_ARGUMENT,
         .token = token,
-        .message = "invalid argument"
+        .message = CREATE_STRING("invalid argument")
     };
 }
 
@@ -243,7 +237,7 @@ RuntimeError RuntimeError::object_must_be_struct(const Token* token){
     return RuntimeError {
         .ty = Type::INVALID_ARGUMENT,
         .token = token,
-        .message = "object must be struct"
+        .message = CREATE_STRING("object must be struct")
     };
 }
 
@@ -251,7 +245,7 @@ RuntimeError RuntimeError::class_does_not_have_field(const Token* token) {
     return RuntimeError {
         .ty = Type::INVALID_ARGUMENT,
         .token = token,
-        .message = "class does not have field"
+        .message = CREATE_STRING("class does not have field")
     };
 }
 
@@ -261,7 +255,7 @@ RuntimeError RuntimeError::wrong_number_arguments(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_NUMBER_ARGUMENTS,
         .token = token,
-        .message = "wrong number of arguments"
+        .message = CREATE_STRING("wrong number of arguments")
     };
 }
 
@@ -942,7 +936,7 @@ void Value::print() const {
             break;
         }
         case Type::STRING: {
-            fprintf(stdout, "%.*s\n", str.len, str.chars);
+            fprintf(stdout, "%.*s\n", (u32) str.len, str.chars);
             break;
         }
         case Type::CLASS: {
@@ -995,7 +989,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 compiler->runtime_error(expr_err.token->m_line, expr_err.message);
             }
             if (test_expr_val.ty != Value::Type::BOOL) {
-                compiler->runtime_error(expr_err.token->m_line, String{"if test expression must evaluate to bool", 41});
+                compiler->runtime_error(expr_err.token->m_line, CREATE_STRING("if test expression must evaluate to bool"));
             }
             bool if_result = test_expr_val.b;
 
@@ -1015,7 +1009,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     compiler->runtime_error(expr_err.token->m_line, expr_err.message);
                 }
                 if (test_expr_val.ty != Value::Type::BOOL) {
-                    compiler->runtime_error(expr_err.token->m_line, String{"while test expression must evaluate to bool", 44});
+                    compiler->runtime_error(expr_err.token->m_line, CREATE_STRING("while test expression must evaluate to bool"));
                 }
                 if(!test_expr_val.b) {
                     break;
@@ -1030,7 +1024,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::BREAK: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, String{"'break' statement can only be used in a loop.", 46});
+                compiler->runtime_error(s_break_continue.line, CREATE_STRING("'break' statement can only be used in a loop."));
             }
             expr_val = Value {
                 .ty = Value::Type::BREAK
@@ -1039,7 +1033,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::CONTINUE: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, String{"'continue' statement can only be used in a loop.", 49});
+                compiler->runtime_error(s_break_continue.line, CREATE_STRING("'continue' statement can only be used in a loop."));
             }
             expr_val = Value {
                 .ty = Value::Type::CONTINUE
@@ -1065,7 +1059,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 const Token* superclass_token = s_class.superclass->expr.literal->val;
                 env->get_class(superclass_token, &superclass);
                 if (superclass == nullptr) {
-                    compiler->runtime_error(superclass_token->m_line, String{"superclass must be a class.", 28});
+                    compiler->runtime_error(superclass_token->m_line, CREATE_STRING("superclass must be a class."));
                 }
             }
 
@@ -1108,7 +1102,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 }
             }
 
-            Callable* class_init = new_class->get_method(String{"init", 4});
+            Callable* class_init = new_class->get_method(CREATE_STRING("init"));
             if (class_init != nullptr) {
                 env->define_callable(class_name, Callable(class_init->m_arity, [class_name_token, class_init](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
                     Class* in_class = nullptr;
@@ -1161,7 +1155,7 @@ void Stmt::print() {
     switch (ty)
     {
         case Type::VAR_DECL: {
-            fprintf(stdout, "VAR DECL: %.*s", s_var_decl.name->m_lexeme.len, s_var_decl.name->m_lexeme.chars);
+            fprintf(stdout, "VAR DECL: %.*s", (u32) s_var_decl.name->m_lexeme.len, s_var_decl.name->m_lexeme.chars);
             if (s_var_decl.initializer != nullptr) {
                 fprintf(stdout, " = ");
                 s_var_decl.initializer->print();
@@ -1208,15 +1202,15 @@ void Stmt::print() {
         }
         case Type::FN_DECLARATION: {
             fprintf(stdout, "FN DECLARATION: ");
-            fprintf(stdout, "%.*s params:", fn_declaration.name->m_lexeme.len, fn_declaration.name->m_lexeme.chars);
+            fprintf(stdout, "%.*s params:", (u32) fn_declaration.name->m_lexeme.len, fn_declaration.name->m_lexeme.chars);
             for (u64 i = 0; i < fn_declaration.params.size(); ++i) {
-                fprintf(stdout, " %.*s", fn_declaration.params[i]->m_lexeme.len,fn_declaration.params[i]->m_lexeme.chars);
+                fprintf(stdout, " %.*s", (u32) fn_declaration.params[i]->m_lexeme.len,fn_declaration.params[i]->m_lexeme.chars);
             }
             break;
         }
         case Type::CLASS_DECLARATION: {
             fprintf(stdout, "CLASS DECLARATION: ");
-            fprintf(stdout, "%.*s", s_class.name->m_lexeme.len, s_class.name->m_lexeme.chars);
+            fprintf(stdout, "%.*s", (u32) s_class.name->m_lexeme.len, s_class.name->m_lexeme.chars);
             if (s_class.superclass != nullptr) {
                 fprintf(stdout, " : ");
                 s_class.superclass->print();

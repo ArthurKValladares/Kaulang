@@ -17,8 +17,8 @@ int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len)
 String concatenated_string(Arena* arena, String left, String right) {
     size_t total_len = left.len + right.len;
     char* string_chars = (char*) arena->push_array_no_zero<char>(total_len);
-    std::memcpy(string_chars, left.chars, left.len * sizeof(char));
-    std::memcpy(string_chars + left.len, right.chars, right.len * sizeof(char));
+    memcpy(string_chars, left.chars, left.len * sizeof(char));
+    memcpy(string_chars + left.len, right.chars, right.len * sizeof(char));
 
     String ret;
     ret.len = total_len;

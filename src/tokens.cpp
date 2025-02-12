@@ -147,7 +147,7 @@ const char* token_type_to_string(TokenType ty) {
 void Token::print() const {
     fprintf(stdout, "%s", token_type_to_string(m_type));
     if (!m_lexeme.empty()) {
-        fprintf(stdout, " -> %.*s", m_lexeme.len, m_lexeme.chars);
+        fprintf(stdout, " -> %.*s", (u32) m_lexeme.len, m_lexeme.chars);
     }
     switch (data.ty) {
         case TokenData::Type::FLOAT: {

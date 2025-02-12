@@ -40,7 +40,7 @@ void Arena::release() {
 
 void* Arena::push(u64 size) {
     void* ret = push_no_zero(size);
-    std::memset(ret, 0, size);
+    memset(ret, 0, size);
     return ret;
 }
 

@@ -311,11 +311,11 @@ namespace {
 
 void Parser::error(const Token* token, String message) {
     if (token->m_type == TokenType::_EOF) {
-        fprintf(stderr, "Parser Error: %.*s at end.\n", message.len, message.chars);
+        fprintf(stderr, "Parser Error: %.*s at end.\n", (u32) message.len, message.chars);
     } else {
         fprintf(stderr, "Parser Error: %.*s of token: %.*s at %d.\n", 
-            message.len, message.chars,
-            token->m_lexeme.len, token->m_lexeme.chars,
+            (u32) message.len, message.chars,
+            (u32) token->m_lexeme.len, token->m_lexeme.chars,
             token->m_line);
     }
     m_had_error = true;
@@ -356,19 +356,19 @@ Stmt Parser::declaration(Arena* arena) {
 }
 
 Stmt Parser::fn_declaration(Arena* arena, bool is_static) {
-    Token* name = consume(TokenType::IDENTIFIER, String{"Expected function name", 23});
-    consume(TokenType::LEFT_PAREN, String{"Expected '(' after function name", 33});
+    Token* name = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected function name"));
+    consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after function name"));
 
     Array<Token*> params;
     params.init(arena);
     if (!check(TokenType::RIGHT_PAREN)) {
         do {
-            params.push(consume(TokenType::IDENTIFIER, String{"Expecteded parameter name", 26}));
+            params.push(consume(TokenType::IDENTIFIER, CREATE_STRING("Expecteded parameter name")));
         } while(match(TokenType::COMMA));
     }
-    consume(TokenType::RIGHT_PAREN, String{"Expected ')' after function parameters", 39});
+    consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after function parameters"));
 
-    consume(TokenType::LEFT_BRACE, String{"Expected '{' before function body.", 35});
+    consume(TokenType::LEFT_BRACE, CREATE_STRING("Expected '{' before function body."));
     Stmt* body = allocated_stmt(block_statement(arena));
 
     return new_fn_declaration(name, params, body, is_static);
@@ -377,15 +377,15 @@ Stmt Parser::fn_declaration(Arena* arena, bool is_static) {
 Stmt Parser::class_declaration(Arena* arena) {
     arena->child_arena = alloc_arena();
 
-    Token* name = consume(TokenType::IDENTIFIER, String{"Expected class name", 20});
+    Token* name = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected class name"));
 
     Expr* superclass = nullptr;
     if (match(TokenType::COLON)) {
-        consume(TokenType::IDENTIFIER, String{"Expected superclass name", 25});
+        consume(TokenType::IDENTIFIER, CREATE_STRING("Expected superclass name"));
         superclass = new_literal(previous());
     }
 
-    consume(TokenType::LEFT_BRACE, String{"Expected '{' after class name", 30});
+    consume(TokenType::LEFT_BRACE, CREATE_STRING("Expected '{' after class name"));
 
     Array<Stmt> members;
     members.init(arena);
@@ -395,21 +395,21 @@ Stmt Parser::class_declaration(Arena* arena) {
         } else if (match(TokenType::FN)) {
             members.push(fn_declaration(arena->child_arena, false));
         }  else if (match(TokenType::STATIC)) {
-            consume(TokenType::FN, String{"Expected 'fn' after 'static'", 29});
+            consume(TokenType::FN, CREATE_STRING("Expected 'fn' after 'static'"));
             members.push(fn_declaration(arena->child_arena, true));
         } else {
-            error(peek(), String{"Statements inside class declaration must either be functions or variables.", 75});
+            error(peek(), CREATE_STRING("Statements inside class declaration must either be functions or variables."));
         }
     }
 
-    consume(TokenType::RIGHT_BRACE, String{"Expected '}' after class body", 30});
-    consume(TokenType::SEMICOLON, String{"Expected ';' after class declaration", 37});
+    consume(TokenType::RIGHT_BRACE, CREATE_STRING("Expected '}' after class body"));
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after class declaration"));
     
     return new_class_declaration(name, superclass, members);
 }
 
 Stmt Parser::var_declaration(Arena* arena) {
-    Token* name = consume(TokenType::IDENTIFIER, String{"Expected variable name", 23});
+    Token* name = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected variable name"));
 
     const TokenType equal_test[] = {TokenType::EQUAL};
     Expr* initializer = nullptr;
@@ -417,7 +417,7 @@ Stmt Parser::var_declaration(Arena* arena) {
         initializer = expression(arena);
     }
 
-    consume(TokenType::SEMICOLON, String{"Expected ';' after variable declaration", 40});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after variable declaration"));
     return new_var_decl(name, initializer);
 }
 
@@ -453,7 +453,7 @@ Stmt Parser::expr_statement(Arena* arena) {
         return new_err_stmt();
     }
 
-    consume(TokenType::SEMICOLON, String{"Expected ';' after expression", 30});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after expression"));
     return new_expr_stmt(val);
 }
 
@@ -467,16 +467,16 @@ Stmt Parser::block_statement(Arena* arena) {
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
         stmts.push(declaration(arena->child_arena));
     }
-    consume(TokenType::RIGHT_BRACE, String{"Expected '}' after block", 25});
+    consume(TokenType::RIGHT_BRACE, CREATE_STRING("Expected '}' after block"));
 
     return new_block_stmt(stmts);
 }
 
 
 Stmt Parser::if_statement(Arena* arena) {
-    consume(TokenType::LEFT_PAREN, String{"Expected '(' after 'if'", 24});
+    consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'if'"));
     Expr* expr = expression(arena);
-    consume(TokenType::RIGHT_PAREN, String{"Unterminated parentheses in if statement", 41});
+    consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in if statement"));
 
     Stmt if_stmt = statement(arena);
 
@@ -489,9 +489,9 @@ Stmt Parser::if_statement(Arena* arena) {
 }
 
 Stmt Parser::while_statement(Arena* arena) {
-    consume(TokenType::LEFT_PAREN, String{"Expected '(' after 'while'", 27});
+    consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'while'"));
     Expr* expr = expression(arena);
-    consume(TokenType::RIGHT_PAREN, String{"Unterminated parentheses in while statement", 44});
+    consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in while statement"));
 
     Stmt stmt = statement(arena);
 
@@ -499,7 +499,7 @@ Stmt Parser::while_statement(Arena* arena) {
 }
 
 Stmt Parser::for_statement(Arena* arena) {
-    consume(TokenType::LEFT_PAREN, String{"Expected '(' after 'for'", 25});
+    consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'for'"));
 
     Stmt initializer = {};
     if (match(TokenType::SEMICOLON)) {
@@ -513,13 +513,13 @@ Stmt Parser::for_statement(Arena* arena) {
     if (!check(TokenType::SEMICOLON)) {
         condition = expression(arena);
     }
-    consume(TokenType::SEMICOLON, String{"Expected ';' after 'for' condition", 35});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after 'for' condition"));
 
     Expr* increment = nullptr;
     if (!check(TokenType::SEMICOLON)) {
         increment = expression(arena);
     }
-    consume(TokenType::RIGHT_PAREN, String{"Unterminated parentheses in for statement", 42});
+    consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in for statement"));
 
     Stmt body = statement(arena);
 
@@ -546,13 +546,13 @@ Stmt Parser::for_statement(Arena* arena) {
 }
 
 Stmt Parser::break_statement() {
-    consume(TokenType::SEMICOLON, String{"Expected ';' after 'break'", 27});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after 'break'"));
 
     return new_break_stmt(previous()->m_line);
 }
 
 Stmt Parser::continue_statement() {
-    consume(TokenType::SEMICOLON, String{"Expected ';' after 'continue'", 30});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after 'continue'"));
 
     return new_continue_stmt(previous()->m_line);
 }
@@ -564,7 +564,7 @@ Stmt Parser::return_statement(Arena* arena) {
     if (!check(TokenType::SEMICOLON)) {
         value = expression(arena);
     }
-    consume(TokenType::SEMICOLON, String{"Expected ';' after retur value", 31});
+    consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after retur value"));
 
     return new_return_stmt(return_keyword, value);
 }
@@ -586,7 +586,7 @@ Expr* Parser::assignment(Arena* arena) {
         } else if (expr->ty == Expr::Type::GET) {
             return new_set(expr, right);
         } else {
-            error(peek(), String{"invalid assignment target.", 27});
+            error(peek(), CREATE_STRING("invalid assignment target."));
             return nullptr;
         }
     }
@@ -631,7 +631,7 @@ Expr* Parser::ternary(Arena* arena) {
             return new_ternary(expr, left_op, middle, right_op, right);
         }
 
-        error(peek(), String{"ternary operator expected `:`.", 31});
+        error(peek(), CREATE_STRING("ternary operator expected `:`."));
 
         return nullptr;
     } else {
@@ -647,7 +647,7 @@ Expr* Parser::equality(Arena* arena) {
         Token* op = previous();
         Expr* right = term(arena);
 
-        error(peek(), String{"equality operator without right-hand side expression.", 54});
+        error(peek(), CREATE_STRING("equality operator without right-hand side expression."));
 
         return nullptr;
     }
@@ -672,7 +672,7 @@ Expr* Parser::comparison(Arena* arena) {
         Token* op = previous();
         Expr* right = term(arena);
 
-        error(peek(), String{"comparison operator without right-hand side expression.", 56});
+        error(peek(), CREATE_STRING("comparison operator without right-hand side expression."));
 
         return nullptr;
     }
@@ -697,7 +697,7 @@ Expr* Parser::term(Arena* arena) {
         Token* op = previous();
         Expr* right = term(arena);
 
-        error(peek(), String{"term operator without right-hand side expression.", 50});
+        error(peek(), CREATE_STRING("term operator without right-hand side expression."));
 
         m_had_error = true;
         return nullptr;
@@ -723,7 +723,7 @@ Expr* Parser::factor(Arena* arena) {
         Token* op = previous();
         Expr* right = term(arena);
 
-        error(peek(), String{"factor operator without right-hand side expression.", 52});
+        error(peek(), CREATE_STRING("factor operator without right-hand side expression."));
 
         return nullptr;
     }
@@ -758,11 +758,11 @@ Expr* Parser::fn_call(Arena* arena) {
         if (match(TokenType::LEFT_PAREN)) {
             expr = finish_call(arena, expr);
         } else if (match(TokenType::DOT)) {
-            Token* name = consume(TokenType::IDENTIFIER, String{"Expected identifier after '.'", 30});
+            Token* name = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected identifier after '.'"));
             expr = new_get(expr, name);
         } else if (match(TokenType::COLON)) {
-            Token* colons = consume(TokenType::COLON, String{"Expected `::` after class name when calling static function", 60});
-            Token* fn_name = consume(TokenType::IDENTIFIER, String{"Expected identifier after '.'", 30});
+            Token* colons = consume(TokenType::COLON, CREATE_STRING("Expected `::` after class name when calling static function"));
+            Token* fn_name = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected identifier after '.'"));
             expr = new_static_fn_call(expr, colons, fn_name);
         } else {
             break;
@@ -783,7 +783,7 @@ Expr* Parser::finish_call(Arena* arena, Expr* callee) {
         } while(match(TokenType::COMMA));
     }
 
-    Token* paren = consume(TokenType::RIGHT_PAREN, String{"Expected ')' after arguments", 29});
+    Token* paren = consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after arguments"));
 
     return new_fn_call(callee, paren, arguments);
 }
@@ -800,8 +800,8 @@ Expr* Parser::primary(Arena* arena) {
 
     if (match(TokenType::SUPER)) {
         Token* keyword = previous();
-        consume(TokenType::DOT, String{"Expected '.' after 'super'", 27});
-        Token* method = consume(TokenType::IDENTIFIER, String{"Expected superclass method name", 32});
+        consume(TokenType::DOT, CREATE_STRING("Expected '.' after 'super'"));
+        Token* method = consume(TokenType::IDENTIFIER, CREATE_STRING("Expected superclass method name"));
         return new_superclass(keyword, method);
     }
 
@@ -816,11 +816,11 @@ Expr* Parser::primary(Arena* arena) {
 
     if (match(TokenType::LEFT_PAREN)) {
         Expr* expr = expression(arena);
-        consume(TokenType::RIGHT_PAREN, String{"Expected ')' after expression", 30});
+        consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after expression"));
         return new_grouping(expr);
     }
 
-    error(peek(), String{"Expected expression.", 21});
+    error(peek(), CREATE_STRING("Expected expression."));
 
     return nullptr;
 }
