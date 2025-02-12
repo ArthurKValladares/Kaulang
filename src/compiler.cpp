@@ -5,7 +5,6 @@
 #include "resolver.h"
 
 #include <iostream>
-#include <print>
 #include <ctime>
 
 namespace {
@@ -47,12 +46,12 @@ KauCompiler::KauCompiler() {
 }
 
 void KauCompiler::error(int line, String message) {
-    fprintf(stderr, "[Line %d] Error: %.*s\n", line, message.len, message.chars);
+    fprintf(stderr, "[Line %d] Error: %.*s\n", line, (u32) message.len, message.chars);
     m_had_error = true;
 }
 
 void KauCompiler::runtime_error(int line, String message) {
-    fprintf(stderr, "[Line %d] Runtime Error: %.*s\n", line, message.len, message.chars);
+    fprintf(stderr, "[Line %d] Runtime Error: %.*s\n", line, (u32) message.len, message.chars);
     m_had_runtime_error = true;
 }
 
@@ -80,25 +79,37 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
         Value val = stmt.evaluate(this, this->global_arena, &global_env, from_prompt, false);
     }
 
-    global_arena->clear();
-
     return 0;
 }
 
 int KauCompiler::run_prompt() {
-    constexpr long max_line_size = 1024;
-    char line_char_buffer[max_line_size];
+    Arena* program_arena = alloc_arena();
+
+    size_t line_start_offset = 0;
+    Array<char> line_char_buffer;
+    line_char_buffer.init(program_arena);
 
     while (true) {
         fprintf(stdout, "> ");
 
-        std::cin.getline(line_char_buffer, max_line_size);
-        const int line_size = strlen(line_char_buffer);
+        int line_size = 0;
+        int c;
+        while (true) {
+            c = fgetc(stdin);
+            if (c == EOF || c == '\n') {
+                break;
+            }
+            line_char_buffer.push(c);
+            ++line_size;
+        }
+
+        
         if (line_size == 0) {
             break;
         }
 
-        run(line_char_buffer, line_size, true);
+        run(&line_char_buffer[line_start_offset], line_size, true);
+        line_start_offset += line_size;
 
         if (m_had_error) {
             // TODO: Do I do anything here?
@@ -106,6 +117,8 @@ int KauCompiler::run_prompt() {
         m_had_error = false;
     }
 
+    global_arena->clear();
+    program_arena->clear();
     return 0;
 }
 
@@ -130,7 +143,8 @@ int KauCompiler::run_file(const char* file_path) {
     fclose(script_file);
 
     run(byte_buffer, end, false);
-
+    global_arena->clear();
+    
     if (m_had_error) {
         return -1;
     }
