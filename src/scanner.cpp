@@ -2,27 +2,77 @@
 
 #include <ctype.h>
 
-// TODO: better way to do this lookup table
-#include <unordered_map>
-const std::unordered_map<std::string_view, TokenType> keywords = {
-    {"and", TokenType::AND},
-    {"class", TokenType::CLASS},
-    {"else", TokenType::ELSE},
-    {"fn", TokenType::FN},
-    {"static", TokenType::STATIC},
-    {"for", TokenType::FOR},
-    {"if", TokenType::IF},
-    {"nil", TokenType::NIL},
-    {"or", TokenType::OR},
-    {"return", TokenType::RETURN},
-    {"super", TokenType::SUPER},
-    {"this", TokenType::THIS},
-    {"true", TokenType::TRUE},
-    {"false", TokenType::FALSE},
-    {"var", TokenType::VAR},
-    {"while", TokenType::WHILE},
-    {"break", TokenType::BREAK},
-};
+void Scanner::init_keywords_map(Arena* arena) {
+    keywords.allocate(arena);
+
+    TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::AND;
+    keywords.insert(arena, CREATE_STRING("and"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::CLASS;
+    keywords.insert(arena, CREATE_STRING("class"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::ELSE;
+    keywords.insert(arena, CREATE_STRING("else"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::FN;
+    keywords.insert(arena, CREATE_STRING("fn"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::STATIC;
+    keywords.insert(arena, CREATE_STRING("static"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::FOR;
+    keywords.insert(arena, CREATE_STRING("for"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::IF;
+    keywords.insert(arena, CREATE_STRING("if"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::NIL;
+    keywords.insert(arena, CREATE_STRING("nil"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::OR;
+    keywords.insert(arena, CREATE_STRING("or"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::RETURN;
+    keywords.insert(arena, CREATE_STRING("return"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::SUPER;
+    keywords.insert(arena, CREATE_STRING("super"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::THIS;
+    keywords.insert(arena, CREATE_STRING("this"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::TRUE;
+    keywords.insert(arena, CREATE_STRING("true"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::FALSE;
+    keywords.insert(arena, CREATE_STRING("false"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::VAR;
+    keywords.insert(arena, CREATE_STRING("var"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::WHILE;
+    keywords.insert(arena, CREATE_STRING("while"), ty);
+
+    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
+    *ty = TokenType::BREAK;
+    keywords.insert(arena, CREATE_STRING("break"), ty);
+}
 
 bool Scanner::is_at_end() const {
     return m_current_char_offset >= m_source_len;
@@ -154,10 +204,10 @@ void Scanner::identifier(Arena* arena) {
     }
 
     const String id = get_substring(m_start_char_offset, m_current_char_offset);
-    const std::string_view id_view = id.to_string_view();
 
-    if (keywords.contains(id_view)) {
-        add_token(arena, keywords.at(id_view), id);
+    TokenType* ty = (TokenType*)keywords.get(id);
+    if (ty != nullptr) { 
+        add_token(arena, *ty, id);
     } else {
         // TODO: This add_token stuff is a bit messy atm imo, specially the subcstring stuff.
         // MAybe just handle it all explicitly

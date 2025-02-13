@@ -1,10 +1,12 @@
 #include "defs.h"
 
 #include "compiler.h"
+#include "scanner.h"
 
 int main(int argc, char **argv) {
     KauCompiler kau;
-    //kau.run_file("../test.kau");
+    
+    kau.run_file("../test.kau");
     switch (argc) {
         case 1: {
             kau.run_prompt();

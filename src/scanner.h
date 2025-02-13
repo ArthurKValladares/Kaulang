@@ -21,6 +21,8 @@ struct Scanner {
     void print_tokens();
 #endif
 
+    void init_keywords_map(Arena* arena);
+
     Array<Token> m_tokens;
     
 private:
@@ -51,6 +53,8 @@ private:
     int m_current_char_offset = 0;
 
     int m_current_line = 1;
+
+    StringMap keywords;
 
     friend class Parser;
 };

@@ -1,7 +1,7 @@
 #include "map.h"
 
 void StringMap::allocate(Arena* arena) {
-    buckets = (MapNode**) arena->push_array_no_zero<MapNode*>(STRING_MAP_NUM_BUCKETS);
+    buckets = (MapNode**) arena->push_array<MapNode*>(STRING_MAP_NUM_BUCKETS);
 }
 
 void* StringMap::get(String key) {
