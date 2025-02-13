@@ -8,7 +8,7 @@ void* StringMap::get(String key) {
     u64 bucket = StringHasher()(key) % STRING_MAP_NUM_BUCKETS;
     MapNode* node;
     node = buckets[bucket];
-    while(node) {
+    while(node != nullptr) {
         if(key == node->key) {
             return node->value;
         }
@@ -23,14 +23,14 @@ void StringMap::insert(Arena* arena, String key, void* object) {
     MapNode*  node;
 
     tmp = &buckets[bucket];
-    while(*tmp) {
+    while(*tmp != nullptr) {
         if(key == (*tmp)->key) {
             break;
         }
         tmp = &(*tmp)->next;
     }
 
-    if(*tmp) {
+    if(*tmp != nullptr) {
         node = *tmp;
     } else {
         node = (MapNode*) arena->push_struct<MapNode>();
