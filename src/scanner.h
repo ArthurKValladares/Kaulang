@@ -7,6 +7,8 @@
 #include "tokens.h"
 #include "compiler.h"
 
+void init_keywords_map(Arena* arena);
+
 struct Scanner {
     Scanner(Arena* arena, char* source, int len) 
         : m_source(source)
@@ -20,8 +22,6 @@ struct Scanner {
 #ifdef DEBUG
     void print_tokens();
 #endif
-
-    void init_keywords_map(Arena* arena);
 
     Array<Token> m_tokens;
     
@@ -53,8 +53,6 @@ private:
     int m_current_char_offset = 0;
 
     int m_current_line = 1;
-
-    StringMap keywords;
 
     friend class Parser;
 };

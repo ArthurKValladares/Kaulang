@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv) {
     KauCompiler kau;
-    
+    init_keywords_map(kau.global_arena);
     kau.run_file("../test.kau");
     switch (argc) {
         case 1: {

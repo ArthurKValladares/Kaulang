@@ -2,7 +2,11 @@
 
 #include <ctype.h>
 
-void Scanner::init_keywords_map(Arena* arena) {
+namespace {
+    StringMap keywords;
+};
+
+void init_keywords_map(Arena* arena) {
     keywords.allocate(arena);
 
     TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
