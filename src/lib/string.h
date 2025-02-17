@@ -2,7 +2,6 @@
 
 #include "arena.h"
 
-#include <string_view>
 
 int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len);
 
@@ -35,11 +34,6 @@ struct String {
 
     bool empty() const {
         return chars == nullptr;
-    }
-
-    // TODO: Temporary
-    std::string_view to_string_view() const {
-        return std::string_view(chars, len);
     }
 };
 
