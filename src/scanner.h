@@ -7,6 +7,8 @@
 #include "tokens.h"
 #include "compiler.h"
 
+void init_keywords_map(Arena* arena);
+
 struct Scanner {
     Scanner(Arena* arena, char* source, int len) 
         : m_source(source)

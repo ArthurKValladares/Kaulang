@@ -17,16 +17,18 @@ namespace {
 
 Arena* alloc_arena() {
     Arena* arena = (Arena*) malloc(sizeof(Arena));
+    assert(arena);
 
     SYSTEM_INFO sys_info;
     GetSystemInfo(&sys_info);
 
     arena->page_size = sys_info.dwPageSize;
     arena->mem = VirtualAlloc(nullptr, round_up_to_multiple(arena->page_size, 64 * 1e9), MEM_RESERVE, PAGE_READWRITE);
-    void* ret = VirtualAlloc(arena->mem, arena->page_size, MEM_COMMIT, PAGE_READWRITE);
+    const u64 initial_commit_size = arena->page_size * 5;
+    void* ret = VirtualAlloc(arena->mem, initial_commit_size, MEM_COMMIT, PAGE_READWRITE);
     assert(ret != nullptr);
     assert(ret == arena->mem);
-    arena->commited_size = arena->page_size;
+    arena->commited_size = initial_commit_size;
     arena->offset = 0;
 
     return arena;

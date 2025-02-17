@@ -13,8 +13,6 @@ struct MapNode  {
 };
 
 struct StringMap {
-    StringMap() {}
-
     void allocate(Arena* arena);
 
     void* get(String key);
