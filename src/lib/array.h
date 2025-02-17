@@ -13,7 +13,7 @@ struct Array {
 
     void push(T item) {
         m_arena->push_struct_no_zero<T>();
-        m_head[m_len++] = std::move(item);
+        m_head[m_len++] = item;
     }
     void pop() {
         m_arena->pop(sizeof(T));

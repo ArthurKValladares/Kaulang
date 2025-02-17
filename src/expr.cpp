@@ -1084,7 +1084,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
                         *callable_ptr = construct_callable_class(fn, new_class);
 
-                        new_class->m_methods.insert(arena, fn.name->m_lexeme, callable_ptr);
+                        new_class->m_methods.insert(arena, HASH_STR(fn.name->m_lexeme), callable_ptr);
                     }
                 } else if (stmt->ty == Stmt::Type::VAR_DECL) {
                     VarDeclPayload var_decl = stmt->s_var_decl;
@@ -1096,7 +1096,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                             compiler->runtime_error(var_err.token->m_line, var_err.message);
                         }
                     }
-                    new_class->m_fields.insert(arena, var_decl.name->m_lexeme, value_ptr);
+                    new_class->m_fields.insert(arena, HASH_STR(var_decl.name->m_lexeme), value_ptr);
                 } else {
                     assert(false);
                 }
@@ -1229,16 +1229,16 @@ void Stmt::print() {
 }
 
 bool Class::contains_field(String field) {
-    return m_fields.get(field) != nullptr;
+    return m_fields.get(HASH_STR(field)) != nullptr;
 }
 
 void Class::set_field(String field, Value in_value) {
-    Value* field_val = (Value*) m_fields.get(field);
+    Value* field_val = (Value*) m_fields.get(HASH_STR(field));
     *field_val = in_value;
 }
 
 Callable* Class::get_method(String name) {
-    Callable* method = (Callable*) m_methods.get(name);
+    Callable* method = (Callable*) m_methods.get(HASH_STR(name));
     if (method != nullptr) {
         return method;
     }
@@ -1249,7 +1249,7 @@ Callable* Class::get_method(String name) {
 }
 
 bool Class::get(String field, Value& in_value) {
-    void* field_ret = m_fields.get(field);
+    void* field_ret = m_fields.get(HASH_STR(field));
     if (field_ret != nullptr) {
         in_value = *((Value*) field_ret);
         return true;

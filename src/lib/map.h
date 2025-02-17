@@ -1,22 +1,22 @@
 #pragma once
 
-#include "string.h"
+#include "../defs.h"
 #include "arena.h"
 
 // TODO: Not a particularly good map implementation, but it works for now
-#define STRING_MAP_NUM_BUCKETS 1024
+#define NUM_BUCKETS 1024
 
 struct MapNode  {
-    String key;
+    u64 hashed_key;
     void* value;
     MapNode* next;
 };
 
-struct StringMap {
+struct Map {
     void allocate(Arena* arena);
 
-    void* get(String key);
-    void insert(Arena* arena, String key, void* object);
+    void* get(u64 hashed_key);
+    void insert(Arena* arena, u64 hashed_key, void* object);
 
     MapNode** buckets;
 };

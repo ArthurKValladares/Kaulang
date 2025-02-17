@@ -1,15 +1,15 @@
 #include "map.h"
 
-void StringMap::allocate(Arena* arena) {
-    buckets = (MapNode**) arena->push_array<MapNode*>(STRING_MAP_NUM_BUCKETS);
+void Map::allocate(Arena* arena) {
+    buckets = (MapNode**) arena->push_array<MapNode*>(NUM_BUCKETS);
 }
 
-void* StringMap::get(String key) {
-    u64 bucket = StringHasher()(key) % STRING_MAP_NUM_BUCKETS;
+void* Map::get(u64 hashed_key) {
+    const u64 bucket = hashed_key % NUM_BUCKETS;
     MapNode* node;
     node = buckets[bucket];
     while(node != nullptr) {
-        if(key == node->key) {
+        if(hashed_key == node->hashed_key) {
             return node->value;
         }
         node = node->next;
@@ -17,14 +17,14 @@ void* StringMap::get(String key) {
     return nullptr;
 }
 
-void StringMap::insert(Arena* arena, String key, void* object) {
-    u64 bucket = StringHasher()(key) % STRING_MAP_NUM_BUCKETS;
+void Map::insert(Arena* arena, u64 hashed_key, void* object) {
+    const u64 bucket = hashed_key % NUM_BUCKETS;
     MapNode** tmp;
     MapNode*  node;
 
     tmp = &buckets[bucket];
     while(*tmp != nullptr) {
-        if(key == (*tmp)->key) {
+        if(hashed_key == (*tmp)->hashed_key) {
             break;
         }
         tmp = &(*tmp)->next;
@@ -37,6 +37,6 @@ void StringMap::insert(Arena* arena, String key, void* object) {
         node->next = nullptr;
         *tmp = node;
     }
-    node->key = key;
+    node->hashed_key = hashed_key;
     node->value = object;
 }

@@ -3,7 +3,7 @@
 #include <ctype.h>
 
 namespace {
-    StringMap keywords;
+    Map keywords;
 };
 
 void init_keywords_map(Arena* arena) {
@@ -11,71 +11,71 @@ void init_keywords_map(Arena* arena) {
 
     TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::AND;
-    keywords.insert(arena, CREATE_STRING("and"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("and")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::CLASS;
-    keywords.insert(arena, CREATE_STRING("class"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("class")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::ELSE;
-    keywords.insert(arena, CREATE_STRING("else"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("else")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::FN;
-    keywords.insert(arena, CREATE_STRING("fn"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("fn")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::STATIC;
-    keywords.insert(arena, CREATE_STRING("static"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("static")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::FOR;
-    keywords.insert(arena, CREATE_STRING("for"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("for")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::IF;
-    keywords.insert(arena, CREATE_STRING("if"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("if")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::NIL;
-    keywords.insert(arena, CREATE_STRING("nil"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("nil")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::OR;
-    keywords.insert(arena, CREATE_STRING("or"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("or")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::RETURN;
-    keywords.insert(arena, CREATE_STRING("return"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("return")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::SUPER;
-    keywords.insert(arena, CREATE_STRING("super"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("super")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::THIS;
-    keywords.insert(arena, CREATE_STRING("this"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("this")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::TRUE;
-    keywords.insert(arena, CREATE_STRING("true"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("true")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::FALSE;
-    keywords.insert(arena, CREATE_STRING("false"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("false")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::VAR;
-    keywords.insert(arena, CREATE_STRING("var"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("var")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::WHILE;
-    keywords.insert(arena, CREATE_STRING("while"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("while")), ty);
 
     ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
     *ty = TokenType::BREAK;
-    keywords.insert(arena, CREATE_STRING("break"), ty);
+    keywords.insert(arena, HASH_STR(CREATE_STRING("break")), ty);
 }
 
 bool Scanner::is_at_end() const {
@@ -209,7 +209,7 @@ void Scanner::identifier(Arena* arena) {
 
     const String id = get_substring(m_start_char_offset, m_current_char_offset);
 
-    TokenType* ty = (TokenType*)keywords.get(id);
+    TokenType* ty = (TokenType*)keywords.get(HASH_STR(id));
     if (ty != nullptr) { 
         add_token(arena, *ty, id);
     } else {

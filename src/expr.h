@@ -100,8 +100,8 @@ struct Class {
 
     void print() const;
 
-    StringMap m_fields;
-    StringMap m_methods;
+    Map m_fields;
+    Map m_methods;
 
     String m_name = String{};
 

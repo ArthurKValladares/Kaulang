@@ -1,5 +1,7 @@
 #include "string.h"
 
+#include <string.h>
+
 int str_cmp(const char* s1, size_t s1_len, const char* s2, size_t s2_len)
 {
     size_t i1 = 0;
