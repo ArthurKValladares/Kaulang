@@ -17,6 +17,10 @@ void* Map::get(u64 hashed_key) {
     return nullptr;
 }
 
+const void* Map::get(u64 hashed_key) const {
+    return get(hashed_key);
+}
+
 void Map::insert(Arena* arena, u64 hashed_key, void* object) {
     const u64 bucket = hashed_key % NUM_BUCKETS;
     MapNode** tmp;

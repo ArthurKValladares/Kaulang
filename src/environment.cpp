@@ -1,15 +1,26 @@
 #include "environment.h"
 
-void Environment::define(const Token* token, Value value) {
-    define(token->m_lexeme, value);
+void Environment::init(Arena* arena) {
+    values.allocate(arena);
+    callables.allocate(arena);
+    classes.allocate(arena);
 }
 
-void Environment::define(String str, Value value) {
-    values[str] = value;
+void Environment::define(Arena* arena, const Token* token, Value in_value) {
+    define(arena, token->m_lexeme, in_value);
+}
+
+void Environment::define(Arena* arena, String str, Value in_value) {
+    // TODO: This copy here could be inneficient. Same for the others below
+    Value* val = (Value*) arena->push_struct_no_zero<Value>();
+    *val = in_value;
+
+    values.insert(arena, HASH_STR(str), val);
 }
 
 bool Environment::contains(const Token* token) const {
-    if(values.contains(token->m_lexeme)) {
+    const Value* val = (const Value*) values.get(HASH_STR(token->m_lexeme));
+    if(val != nullptr) {
         return true;
     } else {
         if (enclosing != nullptr) {
@@ -23,8 +34,9 @@ bool Environment::contains(const Token* token) const {
 RuntimeError Environment::set(const Token* token, Value value) {
     String lexeme = token->m_lexeme;
 
-    if (values.contains(lexeme)) {
-        values[lexeme] = value;
+    Value* val = (Value*) values.get(HASH_STR(lexeme));
+    if (val != nullptr) {
+        *val = value;
         return RuntimeError::ok();
     } else {
         if (enclosing != nullptr) {
@@ -38,8 +50,9 @@ RuntimeError Environment::set(const Token* token, Value value) {
 RuntimeError Environment::get(const Token* token, Value& in_value) {
     String lexeme = token->m_lexeme;
 
-    if (values.contains(lexeme)) {
-        in_value = values.at(lexeme);
+    Value* val = (Value*) values.get(HASH_STR(lexeme));
+    if (val != nullptr) {
+        in_value = *val;
         if (in_value.ty == Value::Type::NIL) {
             return RuntimeError::undefined_variable(token);
         }
@@ -55,8 +68,9 @@ RuntimeError Environment::get(const Token* token, Value& in_value) {
 
 // TODO: Maybe version without the check, get at root.
 Value Environment::get_unchecked(String name) {
-    if (values.contains(name)) {
-        return values.at(name);
+    Value* val = (Value*) values.get(HASH_STR(name));
+    if (val != nullptr) {
+        return *val;
     } else {
         return enclosing->get_unchecked(name);
     }
@@ -74,19 +88,23 @@ RuntimeError Environment::get_at(const Token* token, u64 distance, Value& in_val
     return ancestor(distance)->get(token, in_value);
 }
 
-void Environment::define_callable(const Token* token, Callable in_callable) {
-    define_callable(token->m_lexeme, in_callable);
+void Environment::define_callable(Arena* arena, const Token* token, Callable in_callable) {
+    define_callable(arena, token->m_lexeme, in_callable);
 }
 
-void Environment::define_callable(const String &str, Callable in_callable) {
-    callables[str] = in_callable;
+void Environment::define_callable(Arena* arena, const String &str, Callable in_callable) {
+    Callable* callable = (Callable*) arena->push_struct_no_zero<Callable>();
+    *callable = in_callable;
+
+    callables.insert(arena, HASH_STR(str), callable);
 }
 
 RuntimeError Environment::get_callable(const Token* token, Callable& in_callable) {
     String lexeme = token->m_lexeme;
 
-    if (callables.contains(lexeme)) {
-        in_callable = callables[lexeme];
+    Callable* callable = (Callable*) callables.get(HASH_STR(lexeme));
+    if (callable != nullptr) {
+        in_callable = *callable;
 
         return RuntimeError::ok();
     } else {
@@ -99,8 +117,9 @@ RuntimeError Environment::get_callable(const Token* token, Callable& in_callable
 }
 
 Callable* Environment::get_callable(String name) {
-    if (callables.contains(name)) {
-        return &callables[name];
+    Callable* callable = (Callable*) callables.get(HASH_STR(name));
+    if (callable != nullptr) {
+        return callable;
     } else {
         if (enclosing != nullptr) {
             return enclosing->get_callable(name);
@@ -110,19 +129,23 @@ Callable* Environment::get_callable(String name) {
     }
 }
 
-void Environment::define_class(const Token* token, Class in_class) {
-    define_class(token->m_lexeme, in_class);
+void Environment::define_class(Arena* arena, const Token* token, Class in_class) {
+    define_class(arena, token->m_lexeme, in_class);
 }
 
-void Environment::define_class(const String &str, Class in_class) {
-    classes[str] = in_class;
+void Environment::define_class(Arena* arena, const String &str, Class in_class) {
+    Class* clss = (Class*) arena->push_struct_no_zero<Class>();
+    *clss = in_class;
+
+    classes.insert(arena, HASH_STR(str), clss);
 }
 
 RuntimeError Environment::get_class(const Token* token, Class** in_class) {
     String lexeme = token->m_lexeme;
 
-    if (classes.contains(lexeme)) {
-        *in_class = &classes[lexeme];
+    Class* clss = (Class*) classes.get(HASH_STR(lexeme));
+    if (clss != nullptr) {
+        *in_class = clss;
 
         return RuntimeError::ok();
     } else {

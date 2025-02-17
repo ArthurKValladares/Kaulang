@@ -4,7 +4,7 @@
 #include "arena.h"
 
 // TODO: Not a particularly good map implementation, but it works for now
-#define NUM_BUCKETS 1024
+#define NUM_BUCKETS 512
 
 struct MapNode  {
     u64 hashed_key;
@@ -16,6 +16,7 @@ struct Map {
     void allocate(Arena* arena);
 
     void* get(u64 hashed_key);
+    const void* get(u64 hashed_key) const;
     void insert(Arena* arena, u64 hashed_key, void* object);
 
     MapNode** buckets;

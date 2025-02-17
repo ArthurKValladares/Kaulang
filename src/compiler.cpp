@@ -21,8 +21,12 @@ long get_file_size(FILE* file) {
 };
 
 KauCompiler::KauCompiler() {
+    global_arena = alloc_arena();
+
+    global_env.init(global_arena);
+    
     String clock_str = CREATE_STRING("clock");
-    global_env.define_callable(clock_str, Callable(0, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(global_arena, clock_str, Callable(0, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()
@@ -30,13 +34,11 @@ KauCompiler::KauCompiler() {
     }));
 
     String print_str = CREATE_STRING("print");
-    global_env.define_callable(print_str, Callable(1, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(global_arena, print_str, Callable(1, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         const Value& val = args[0];
         val.print();
         return val;
     }));
-
-    global_arena = alloc_arena();
 }
 
 void KauCompiler::error(int line, String message) {

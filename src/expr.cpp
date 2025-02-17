@@ -48,10 +48,11 @@ namespace {
 
         return Callable(fn_declaration.params.size(), [fn_declaration](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
             Environment new_env = {};
+            new_env.init(arena);
             new_env.enclosing = env;
 
             for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
-                new_env.define(fn_declaration.params[i], args[i]);
+                new_env.define(arena, fn_declaration.params[i], args[i]);
             }
 
             return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
@@ -66,6 +67,7 @@ namespace {
 
         return Callable(fn_declaration.params.size(), [fn_declaration, class_ptr, this_str, is_initializer](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
             env->define(
+                arena,
                 this_str,
                 Value{
                     .ty = Value::Type::CLASS,
@@ -76,6 +78,7 @@ namespace {
                 String super_str = CREATE_STRING("super");
 
                 env->define(
+                    arena,
                     super_str,
                     Value{
                         .ty = Value::Type::CLASS,
@@ -85,10 +88,11 @@ namespace {
             }
 
             Environment new_env = {};
+            new_env.init(arena);
             new_env.enclosing = env;
 
             for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
-                new_env.define(fn_declaration.params[i], args[i]);
+                new_env.define(arena, fn_declaration.params[i], args[i]);
             }
 
             Value body_val = fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
@@ -964,11 +968,12 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     compiler->runtime_error(expr_err.token->m_line, expr_err.message);
                 }
             }
-            env->define(s_var_decl.name, expr_val);
+            env->define(arena, s_var_decl.name, expr_val);
             break;
         }
         case Stmt::Type::BLOCK: {
             Environment new_env = {};
+            new_env.init(arena);
             new_env.enclosing = env;
             for (int i = 0; i < s_block.stmts.size(); ++i) {
                 expr_val = s_block.stmts[i].evaluate(compiler, arena, &new_env, from_prompt, in_loop);
@@ -1044,7 +1049,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             String fn_name = fn_declaration.name->m_lexeme;
             FnDeclarationPayload fn = fn_declaration;
 
-            env->define_callable(fn_name, construct_callable(fn));
+            env->define_callable(arena, fn_name, construct_callable(fn));
 
             break;
         }
@@ -1063,7 +1068,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 }
             }
 
-            env->define_class(class_name_token, Class());
+            env->define_class(arena, class_name_token, Class());
             Class* new_class = nullptr;
             env->get_class(class_name_token, &new_class);
             assert(new_class != nullptr);
@@ -1078,7 +1083,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     FnDeclarationPayload fn = stmt->fn_declaration;
                     if (fn.is_static) {
                         String fn_name = mangled_name(arena, new_class->m_name, fn.name->m_lexeme);
-                        compiler->global_env.define_callable(fn_name, construct_callable(fn));
+                        compiler->global_env.define_callable(arena, fn_name, construct_callable(fn));
                     } else {
                         Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
 
@@ -1104,7 +1109,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
             Callable* class_init = new_class->get_method(CREATE_STRING("init"));
             if (class_init != nullptr) {
-                env->define_callable(class_name, Callable(class_init->m_arity, [class_name_token, class_init](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                env->define_callable(arena, class_name, Callable(class_init->m_arity, [class_name_token, class_init](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
                     Class* in_class = nullptr;
                     env->get_class(class_name_token, &in_class);
 
@@ -1116,7 +1121,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     };
                 }));
             } else {
-                env->define_callable(class_name, Callable(0, [class_name_token](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
+                env->define_callable(arena, class_name, Callable(0, [class_name_token](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
                     Class* in_class = nullptr;
                     env->get_class(class_name_token, &in_class);
 
