@@ -1,28 +1,37 @@
 #include "map.h"
 
+#define GET_IMPL() do {\
+    const u64 bucket = hashed_key % num_buckets;\
+    MapNode* node;\
+    node = buckets[bucket];\
+    while(node != nullptr) {\
+        if(hashed_key == node->hashed_key) {\
+            return node->value;\
+        }\
+        node = node->next;\
+    }\
+    return nullptr;\
+} while(0)
+
 void Map::allocate(Arena* arena) {
-    buckets = (MapNode**) arena->push_array<MapNode*>(NUM_BUCKETS);
+    allocate(arena, 256);
+}
+
+void Map::allocate(Arena* arena, u64 num_buckets) {
+    buckets = (MapNode**) arena->push_array<MapNode*>(num_buckets);
+    this->num_buckets = num_buckets;
 }
 
 void* Map::get(u64 hashed_key) {
-    const u64 bucket = hashed_key % NUM_BUCKETS;
-    MapNode* node;
-    node = buckets[bucket];
-    while(node != nullptr) {
-        if(hashed_key == node->hashed_key) {
-            return node->value;
-        }
-        node = node->next;
-    }
-    return nullptr;
+    GET_IMPL();
 }
 
-const void* Map::get(u64 hashed_key) const {
-    return get(hashed_key);
+const void* Map::get_const(u64 hashed_key)  const {
+    GET_IMPL();
 }
 
 void Map::insert(Arena* arena, u64 hashed_key, void* object) {
-    const u64 bucket = hashed_key % NUM_BUCKETS;
+    const u64 bucket = hashed_key % num_buckets;
     MapNode** tmp;
     MapNode*  node;
 

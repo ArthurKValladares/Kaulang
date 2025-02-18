@@ -19,7 +19,7 @@ void Environment::define(Arena* arena, String str, Value in_value) {
 }
 
 bool Environment::contains(const Token* token) const {
-    const Value* val = (const Value*) values.get(HASH_STR(token->m_lexeme));
+    const Value* val = (const Value*) values.get_const(HASH_STR(token->m_lexeme));
     if(val != nullptr) {
         return true;
     } else {
