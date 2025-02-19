@@ -52,7 +52,7 @@ namespace {
             new_env.enclosing = env;
 
             for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
-                new_env.define(arena, fn_declaration.params[i], args[i]);
+                new_env.define(arena, fn_declaration.params[i]->m_lexeme, args[i]);
             }
 
             return fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
@@ -92,12 +92,12 @@ namespace {
             new_env.enclosing = env;
 
             for (size_t i = 0; i < fn_declaration.params.size(); ++i) {
-                new_env.define(arena, fn_declaration.params[i], args[i]);
+                new_env.define(arena, fn_declaration.params[i]->m_lexeme, args[i]);
             }
 
             Value body_val = fn_declaration.body->evaluate(compiler, arena, &new_env, false, false);
             if (is_initializer) {
-                return env->get_unchecked(this_str);
+                return *env->get(this_str);
             } else {
                 return body_val;
             }
@@ -721,8 +721,9 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
             in_value = right_val;
 
-            if (env->contains(assignment->id)) {
-                env->set(assignment->id, right_val);
+            if (env->contains(assignment->id->m_lexeme)) {
+                const bool was_set = env->set(assignment->id->m_lexeme, right_val);
+                assert(was_set);
             } else {
                 return RuntimeError::undefined_variable(assignment->id);
             }
@@ -968,7 +969,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                     compiler->runtime_error(expr_err.token->m_line, expr_err.message);
                 }
             }
-            env->define(arena, s_var_decl.name, expr_val);
+            env->define(arena, s_var_decl.name->m_lexeme, expr_val);
             break;
         }
         case Stmt::Type::BLOCK: {
@@ -1062,15 +1063,15 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 Value superclass_val = {};
                 assert(s_class.superclass->ty == Expr::Type::LITERAL);
                 const Token* superclass_token = s_class.superclass->expr.literal->val;
-                env->get_class(superclass_token, &superclass);
+                superclass = env->get_class(superclass_token->m_lexeme);
                 if (superclass == nullptr) {
                     compiler->runtime_error(superclass_token->m_line, CREATE_STRING("superclass must be a class."));
                 }
             }
 
-            env->define_class(arena, class_name_token, Class());
+            env->define_class(arena, class_name_token->m_lexeme, Class());
             Class* new_class = nullptr;
-            env->get_class(class_name_token, &new_class);
+            new_class = env->get_class(class_name_token->m_lexeme);
             assert(new_class != nullptr);
             new_class->m_name = class_name;
             new_class->m_methods.allocate(arena);
@@ -1110,8 +1111,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
             Callable* class_init = new_class->get_method(CREATE_STRING("init"));
             if (class_init != nullptr) {
                 env->define_callable(arena, class_name, Callable(class_init->m_arity, [class_name_token, class_init](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
-                    Class* in_class = nullptr;
-                    env->get_class(class_name_token, &in_class);
+                    Class* in_class = env->get_class(class_name_token->m_lexeme);
+                    assert(in_class != nullptr);
 
                     const Value init_value = class_init->m_callback(args, compiler, arena, env);
 
@@ -1122,8 +1123,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                 }));
             } else {
                 env->define_callable(arena, class_name, Callable(0, [class_name_token](Array<Value> args, KauCompiler* compiler, Arena* arena, Environment* env) {
-                    Class* in_class = nullptr;
-                    env->get_class(class_name_token, &in_class);
+                    Class* in_class = env->get_class(class_name_token->m_lexeme);
+                    assert(in_class != nullptr);
 
                     return Value{
                         .ty = Value::Type::CLASS,

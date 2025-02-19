@@ -159,8 +159,29 @@ int KauCompiler::run_file(const char* file_path) {
 RuntimeError KauCompiler::lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value) {
     u64* dist = (u64*) locals.get((u64) expr);
     if (dist != nullptr) {
-        return env->get_at(name, *dist, in_value);
+        Value* val = env->get_at(name->m_lexeme, *dist);
+
+        // TODO: Abstract this pattern later
+        if (val == nullptr) {
+            return RuntimeError::undefined_variable(name);
+        }
+        if (val->ty == Value::Type::NIL) {
+            return RuntimeError::undefined_variable(name);
+        }
+
+        in_value = *val;
+        return RuntimeError::ok();
     } else {
-        return global_env.get(name, in_value);
+        Value* val = global_env.get(name->m_lexeme);
+
+        if (val == nullptr) {
+            return RuntimeError::undefined_variable(name);
+        }
+        if (val->ty == Value::Type::NIL) {
+            return RuntimeError::undefined_variable(name);
+        }
+
+        in_value = *val;
+        return RuntimeError::ok();
     }
 }
