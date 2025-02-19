@@ -417,5 +417,7 @@ void Resolver::end_scope() {
 }
 
 void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, int depth) {
-    compiler->locals[expr] = depth;
+    u64* depth_ptr = (u64*) compiler->global_arena->push_struct_no_zero<u64>();
+    *depth_ptr = depth;
+    compiler->locals.insert(compiler->global_arena, (u64) expr, depth_ptr);
 }

@@ -39,6 +39,8 @@ KauCompiler::KauCompiler() {
         val.print();
         return val;
     }));
+
+    locals.allocate(global_arena);
 }
 
 void KauCompiler::error(int line, String message) {
@@ -155,9 +157,9 @@ int KauCompiler::run_file(const char* file_path) {
 }
 
 RuntimeError KauCompiler::lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value) {
-    if (locals.contains(expr)) {
-        const u64 distance = locals[expr];
-        return env->get_at(name, distance, in_value);
+    u64* dist = (u64*) locals.get((u64) expr);
+    if (dist != nullptr) {
+        return env->get_at(name, *dist, in_value);
     } else {
         return global_env.get(name, in_value);
     }
