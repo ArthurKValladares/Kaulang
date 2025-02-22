@@ -1,3 +1,5 @@
+#include "lib/span.h"
+
 #include "expr.h"
 #include "defs.h"
 #include "environment.h"
@@ -105,9 +107,14 @@ namespace {
     }
 
     String mangled_name(Arena* arena, String left, String right) {
-        // TODO: This double concatenation is bad, can be optimized
-        String dot = CREATE_STRING(".");
-        return concatenated_string(arena, concatenated_string(arena, left, dot), right);
+        const String dot = CREATE_STRING(".");
+        const String* strings[3] = {
+            &left,
+            &dot,
+            &right
+        };
+        Span<const String*> strings_span = Span<const String*>(strings, 3);
+        return concatenated_strings(arena, strings_span);
     }
 };
 

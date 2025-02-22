@@ -110,9 +110,6 @@ int KauCompiler::run_prompt() {
         run(&line_char_buffer[line_start_offset], line_size, true);
         line_start_offset += line_size;
 
-        if (m_had_error) {
-            // TODO: Do I do anything here?
-        }
         m_had_error = false;
     }
 

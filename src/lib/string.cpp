@@ -31,3 +31,25 @@ String concatenated_string(Arena* arena, String left, String right) {
         .len = total_len
     };
 }
+
+String concatenated_strings(Arena* arena, Span<const String*> strings) {
+    size_t total_len = 0;
+    for (u64 i = 0; i < strings.len; ++i) {
+        total_len += strings.len;
+    }
+
+    char* string_chars = (char*) arena->push_array_no_zero<char>(total_len);
+    u64 offset = 0;
+    for (u64 i = 0; i < strings.len; ++i) {
+        memcpy(string_chars + offset, strings.items[i]->chars, strings.items[i]->len * sizeof(char));
+    }
+
+    String ret;
+    ret.len = total_len;
+    ret.chars = string_chars;
+
+    return String {
+        .chars = string_chars,
+        .len = total_len
+    };
+}

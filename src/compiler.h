@@ -26,7 +26,6 @@ struct KauCompiler {
 
     int run_file(const char* file_path);
 
-    // TODO: Re-think this, at least make it a bitfield with other stuff like `should_print`
     bool hit_return = false;
 
     Arena* global_arena;

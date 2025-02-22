@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arena.h"
+#include "span.h"
 
 #define HASH_STR(str) StringHasher()(str)
 #define CREATE_STRING(static_str) String{static_str, ArrayCount(static_str) - 1}
@@ -39,6 +40,7 @@ struct String {
 };
 
 String concatenated_string(Arena* arena, String left, String right);
+String concatenated_strings(Arena* arena, Span<const String*> strings);
 
 struct StringHasher {
     size_t operator()(const String& p) const
