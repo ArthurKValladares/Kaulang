@@ -95,7 +95,6 @@ struct Class {
     void set_field(String field, Value in_value);
 
     Callable* get_method(String name);
-    // TODO: Maybe ptr?
     bool get(String field, Value& in_value);
 
     void print() const;

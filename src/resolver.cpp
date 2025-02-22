@@ -62,7 +62,6 @@ void Resolver::resolve_stmt(KauCompiler* compiler, Stmt* stmt) {
 void Resolver::resolve_expr(KauCompiler* compiler, Expr* expr) {
     switch (expr->ty) {
         case Expr::Type::LITERAL: {
-            // TODO: Don't love that this is how I need to detect a variable, make it better
             if (expr->expr.literal->val->m_type == TokenType::IDENTIFIER) {
                 visit_variable_expr(compiler, expr);
             }
@@ -163,8 +162,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
 
     if (stmt->s_class.superclass != nullptr) {
         if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
-            // TODO: Get actual line number
-            compiler->error(0, CREATE_STRING("Class can't inherit from itself"));
+            compiler->error(stmt->s_class.superclass->expr.literal->val->m_line, CREATE_STRING("Class can't inherit from itself"));
             exit(-1);
         }
 
@@ -224,16 +222,16 @@ void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
+    ReturnPayload& ret = stmt->s_return;
+
     if (current_function == FunctionType::NONE) {
-        // TODO: Get actual line number
-        compiler->error(0, CREATE_STRING("Can't return from top-level code"));
+        compiler->error(ret.keyword->m_line, CREATE_STRING("Can't return from top-level code"));
         exit(-1);
     }
 
     if (stmt->s_return.expr != nullptr) {
         if (current_function == FunctionType::INITIALIZER) {
-            // TODO: Get actual line number
-            compiler->error(0, CREATE_STRING("Can't return value fron initializer"));
+            compiler->error(ret.keyword->m_line, CREATE_STRING("Can't return value fron initializer"));
             exit(-1);
         }
         resolve_expr(compiler, stmt->s_return.expr);
@@ -254,8 +252,7 @@ void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
         VariableStatus* get = (VariableStatus*) scope.get(hashed_str);
 
         if (get != nullptr && get->defined == false) {
-            // TODO: Get line
-            compiler->error(0, CREATE_STRING("Can't read local varaible in its own initializer"));
+            compiler->error(token->m_line, CREATE_STRING("Can't read local varaible in its own initializer"));
             return;
         }
     }
@@ -313,22 +310,25 @@ void Resolver::visit_set_expr(KauCompiler* compiler, Expr* expr) {
 }
 
 void Resolver::visit_this_expr(KauCompiler* compiler, Expr* expr) {
+    ThisExpr* this_expr = expr->expr.this_expr;
     if (current_class == ClassType::NONE) {
-        compiler->error(0, CREATE_STRING("Can't use `this` outside of class"));
+        compiler->error(this_expr->val->m_line, CREATE_STRING("Can't use `this` outside of class"));
         return;
     }
-    resolve_local(compiler, expr, expr->expr.this_expr->val);
+    resolve_local(compiler, expr, this_expr->val);
 }
 
 void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
+    SuperExpr* super_expr = expr->expr.super_expr;
+
     if (current_class == ClassType::NONE) {
-        compiler->error(0, CREATE_STRING("Can't use `super` outside of class"));
+        compiler->error(super_expr->keyword->m_line, CREATE_STRING("Can't use `super` outside of class"));
         return;
     } else if (current_class != ClassType::SUBCLASS) {
-        compiler->error(0, CREATE_STRING("Can't use `super` in a class with no superclass."));
+        compiler->error(super_expr->keyword->m_line, CREATE_STRING("Can't use `super` in a class with no superclass."));
         return;
     }
-    resolve_local(compiler, expr, expr->expr.super_expr->keyword);
+    resolve_local(compiler, expr, super_expr->keyword);
 }
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {
@@ -368,7 +368,7 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
     u64 hashed_lexeme = HASH_STR(name->m_lexeme);
     VariableStatus* get = (VariableStatus*) scope.get(hashed_lexeme);
     if (get != nullptr) {
-        compiler->error(0, CREATE_STRING("Already a variable with this name in this scope"));
+        compiler->error(name->m_line, CREATE_STRING("Already a variable with this name in this scope"));
         return;
     }
     VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();

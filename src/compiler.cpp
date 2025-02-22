@@ -55,7 +55,6 @@ void KauCompiler::runtime_error(int line, String message) {
 
 int KauCompiler::run(char* program, int size, bool from_prompt) {
     Scanner scanner = Scanner(global_arena, program, size);
-    // TODO: fix this kinda circular dependency thing later
     scanner.scan_tokens(*this, global_arena);
 
     Parser parser(scanner.m_tokens);
