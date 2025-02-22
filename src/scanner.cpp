@@ -113,25 +113,11 @@ String Scanner::get_substring(int start_offset, int end_offset) const {
     return String{start_char, substr_len};
 }
 
-void Scanner::add_token(Arena* arena, TokenType token_type, TokenData data) {
-    m_tokens.push(Token{
-        token_type,
-        String{},
-        m_current_line,
-        data
-    });
-}
-
 void Scanner::add_token(Arena* arena, TokenType token_type, String substr, TokenData data) {
-    String lexeme = substr;
-    if (substr.empty()) {
-        lexeme = get_substring(m_start_char_offset, m_current_char_offset);
-    }
-
     m_tokens.push(
         Token{
             token_type,
-            lexeme,
+            substr,
             m_current_line,
             data
         }
@@ -185,20 +171,20 @@ void Scanner::number(KauCompiler& compiler, Arena* arena) {
 
     if (ty == TokenData::Type::INT) {
         const int integer = atoi(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_INT, TokenData::new_int(integer));
+        add_token(arena, TokenType::NUMBER_INT, String{}, TokenData::new_int(integer));
     } else if (ty == TokenData::Type::LONG) {
         const long integer = atol(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_LONG, TokenData::new_long(integer));
+        add_token(arena, TokenType::NUMBER_LONG, String{}, TokenData::new_long(integer));
     } else if (ty == TokenData::Type::FLOAT) {
         const float fractional = atof(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_FLOAT, TokenData::new_float(fractional));
+        add_token(arena, TokenType::NUMBER_FLOAT, String{}, TokenData::new_float(fractional));
     } else {
         char* err;
         const double fractional = strtod(m_source + m_start_char_offset, &err);
         if (err == nullptr) {
             compiler.error(m_current_line, CREATE_STRING("could not convert string to double"));
         }
-        add_token(arena, TokenType::NUMBER_DOUBLE, TokenData::new_double(fractional));
+        add_token(arena, TokenType::NUMBER_DOUBLE, String{}, TokenData::new_double(fractional));
     }
 }
 
@@ -213,9 +199,8 @@ void Scanner::identifier(Arena* arena) {
     if (ty != nullptr) { 
         add_token(arena, *ty, id);
     } else {
-        // TODO: This add_token stuff is a bit messy atm imo, specially the subcstring stuff.
-        // MAybe just handle it all explicitly
-        add_token(arena, TokenType::IDENTIFIER, String{});
+        String substr = get_substring(m_start_char_offset, m_current_char_offset);
+        add_token(arena, TokenType::IDENTIFIER, substr);
     }
 }
 

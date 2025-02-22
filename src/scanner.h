@@ -43,8 +43,7 @@ private:
     void identifier(Arena* arena);
     void block_comment(KauCompiler& compiler);
     
-    void add_token(Arena* arena, TokenType token_type, TokenData data = {});
-    void add_token(Arena* arena, TokenType token_type, String substr, TokenData data = {});
+    void add_token(Arena* arena, TokenType token_type, String substr = {}, TokenData data = {});
 
     char* m_source;
     int m_source_len;
