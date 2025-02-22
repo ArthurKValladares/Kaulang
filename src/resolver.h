@@ -12,8 +12,6 @@ struct VariableStatus {
     bool defined = false;
     u64 uses = 0;
 };
-// TODO: using std structures for now
-using ScopeMap = std::unordered_map<String, VariableStatus, StringHasher>;
 
 enum class FunctionType {
     NONE,
@@ -61,7 +59,7 @@ private:
     void declare(KauCompiler* compiler, Token* name);
     void define(Token* name);
 
-    void begin_scope();
+    void begin_scope(KauCompiler* compiler);
     void end_scope();
 
     void resolve_stmt(KauCompiler* compiler, Stmt* stmt);
@@ -72,7 +70,7 @@ private:
 
     void mark_resolved(KauCompiler* compiler, Expr* expr, int depth);
 
-    Array<ScopeMap> scopes;
+    Array<Map> scopes;
 
     FunctionType current_function = FunctionType::NONE;
     ClassType current_class = ClassType::NONE;

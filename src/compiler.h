@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib/arena.h"
+#include "lib/map.h"
 #include "defs.h"
 
 #include "environment.h"
@@ -12,7 +13,7 @@ struct KauCompiler {
     bool m_had_runtime_error = false;
 
     Environment global_env = {};
-    std::unordered_map<Expr*, u64> locals;
+    Map locals;
 
     RuntimeError lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value);
 

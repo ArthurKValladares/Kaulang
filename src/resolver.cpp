@@ -132,7 +132,7 @@ void Resolver::visit_expr_stmt(KauCompiler* compiler, Stmt* stmt) {
 }
 
 void Resolver::visit_block_stmt(KauCompiler* compiler, Stmt* stmt) {
-    begin_scope();
+    begin_scope(compiler);
     resolve(compiler, stmt->s_block.stmts);
     end_scope();
 }
@@ -159,7 +159,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
     declare(compiler, stmt->s_class.name);
     define(stmt->s_class.name);
 
-    begin_scope();
+    begin_scope(compiler);
 
     if (stmt->s_class.superclass != nullptr) {
         if (stmt->s_class.name->m_lexeme == stmt->s_class.superclass->expr.literal->val->m_lexeme) {
@@ -172,20 +172,22 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
 
         resolve_expr(compiler, stmt->s_class.superclass);
 
-        String super_str =CREATE_STRING("super");
-        scopes.back()[super_str] = 
-        VariableStatus {
+        String super_str = CREATE_STRING("super");
+        VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
+        *status = VariableStatus {
             .defined = true,
             .uses = 1
         };
+        scopes.back().insert(compiler->global_arena, HASH_STR(super_str), status); 
     }
     
     String this_str = CREATE_STRING("this");
-    scopes.back()[this_str] = 
-    VariableStatus {
+    VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
+    *status = VariableStatus {
         .defined = true,
         .uses = 1
     };
+    scopes.back().insert(compiler->global_arena, HASH_STR(this_str), status); 
 
     for (u64 i = 0; i < stmt->s_class.members.size(); ++i) {
         Stmt* class_stmt = &stmt->s_class.members[i];
@@ -245,11 +247,17 @@ void Resolver::visit_while_stmt(KauCompiler* compiler, Stmt* stmt) {
 
 void Resolver::visit_variable_expr(KauCompiler* compiler, Expr* expr) {
     const Token* token = expr->expr.literal->val;
-    if (!scopes.empty() &&
-        scopes.back().contains(token->m_lexeme) &&
-        scopes.back().at(token->m_lexeme).defined == false) {
-        compiler->error(0, CREATE_STRING("Can't read local varaible in its own initializer"));
-        return;
+    if (!scopes.empty()) {
+        u64 hashed_str = HASH_STR(token->m_lexeme);
+
+        Map& scope = scopes.back();
+        VariableStatus* get = (VariableStatus*) scope.get(hashed_str);
+
+        if (get != nullptr && get->defined == false) {
+            // TODO: Get line
+            compiler->error(0, CREATE_STRING("Can't read local varaible in its own initializer"));
+            return;
+        }
     }
     resolve_local(compiler, expr, token);
 }
@@ -325,9 +333,11 @@ void Resolver::visit_super_expr(KauCompiler* compiler, Expr* expr) {
 
 void Resolver::resolve_local(KauCompiler* compiler, Expr* expr, const Token* token) {
     for (i64 i = scopes.size() - 1; i >= 0; --i) {
-        if (scopes[i].contains(token->m_lexeme)) {
+        u64 hashed_lexeme = HASH_STR(token->m_lexeme);
+        VariableStatus* get = (VariableStatus*) scopes[i].get(hashed_lexeme);
+        if (get != nullptr) {
             mark_resolved(compiler, expr, scopes.size() - 1 - i);
-            scopes[i][token->m_lexeme].uses += 1;
+            get->uses += 1;
             return;
         }
     }
@@ -337,7 +347,7 @@ void Resolver::resolve_fn(KauCompiler* compiler, Stmt* stmt, FunctionType ty) {
     const FunctionType enclosing_function = current_function;
     current_function = ty;
 
-    begin_scope();
+    begin_scope(compiler);
     for (u64 i = 0; i < stmt->fn_declaration.params.size(); ++i) {
         Token* param = stmt->fn_declaration.params[i];
         declare(compiler, param);
@@ -354,15 +364,19 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
         return;
     }
 
-    ScopeMap& scope = scopes.back();
-    if (scope.contains(name->m_lexeme)) {
+    Map& scope = scopes.back();
+    u64 hashed_lexeme = HASH_STR(name->m_lexeme);
+    VariableStatus* get = (VariableStatus*) scope.get(hashed_lexeme);
+    if (get != nullptr) {
         compiler->error(0, CREATE_STRING("Already a variable with this name in this scope"));
         return;
     }
-    scope[name->m_lexeme] = VariableStatus{
+    VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
+    *status = VariableStatus{
         .defined = false,
         .uses = 0,
     };
+    scope.insert(compiler->global_arena, hashed_lexeme, status);
 }
 
 void Resolver::define(Token* name) {
@@ -370,27 +384,40 @@ void Resolver::define(Token* name) {
         return;
     }
 
-    VariableStatus& status = scopes.back()[name->m_lexeme];
-    status.defined = true;
+    Map& scope = scopes.back();
+    VariableStatus* status = (VariableStatus*) scope.get(HASH_STR(name->m_lexeme));
+    status->defined = true;
 }
 
-void Resolver::begin_scope() {
+void Resolver::begin_scope(KauCompiler* compiler) {
     // TODO: This needs to be aligned
-    ScopeMap* curr = scopes.curr_ptr();
+    Map* curr = scopes.curr_ptr();
     scopes.advance();
 
-    curr = new(curr) ScopeMap();
+    *curr = Map();
+    curr->allocate(compiler->global_arena);
 }
 
 void Resolver::end_scope() {
-    for (auto const& [name, status] : scopes.back()) {
-        if (status.uses == 0) {
-            fprintf(stdout, "Warn: unused variable %.*s\n", (u32) name.len, name.chars);
+    Map& scope = scopes.back();
+    for (u64 i = 0; i < scope.num_buckets; ++i) {
+        MapNode* node = scope.buckets[i];
+        while (node != nullptr) {
+            VariableStatus* status = (VariableStatus*) node->value;
+            if (status->uses == 0) {
+                // TODO: I also need a way to get the unhashed key from the map
+                //fprintf(stdout, "Warn: unused variable %.*s\n", (u32) name.len, name.chars);
+                fprintf(stdout, "Warn: unused variable\n");
+            }
+            node = node->next;
         }
     }
+    
     scopes.pop();
 }
 
 void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, int depth) {
-    compiler->locals[expr] = depth;
+    u64* depth_ptr = (u64*) compiler->global_arena->push_struct_no_zero<u64>();
+    *depth_ptr = depth;
+    compiler->locals.insert(compiler->global_arena, (u64) expr, depth_ptr);
 }

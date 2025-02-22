@@ -21,8 +21,12 @@ long get_file_size(FILE* file) {
 };
 
 KauCompiler::KauCompiler() {
+    global_arena = alloc_arena();
+
+    global_env.init(global_arena);
+    
     String clock_str = CREATE_STRING("clock");
-    global_env.define_callable(clock_str, Callable(0, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(global_arena, clock_str, Callable(0, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         return Value{
             .ty = Value::Type::LONG,
             .l = clock()
@@ -30,13 +34,13 @@ KauCompiler::KauCompiler() {
     }));
 
     String print_str = CREATE_STRING("print");
-    global_env.define_callable(print_str, Callable(1, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
+    global_env.define_callable(global_arena, print_str, Callable(1, [](Array<Value> args, KauCompiler* compiler, Arena*, Environment* env) {
         const Value& val = args[0];
         val.print();
         return val;
     }));
 
-    global_arena = alloc_arena();
+    locals.allocate(global_arena);
 }
 
 void KauCompiler::error(int line, String message) {
@@ -57,12 +61,14 @@ int KauCompiler::run(char* program, int size, bool from_prompt) {
     Parser parser(scanner.m_tokens);
     Array<Stmt> stmts = parser.parse(global_arena);
 
+    Arena* resolver_area = alloc_arena();
     Resolver resolver = {};
-    resolver.init(global_arena);
+    resolver.init(resolver_area);
     resolver.resolve(this, stmts);
     if (m_had_error) {
         return -1;
     }
+    resolver_area->clear();
     
     for (u64 i = 0; i < stmts.size(); ++i) {
         Stmt& stmt = stmts[i];
@@ -151,10 +157,31 @@ int KauCompiler::run_file(const char* file_path) {
 }
 
 RuntimeError KauCompiler::lookup_variable(Environment* env, const Token* name, Expr* expr, Value& in_value) {
-    if (locals.contains(expr)) {
-        const u64 distance = locals[expr];
-        return env->get_at(name, distance, in_value);
+    u64* dist = (u64*) locals.get((u64) expr);
+    if (dist != nullptr) {
+        Value* val = env->get_at(name->m_lexeme, *dist);
+
+        // TODO: Abstract this pattern later
+        if (val == nullptr) {
+            return RuntimeError::undefined_variable(name);
+        }
+        if (val->ty == Value::Type::NIL) {
+            return RuntimeError::undefined_variable(name);
+        }
+
+        in_value = *val;
+        return RuntimeError::ok();
     } else {
-        return global_env.get(name, in_value);
+        Value* val = global_env.get(name->m_lexeme);
+
+        if (val == nullptr) {
+            return RuntimeError::undefined_variable(name);
+        }
+        if (val->ty == Value::Type::NIL) {
+            return RuntimeError::undefined_variable(name);
+        }
+
+        in_value = *val;
+        return RuntimeError::ok();
     }
 }
