@@ -1093,7 +1093,8 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
 
                         *callable_ptr = construct_callable_class(fn, new_class);
 
-                        new_class->m_methods.insert(arena, HASH_STR(fn.name->m_lexeme), callable_ptr);
+                        String str = fn.name->m_lexeme;
+                        new_class->m_methods.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), callable_ptr);
                     }
                 } else if (stmt->ty == Stmt::Type::VAR_DECL) {
                     VarDeclPayload var_decl = stmt->s_var_decl;
@@ -1105,7 +1106,9 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                             compiler->runtime_error(var_err.token->m_line, var_err.message);
                         }
                     }
-                    new_class->m_fields.insert(arena, HASH_STR(var_decl.name->m_lexeme), value_ptr);
+
+                    String str = var_decl.name->m_lexeme;
+                    new_class->m_fields.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), value_ptr);
                 } else {
                     assert(false);
                 }

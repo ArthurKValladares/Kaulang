@@ -2,6 +2,13 @@
 
 #include <ctype.h>
 
+#define ADD_TO_KEYWORDS(TYPE, STRING) do {\
+    TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();\
+    *ty = TokenType::TYPE;\
+    String str = CREATE_STRING(STRING);\
+    keywords.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), ty);\
+} while(0)
+
 namespace {
     Map keywords;
 };
@@ -9,73 +16,23 @@ namespace {
 void init_keywords_map(Arena* arena) {
     keywords.allocate(arena);
 
-    TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::AND;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("and")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::CLASS;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("class")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::ELSE;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("else")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::FN;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("fn")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::STATIC;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("static")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::FOR;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("for")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::IF;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("if")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::NIL;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("nil")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::OR;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("or")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::RETURN;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("return")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::SUPER;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("super")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::THIS;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("this")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::TRUE;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("true")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::FALSE;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("false")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::VAR;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("var")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::WHILE;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("while")), ty);
-
-    ty = (TokenType*) arena->push_struct_no_zero<TokenType>();
-    *ty = TokenType::BREAK;
-    keywords.insert(arena, HASH_STR(CREATE_STRING("break")), ty);
+    ADD_TO_KEYWORDS(AND, "and");
+    ADD_TO_KEYWORDS(CLASS, "class");
+    ADD_TO_KEYWORDS(ELSE, "else");
+    ADD_TO_KEYWORDS(FN, "fn");
+    ADD_TO_KEYWORDS(STATIC, "static");
+    ADD_TO_KEYWORDS(FOR, "for");
+    ADD_TO_KEYWORDS(IF, "if");
+    ADD_TO_KEYWORDS(NIL, "nil");
+    ADD_TO_KEYWORDS(OR, "or");
+    ADD_TO_KEYWORDS(RETURN, "return");
+    ADD_TO_KEYWORDS(SUPER, "super");
+    ADD_TO_KEYWORDS(THIS, "this");
+    ADD_TO_KEYWORDS(TRUE, "true");
+    ADD_TO_KEYWORDS(FALSE, "false");
+    ADD_TO_KEYWORDS(VAR, "var");
+    ADD_TO_KEYWORDS(WHILE, "while");
+    ADD_TO_KEYWORDS(BREAK, "break");
 }
 
 bool Scanner::is_at_end() const {
