@@ -38,7 +38,6 @@ private:
     void visit_fn_stmt(KauCompiler* compiler, Stmt* stmt);
     void visit_class_stmt(KauCompiler* compiler, Stmt* stmt);
     void visit_if_stmt(KauCompiler* compiler, Stmt* stmt);
-    void visit_print_stmt(KauCompiler* compiler, Stmt* stmt);
     void visit_return_stmt(KauCompiler* compiler, Stmt* stmt);
     void visit_while_stmt(KauCompiler* compiler, Stmt* stmt);
     

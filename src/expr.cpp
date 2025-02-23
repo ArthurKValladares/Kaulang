@@ -748,8 +748,7 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
             }
 
             in_value = left_val;
-            // TODO: so far this allow the right-side expression to evaluate to something other
-            // than bool in the case the left-side is false. Think about that.
+
             if (left_val.b == true) {
                 Value right_val = {};
                 CHECK_ERR(logical_and->right->evaluate(compiler, arena, env, right_val));
@@ -913,9 +912,6 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
         case Type::THIS: {
             ThisExpr* this_expr = expr.this_expr;
             return compiler->lookup_variable(env, this_expr->val, this, in_value);
-        }
-        case Type::SUPER: {
-            // TODO:
         }
     }
 }

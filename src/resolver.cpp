@@ -196,7 +196,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
             }
             resolve_fn(compiler, class_stmt, fn_type);
         } else if (class_stmt->ty == Stmt::Type::VAR_DECL) {
-            // TODO: Think about this.
+            visit_var_stmt(compiler, class_stmt);
         } else {
             assert(false);
         }
@@ -214,11 +214,6 @@ void Resolver::visit_if_stmt(KauCompiler* compiler, Stmt* stmt) {
     if (stmt->s_if.else_stmt->ty != Stmt::Type::ERR) {
         resolve_stmt(compiler, stmt->s_if.else_stmt);
     }
-}
-
-void Resolver::visit_print_stmt(KauCompiler* compiler, Stmt* stmt) {
-    // TODO: Print Stmt should be its own thing
-    resolve_expr(compiler, stmt->s_expr.expr);
 }
 
 void Resolver::visit_return_stmt(KauCompiler* compiler, Stmt* stmt) {
