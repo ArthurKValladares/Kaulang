@@ -81,3 +81,21 @@ void Arena::clear() {
     */
     offset = 0;
 }
+
+void Arena::free_section(void* start, u64 size) {
+    FreeNode* free_node = (FreeNode*) malloc(sizeof(FreeNode));
+    *free_node = FreeNode {
+        .head = start,
+        .size = size,
+        .next = nullptr,
+    };
+    
+    if (free_list_head == nullptr) {
+        free_list_head = free_node;
+    } else {
+        free_list_tail->next = free_node;
+    }
+
+    free_list_tail = free_node;
+
+}

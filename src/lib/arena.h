@@ -2,6 +2,12 @@
 
 #include "../defs.h"
 
+struct FreeNode {
+    void* head;
+    u64 size;
+    FreeNode* next;
+};
+
 // TODO: in general for this arena and for the array that uses it,
 // I think I'm not worrying enough about memory-aligment
 struct Arena {
@@ -35,6 +41,8 @@ struct Arena {
 
     void clear();
 
+    void free_section(void* start, u64 size);
+
     // TODO: This is pretty sloppy and i need to handle multiple arenas better later,
     // This is here just to make vectors work
     Arena* child_arena;
@@ -44,6 +52,9 @@ struct Arena {
 
     void* mem;
     u64 offset;
+
+    FreeNode* free_list_head = nullptr;
+    FreeNode* free_list_tail = nullptr;
 };
 
 Arena* alloc_arena();
