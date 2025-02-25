@@ -31,6 +31,15 @@ Arena* alloc_arena() {
     arena->commited_size = initial_commit_size;
     arena->offset = 0;
 
+    // NOTE: Having a zero sized node at the start makes things easier
+    FreeNode* zero_node = (FreeNode*) malloc(sizeof(FreeNode));
+    zero_node->size = 0;
+    zero_node->prev = nullptr;
+    zero_node->next = nullptr;
+
+    arena->free_list_head = zero_node;
+    arena->free_list_tail = zero_node;
+
     return arena;
 }
 
@@ -87,15 +96,37 @@ void Arena::free_section(void* start, u64 size) {
     *free_node = FreeNode {
         .head = start,
         .size = size,
+        .prev = nullptr,
         .next = nullptr,
     };
     
-    if (free_list_head == nullptr) {
-        free_list_head = free_node;
-    } else {
-        free_list_tail->next = free_node;
-    }
+    free_list_tail->next = free_node;
 
     free_list_tail = free_node;
+}
 
+void* Arena::get_from_list_with_size(u64 size) {
+    if (size == 0) return nullptr;
+
+    FreeNode* test_node = free_list_head;
+    while(test_node->size < size) {
+        if (test_node->next == nullptr) {
+            return nullptr;
+        }
+        test_node = test_node->next;
+    }
+
+    void* ret;
+    const u64 remaining_size = test_node->size - size;
+    if (remaining_size == 0) {
+        test_node->prev->next = test_node->next;
+        ret = test_node->head;
+
+        free(test_node);
+    } else {
+        test_node->size -= size;
+        ret = (u8*) test_node->head + test_node->size;
+    }
+
+    return ret;
 }

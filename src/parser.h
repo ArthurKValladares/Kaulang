@@ -24,8 +24,7 @@ private:
     Stmt class_declaration(Arena* arena);
     Stmt statement(Arena* arena);
     Stmt expr_statement(Arena* arena);
-    Stmt block_statement(Arena* arena);
-    Stmt print_statement(Arena* arena);
+    Stmt block_statement(Arena* arena, Token* start);
     Stmt if_statement(Arena* arena);
     Stmt while_statement(Arena* arena);
     Stmt for_statement(Arena* arena);

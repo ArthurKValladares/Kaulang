@@ -5,6 +5,7 @@
 struct FreeNode {
     void* head;
     u64 size;
+    FreeNode* prev;
     FreeNode* next;
 };
 
@@ -42,6 +43,8 @@ struct Arena {
     void clear();
 
     void free_section(void* start, u64 size);
+
+    void* get_from_list_with_size(u64 size);
 
     // TODO: This is pretty sloppy and i need to handle multiple arenas better later,
     // This is here just to make vectors work

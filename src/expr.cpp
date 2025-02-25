@@ -1033,7 +1033,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::BREAK: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, CREATE_STRING("'break' statement can only be used in a loop."));
+                compiler->runtime_error(s_break_continue.token->m_line, CREATE_STRING("'break' statement can only be used in a loop."));
             }
             expr_val = Value {
                 .ty = Value::Type::BREAK
@@ -1042,7 +1042,7 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
         }
         case Stmt::Type::CONTINUE: {
             if (!in_loop) {
-                compiler->runtime_error(s_break_continue.line, CREATE_STRING("'continue' statement can only be used in a loop."));
+                compiler->runtime_error(s_break_continue.token->m_line, CREATE_STRING("'continue' statement can only be used in a loop."));
             }
             expr_val = Value {
                 .ty = Value::Type::CONTINUE

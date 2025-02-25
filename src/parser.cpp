@@ -213,10 +213,10 @@ namespace {
         return ret;
     }
 
-    Stmt new_block_stmt(Array<Stmt> stmts) {
+    Stmt new_block_stmt(Token* start, Array<Stmt> stmts, Token* end) {
         return Stmt {
             .ty = Stmt::Type::BLOCK,
-            .s_block = BlockPayload{stmts}
+            .s_block = BlockPayload{start, stmts, end}
         };
     }
 
@@ -234,10 +234,11 @@ namespace {
         };
     }
 
-    Stmt new_if_stmt(Expr* expr, Stmt if_stmt, Stmt else_stmt) {
+    Stmt new_if_stmt(Token* token, Expr* expr, Stmt if_stmt, Stmt else_stmt) {
         return Stmt {
             .ty = Stmt::Type::IF,
             .s_if = IfPayload{
+                token,
                 expr,
                 allocated_stmt(if_stmt),
                 allocated_stmt(else_stmt)
@@ -245,10 +246,11 @@ namespace {
         };
     }
 
-    Stmt new_while_stmt(Expr* expr, Stmt stmt) {
+    Stmt new_while_stmt(Token* token, Expr* expr, Stmt stmt) {
         return Stmt {
             .ty = Stmt::Type::WHILE,
             .s_while = WhilePayload{
+                token,
                 expr,
                 allocated_stmt(stmt)
             }
@@ -261,17 +263,17 @@ namespace {
         };
     }
 
-    Stmt new_break_stmt(int line) {
+    Stmt new_break_stmt(Token* token) {
         return Stmt {
             .ty = Stmt::Type::BREAK,
-            .s_break_continue = BreakContinuePayload{line},
+            .s_break_continue = BreakContinuePayload{token},
         };
     }
 
-    Stmt new_continue_stmt(int line) {
+    Stmt new_continue_stmt(Token* token) {
         return Stmt {
             .ty = Stmt::Type::CONTINUE,
-            .s_break_continue = BreakContinuePayload{line},
+            .s_break_continue = BreakContinuePayload{token},
         };
     }
 
@@ -368,8 +370,8 @@ Stmt Parser::fn_declaration(Arena* arena, bool is_static) {
     }
     consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after function parameters"));
 
-    consume(TokenType::LEFT_BRACE, CREATE_STRING("Expected '{' before function body."));
-    Stmt* body = allocated_stmt(block_statement(arena));
+    Token* start = consume(TokenType::LEFT_BRACE, CREATE_STRING("Expected '{' before function body."));
+    Stmt* body = allocated_stmt(block_statement(arena, start));
 
     return new_fn_declaration(name, params, body, is_static);
 }
@@ -432,7 +434,8 @@ Stmt Parser::statement(Arena* arena) {
         return for_statement(arena);
     }
     if (match(TokenType::LEFT_BRACE)) {
-        return block_statement(arena);
+        Token* start = previous();
+        return block_statement(arena, start);
     }
     if (match(TokenType::BREAK)) {
         return break_statement();
@@ -457,7 +460,7 @@ Stmt Parser::expr_statement(Arena* arena) {
     return new_expr_stmt(val);
 }
 
-Stmt Parser::block_statement(Arena* arena) {
+Stmt Parser::block_statement(Arena* arena, Token* start) {
     int stmt_count = 0;
 
     arena->child_arena = alloc_arena();
@@ -467,13 +470,14 @@ Stmt Parser::block_statement(Arena* arena) {
     while (!is_at_end() && !check(TokenType::RIGHT_BRACE)) {
         stmts.push(declaration(arena->child_arena));
     }
-    consume(TokenType::RIGHT_BRACE, CREATE_STRING("Expected '}' after block"));
+    Token* end = consume(TokenType::RIGHT_BRACE, CREATE_STRING("Expected '}' after block"));
 
-    return new_block_stmt(stmts);
+    return new_block_stmt(start, stmts, end);
 }
 
 
 Stmt Parser::if_statement(Arena* arena) {
+    Token* token = previous();
     consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'if'"));
     Expr* expr = expression(arena);
     consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in if statement"));
@@ -485,21 +489,25 @@ Stmt Parser::if_statement(Arena* arena) {
         else_stmt = statement(arena);
     }
 
-    return new_if_stmt(expr, if_stmt, else_stmt);
+    return new_if_stmt(token, expr, if_stmt, else_stmt);
 }
 
 Stmt Parser::while_statement(Arena* arena) {
+    Token* token = previous();
+
     consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'while'"));
     Expr* expr = expression(arena);
     consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in while statement"));
 
     Stmt stmt = statement(arena);
 
-    return new_while_stmt(expr, stmt);
+    return new_while_stmt(token, expr, stmt);
 }
 
 Stmt Parser::for_statement(Arena* arena) {
-    consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'for'"));
+    Token* token = previous();
+
+    Token* start = consume(TokenType::LEFT_PAREN, CREATE_STRING("Expected '(' after 'for'"));
 
     Stmt initializer = {};
     if (match(TokenType::SEMICOLON)) {
@@ -519,7 +527,7 @@ Stmt Parser::for_statement(Arena* arena) {
     if (!check(TokenType::SEMICOLON)) {
         increment = expression(arena);
     }
-    consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in for statement"));
+    Token* end = consume(TokenType::RIGHT_PAREN, CREATE_STRING("Unterminated parentheses in for statement"));
 
     Stmt body = statement(arena);
 
@@ -528,18 +536,18 @@ Stmt Parser::for_statement(Arena* arena) {
         stmts.init(arena, 2);
         stmts[0] = body;
         stmts[1] = new_expr_stmt(increment);
-        body = new_block_stmt(stmts);
+        body = new_block_stmt(start, stmts, end);
     }
     if (condition == nullptr) {
         condition = new_literal(&true_token);
     }
-    body = new_while_stmt(condition, body);
+    body = new_while_stmt(token, condition, body);
     if (initializer.ty != Stmt::Type::ERR) {
         Array<Stmt> stmts;
         stmts.init(arena, 2);
         stmts[0] = initializer;
         stmts[1] = body;
-        body = new_block_stmt(stmts);
+        body = new_block_stmt(start, stmts, end);
     }
     
     return body;
@@ -548,13 +556,13 @@ Stmt Parser::for_statement(Arena* arena) {
 Stmt Parser::break_statement() {
     consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after 'break'"));
 
-    return new_break_stmt(previous()->m_line);
+    return new_break_stmt(previous());
 }
 
 Stmt Parser::continue_statement() {
     consume(TokenType::SEMICOLON, CREATE_STRING("Expected ';' after 'continue'"));
 
-    return new_continue_stmt(previous()->m_line);
+    return new_continue_stmt(previous());
 }
 
 Stmt Parser::return_statement(Arena* arena) {

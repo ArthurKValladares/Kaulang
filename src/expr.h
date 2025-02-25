@@ -147,22 +147,26 @@ struct VarDeclPayload {
 };
 
 struct BlockPayload {
+    Token* start;
     Array<Stmt> stmts;
+    Token* end;
 };
 
 struct IfPayload {
+    Token* token;
     Expr* condition;
     Stmt* if_stmt;
     Stmt* else_stmt;
 };
 
 struct WhilePayload {
+    Token* token;
     Expr* condition;
     Stmt* body;
 };
 
 struct BreakContinuePayload {
-    int line;
+    Token* token;
 };
 
 struct FnDeclarationPayload {
@@ -178,7 +182,6 @@ struct ClassDeclarationPayload {
     Array<Stmt> members;
 };
 
-// TODO: Review `Token` struct and add it to more payloads maybe if we need it for logging
 struct ReturnPayload {
     Token* keyword;
     Expr* expr;
