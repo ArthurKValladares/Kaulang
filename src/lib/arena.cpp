@@ -56,6 +56,11 @@ void* Arena::push(u64 size) {
 }
 
 void* Arena::push_no_zero(u64 size) {
+    void* from_list = get_from_list_with_size(size);
+    if (from_list != nullptr) {
+        return from_list;
+    }
+    
     if (offset + size > commited_size) {
         u64 alloc_size = round_up_to_multiple(page_size, size);
         void* ret = VirtualAlloc((u8*)mem + (offset + size), alloc_size, MEM_COMMIT, PAGE_READWRITE);

@@ -38,12 +38,12 @@ private:
 
     String get_substring(int start_offset, int end_offset) const;
 
-    void string(KauCompiler& compiler, Arena* arena);
-    void number(KauCompiler& compiler, Arena* arena);
-    void identifier(Arena* arena);
+    void string(KauCompiler& compiler);
+    void number(KauCompiler& compiler);
+    void identifier();
     void block_comment(KauCompiler& compiler);
     
-    void add_token(Arena* arena, TokenType token_type, String substr = {}, TokenData data = {});
+    void add_token(TokenType token_type, String substr = {}, TokenData data = {});
 
     char* m_source;
     int m_source_len;

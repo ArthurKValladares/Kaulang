@@ -70,7 +70,7 @@ String Scanner::get_substring(int start_offset, int end_offset) const {
     return String{start_char, substr_len};
 }
 
-void Scanner::add_token(Arena* arena, TokenType token_type, String substr, TokenData data) {
+void Scanner::add_token(TokenType token_type, String substr, TokenData data) {
     m_tokens.push(
         Token{
             token_type,
@@ -81,7 +81,7 @@ void Scanner::add_token(Arena* arena, TokenType token_type, String substr, Token
     );
 }
 
-void Scanner::string(KauCompiler& compiler, Arena* arena) {
+void Scanner::string(KauCompiler& compiler) {
     while(!is_at_end() && peek() != '"') {
         if (peek() == '\n') {
             ++m_current_line;
@@ -96,10 +96,10 @@ void Scanner::string(KauCompiler& compiler, Arena* arena) {
     advance();
 
     const String substr = get_substring(m_start_char_offset + 1, m_current_char_offset - 1);
-    add_token(arena, TokenType::STRING, substr);
+    add_token(TokenType::STRING, substr);
 }
 
-void Scanner::number(KauCompiler& compiler, Arena* arena) {
+void Scanner::number(KauCompiler& compiler) {
     while(isdigit(peek())) {
         advance();
     }
@@ -128,24 +128,24 @@ void Scanner::number(KauCompiler& compiler, Arena* arena) {
 
     if (ty == TokenData::Type::INT) {
         const int integer = atoi(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_INT, String{}, TokenData::new_int(integer));
+        add_token(TokenType::NUMBER_INT, String{}, TokenData::new_int(integer));
     } else if (ty == TokenData::Type::LONG) {
         const long integer = atol(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_LONG, String{}, TokenData::new_long(integer));
+        add_token(TokenType::NUMBER_LONG, String{}, TokenData::new_long(integer));
     } else if (ty == TokenData::Type::FLOAT) {
         const float fractional = atof(m_source + m_start_char_offset);
-        add_token(arena, TokenType::NUMBER_FLOAT, String{}, TokenData::new_float(fractional));
+        add_token(TokenType::NUMBER_FLOAT, String{}, TokenData::new_float(fractional));
     } else {
         char* err;
         const double fractional = strtod(m_source + m_start_char_offset, &err);
         if (err == nullptr) {
             compiler.error(m_current_line, CREATE_STRING("could not convert string to double"));
         }
-        add_token(arena, TokenType::NUMBER_DOUBLE, String{}, TokenData::new_double(fractional));
+        add_token(TokenType::NUMBER_DOUBLE, String{}, TokenData::new_double(fractional));
     }
 }
 
-void Scanner::identifier(Arena* arena) {
+void Scanner::identifier() {
     while (isalnum(peek()) || peek() == '_') {
         advance();
     }
@@ -154,10 +154,10 @@ void Scanner::identifier(Arena* arena) {
 
     TokenType* ty = (TokenType*)keywords.get(HASH_STR(id));
     if (ty != nullptr) { 
-        add_token(arena, *ty, id);
+        add_token(*ty, id);
     } else {
         String substr = get_substring(m_start_char_offset, m_current_char_offset);
-        add_token(arena, TokenType::IDENTIFIER, substr);
+        add_token(TokenType::IDENTIFIER, substr);
     }
 }
 
@@ -183,68 +183,68 @@ void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
     switch(c) {
         // Single-character
         case '(': {
-            add_token(arena, TokenType::LEFT_PAREN);
+            add_token(TokenType::LEFT_PAREN);
             break;
         }
         case ')': {
-            add_token(arena, TokenType::RIGHT_PAREN);
+            add_token(TokenType::RIGHT_PAREN);
             break;
         }
         case '{': {
-            add_token(arena, TokenType::LEFT_BRACE);
+            add_token(TokenType::LEFT_BRACE);
             break;
         }
         case '}': {
-            add_token(arena, TokenType::RIGHT_BRACE);
+            add_token(TokenType::RIGHT_BRACE);
             break;
         }
         case ',': {
-            add_token(arena, TokenType::COMMA);
+            add_token(TokenType::COMMA);
             break;
         }
         case '.': {
-            add_token(arena, TokenType::DOT);
+            add_token(TokenType::DOT);
             break;
         }
         case '-': {
-            add_token(arena, TokenType::MINUS);
+            add_token(TokenType::MINUS);
             break;
         }
         case '+': {
-            add_token(arena, TokenType::PLUS);
+            add_token(TokenType::PLUS);
             break;
         }
         case ';': {
-            add_token(arena, TokenType::SEMICOLON);
+            add_token(TokenType::SEMICOLON);
             break;
         }
         case ':': {
-            add_token(arena, TokenType::COLON);
+            add_token(TokenType::COLON);
             break;
         }
         case '*': {
-            add_token(arena, TokenType::STAR);
+            add_token(TokenType::STAR);
             break;
         }
         case '?': {
-            add_token(arena, TokenType::QUESTION_MARK);
+            add_token(TokenType::QUESTION_MARK);
             break;
         }
         // One or two character tokens
         case '!': {
-            add_token(arena, match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+            add_token(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
             break;
         }
         case '=': {
-            add_token(arena, match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+            add_token(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
             break;
         }
         case '>': {
-            add_token(arena, match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            add_token(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
             break;
         }
         case '<': {
-            add_token(arena, match('=') ? TokenType::LESSER_EQUAL : TokenType::LESSER);
+            add_token(match('=') ? TokenType::LESSER_EQUAL : TokenType::LESSER);
             break;
         }
         // Special-case
@@ -257,7 +257,7 @@ void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
             } else if (match('*')) {
                 block_comment(compiler);
             } else {
-                add_token(arena, TokenType::SLASH);
+                add_token(TokenType::SLASH);
             }
             break;
         }
@@ -274,7 +274,7 @@ void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
         }
         // String literals
         case '"': {
-            string(compiler, arena);
+            string(compiler);
             break;
         }
         case '\0': {
@@ -282,9 +282,9 @@ void Scanner::scan_token(KauCompiler& compiler, Arena* arena) {
         }
         default: {
             if (isdigit(c)) {
-                number(compiler, arena);
+                number(compiler);
             } else if (isalpha(c) || c == '_') {
-                identifier(arena);
+                identifier();
             } else {
                 compiler.error(m_current_line,  concatenated_string(arena, CREATE_STRING("unexpected character "), String{&c, 1}));
             }

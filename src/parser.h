@@ -64,4 +64,6 @@ private:
     int m_current = 0;
 
     bool m_had_error = false;
+
+    friend class KauCompiler;
 };

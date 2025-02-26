@@ -27,6 +27,10 @@ struct Array {
         return m_len == 0;
     }
 
+    u64 size_bytes() const {
+        return size() * sizeof(T);
+    }
+
     T& operator[](u64 index) {
         return m_head[index];
     }
