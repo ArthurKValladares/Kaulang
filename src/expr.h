@@ -320,6 +320,7 @@ struct GetExpr {
 };
 
 struct SetExpr {
+    Token* equals;
     Expr* get;
     Expr* right;
 };

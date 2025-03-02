@@ -169,8 +169,9 @@ namespace {
         return expr;
     }
 
-    Expr* new_set(Expr* get, Expr* right) {
+    Expr* new_set(Token* equals, Expr* get, Expr* right) {
         SetExpr* set = (SetExpr*) malloc(sizeof(SetExpr));
+        set->equals = equals;
         set->get = get;
         set->right = right;
 
@@ -594,7 +595,7 @@ Expr* Parser::assignment(Arena* arena) {
             const Token* id = expr->expr.literal->val;
             return new_assignment(id, right);
         } else if (expr->ty == Expr::Type::GET) {
-            return new_set(expr, right);
+            return new_set(equals, expr, right);
         } else {
             error(peek(), CREATE_STRING("invalid assignment target."));
             return nullptr;
