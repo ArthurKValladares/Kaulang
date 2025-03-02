@@ -7,11 +7,7 @@ void Environment::init(Arena* arena) {
 }
 
 void Environment::define(Arena* arena, const String str, Value in_value) {
-    // TODO: This copy here could be inneficient. Same for the others below
-    Value* val = (Value*) arena->push_struct_no_zero<Value>();
-    *val = in_value;
-
-    values.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), val);
+    values.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_value, sizeof(Value));
 }
 
 bool Environment::contains(const String name) const {
@@ -66,10 +62,7 @@ Value* Environment::get_at(String name, u64 distance) {
 }
 
 void Environment::define_callable(Arena* arena, const String str, Callable in_callable) {
-    Callable* callable = (Callable*) arena->push_struct_no_zero<Callable>();
-    *callable = in_callable;
-
-    callables.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), callable);
+    callables.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_callable, sizeof(Callable));
 }
 
 Callable* Environment::get_callable(String name) {
@@ -86,10 +79,7 @@ Callable* Environment::get_callable(String name) {
 }
 
 void Environment::define_class(Arena* arena, const String str, Class in_class) {
-    Class* clss = (Class*) arena->push_struct_no_zero<Class>();
-    *clss = in_class;
-
-    classes.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), clss);
+    classes.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_class, sizeof(Class));
 }
 
 Class* Environment::get_class(String name) {

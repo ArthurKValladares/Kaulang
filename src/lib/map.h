@@ -16,8 +16,7 @@ struct Map {
 
     void* get(u64 hashed_key);
     const void* get_const(u64 hashed_key) const;
-    // TODO: Maybe make the object_size explicit as well and do the copy inside here.
-    void insert(Arena* arena, void* key, u64 key_size, u64 hashed_key, void* object);
+    void insert(Arena* arena, const void* key, u64 key_size, u64 hashed_key, const void* object, u64 object_size);
 
     MapNode** buckets;
     u64 num_buckets;

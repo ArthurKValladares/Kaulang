@@ -1089,26 +1089,23 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
                         String fn_name = mangled_name(arena, new_class->m_name, fn.name->m_lexeme);
                         compiler->global_env.define_callable(arena, fn_name, construct_callable(fn));
                     } else {
-                        Callable* callable_ptr = (Callable*) arena->push_struct_no_zero<Callable>();
-
-                        *callable_ptr = construct_callable_class(fn, new_class);
-
                         String str = fn.name->m_lexeme;
-                        new_class->m_methods.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), callable_ptr);
+                        Callable callable = construct_callable_class(fn, new_class);
+                        new_class->m_methods.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &callable, sizeof(Callable));
                     }
                 } else if (stmt->ty == Stmt::Type::VAR_DECL) {
                     VarDeclPayload var_decl = stmt->s_var_decl;
-                    Value* value_ptr = (Value*) arena->push_struct_no_zero<Value>();
-                    *value_ptr = Value{};
+
+                    Value value = {};
                     if (var_decl.initializer != nullptr) {
-                        RuntimeError var_err = var_decl.initializer->evaluate(compiler, arena, env, *value_ptr);
+                        RuntimeError var_err = var_decl.initializer->evaluate(compiler, arena, env, value);
                         if (!var_err.is_ok()) {
                             compiler->runtime_error(var_err.token->m_line, var_err.message);
                         }
                     }
 
                     String str = var_decl.name->m_lexeme;
-                    new_class->m_fields.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), value_ptr);
+                    new_class->m_fields.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &value, sizeof(Value));
                 } else {
                     assert(false);
                 }

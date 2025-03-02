@@ -32,7 +32,7 @@ const void* Map::get_const(u64 hashed_key)  const {
     GET_IMPL();
 }
 
-void Map::insert(Arena* arena, void* key, u64 key_size, u64 hashed_key, void* object) {
+void Map::insert(Arena* arena, const void* key, u64 key_size, u64 hashed_key, const void* object, u64 object_size) {
     const u64 bucket = hashed_key % num_buckets;
     MapNode** tmp;
     MapNode*  node;
@@ -56,5 +56,6 @@ void Map::insert(Arena* arena, void* key, u64 key_size, u64 hashed_key, void* ob
     memcpy(node->key, key, key_size);
 
     node->hashed_key = hashed_key;
-    node->value = object;
+    node->value = arena->push_no_zero(object_size);
+    memcpy(node->value, object, object_size);
 }

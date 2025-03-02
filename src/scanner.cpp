@@ -3,10 +3,9 @@
 #include <ctype.h>
 
 #define ADD_TO_KEYWORDS(TYPE, STRING) do {\
-    TokenType* ty = (TokenType*) arena->push_struct_no_zero<TokenType>();\
-    *ty = TokenType::TYPE;\
     String str = CREATE_STRING(STRING);\
-    keywords.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), ty);\
+    const TokenType ty = TokenType::TYPE;\
+    keywords.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &ty, sizeof(TokenType));\
 } while(0)
 
 namespace {

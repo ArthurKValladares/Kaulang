@@ -67,7 +67,7 @@ private:
 
     void resolve_local(KauCompiler* compiler, Expr* expr, const Token* token);
 
-    void mark_resolved(KauCompiler* compiler, Expr* expr, int depth);
+    void mark_resolved(KauCompiler* compiler, Expr* expr, u64 depth);
 
     Array<Map> scopes;
 

@@ -171,21 +171,19 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
         resolve_expr(compiler, stmt->s_class.superclass);
 
         String super_str = CREATE_STRING("super");
-        VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
-        *status = VariableStatus {
+        const VariableStatus status = VariableStatus {
             .defined = true,
             .uses = 1
         };
-        scopes.back().insert(compiler->global_arena, (void*) &super_str, sizeof(String), HASH_STR(super_str), status); 
+        scopes.back().insert(compiler->global_arena, (void*) &super_str, sizeof(String), HASH_STR(super_str), &status, sizeof(VariableStatus));
     }
     
     String this_str = CREATE_STRING("this");
-    VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
-    *status = VariableStatus {
+    const VariableStatus status = VariableStatus {
         .defined = true,
         .uses = 1
     };
-    scopes.back().insert(compiler->global_arena, (void*) &this_str, sizeof(String), HASH_STR(this_str), status); 
+    scopes.back().insert(compiler->global_arena, (void*) &this_str, sizeof(String), HASH_STR(this_str), &status, sizeof(VariableStatus)); 
 
     for (u64 i = 0; i < stmt->s_class.members.size(); ++i) {
         Stmt* class_stmt = &stmt->s_class.members[i];
@@ -366,12 +364,11 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
         compiler->error(name->m_line, CREATE_STRING("Already a variable with this name in this scope"));
         return;
     }
-    VariableStatus* status = (VariableStatus*) compiler->global_arena->push_struct_no_zero<VariableStatus>();
-    *status = VariableStatus{
+    const VariableStatus status = VariableStatus{
         .defined = false,
         .uses = 0,
     };
-    scope.insert(compiler->global_arena, (void*) &str, sizeof(String), hashed_lexeme, status);
+    scope.insert(compiler->global_arena, (void*) &str, sizeof(String), hashed_lexeme, &status, sizeof(VariableStatus));
 }
 
 void Resolver::define(Token* name) {
@@ -410,8 +407,6 @@ void Resolver::end_scope() {
     scopes.pop();
 }
 
-void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, int depth) {
-    u64* depth_ptr = (u64*) compiler->global_arena->push_struct_no_zero<u64>();
-    *depth_ptr = depth;
-    compiler->locals.insert(compiler->global_arena, depth_ptr, sizeof(u64), (u64) expr, depth_ptr);
+void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, u64 depth) {
+    compiler->locals.insert(compiler->global_arena, expr, sizeof(Expr), (u64) expr, &depth, sizeof(u64));
 }
