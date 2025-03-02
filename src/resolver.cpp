@@ -175,7 +175,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
             .defined = true,
             .uses = 1
         };
-        scopes.back().insert(compiler->global_arena, (void*) &super_str, sizeof(String), HASH_STR(super_str), &status, sizeof(VariableStatus));
+        scopes.back().insert(compiler->global_arena, super_str, HASH_STR(super_str), status);
     }
     
     String this_str = CREATE_STRING("this");
@@ -183,7 +183,7 @@ void Resolver::visit_class_stmt(KauCompiler* compiler, Stmt* stmt) {
         .defined = true,
         .uses = 1
     };
-    scopes.back().insert(compiler->global_arena, (void*) &this_str, sizeof(String), HASH_STR(this_str), &status, sizeof(VariableStatus)); 
+    scopes.back().insert(compiler->global_arena, this_str, HASH_STR(this_str), status); 
 
     for (u64 i = 0; i < stmt->s_class.members.size(); ++i) {
         Stmt* class_stmt = &stmt->s_class.members[i];
@@ -368,7 +368,7 @@ void Resolver::declare(KauCompiler* compiler, Token* name) {
         .defined = false,
         .uses = 0,
     };
-    scope.insert(compiler->global_arena, (void*) &str, sizeof(String), hashed_lexeme, &status, sizeof(VariableStatus));
+    scope.insert(compiler->global_arena, str,hashed_lexeme, status);
 }
 
 void Resolver::define(Token* name) {
@@ -408,5 +408,5 @@ void Resolver::end_scope() {
 }
 
 void Resolver::mark_resolved(KauCompiler* compiler, Expr* expr, u64 depth) {
-    compiler->locals.insert(compiler->global_arena, expr, sizeof(Expr), (u64) expr, &depth, sizeof(u64));
+    compiler->locals.insert(compiler->global_arena, expr, (u64) expr, depth);
 }

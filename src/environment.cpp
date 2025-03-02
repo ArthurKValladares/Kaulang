@@ -7,7 +7,7 @@ void Environment::init(Arena* arena) {
 }
 
 void Environment::define(Arena* arena, const String str, Value in_value) {
-    values.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_value, sizeof(Value));
+    values.insert(arena, str, HASH_STR(str), in_value);
 }
 
 bool Environment::contains(const String name) const {
@@ -62,7 +62,7 @@ Value* Environment::get_at(String name, u64 distance) {
 }
 
 void Environment::define_callable(Arena* arena, const String str, Callable in_callable) {
-    callables.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_callable, sizeof(Callable));
+    callables.insert(arena, str, HASH_STR(str), in_callable);
 }
 
 Callable* Environment::get_callable(String name) {
@@ -79,7 +79,7 @@ Callable* Environment::get_callable(String name) {
 }
 
 void Environment::define_class(Arena* arena, const String str, Class in_class) {
-    classes.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &in_class, sizeof(Class));
+    classes.insert(arena, str, HASH_STR(str), in_class);
 }
 
 Class* Environment::get_class(String name) {

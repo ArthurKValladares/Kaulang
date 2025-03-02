@@ -5,7 +5,7 @@
 #define ADD_TO_KEYWORDS(TYPE, STRING) do {\
     String str = CREATE_STRING(STRING);\
     const TokenType ty = TokenType::TYPE;\
-    keywords.insert(arena, (void*) &str, sizeof(String), HASH_STR(str), &ty, sizeof(TokenType));\
+    keywords.insert(arena, str, HASH_STR(str), ty);\
 } while(0)
 
 namespace {

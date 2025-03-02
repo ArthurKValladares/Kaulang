@@ -16,7 +16,34 @@ struct Map {
 
     void* get(u64 hashed_key);
     const void* get_const(u64 hashed_key) const;
-    void insert(Arena* arena, const void* key, u64 key_size, u64 hashed_key, const void* object, u64 object_size);
+    template<class K, class V>
+    void insert(Arena* arena, const K& key, u64 hashed_key, const V& value) {
+        const u64 bucket = hashed_key % num_buckets;
+        MapNode** tmp;
+        MapNode*  node;
+
+        tmp = &buckets[bucket];
+        while(*tmp != nullptr) {
+            if(hashed_key == (*tmp)->hashed_key) {
+                break;
+            }
+            tmp = &(*tmp)->next;
+        }
+
+        if(*tmp != nullptr) {
+            node = *tmp;
+        } else {
+            node = (MapNode*) arena->push_struct<MapNode>();
+            node->next = nullptr;
+            *tmp = node;
+        }
+        node->key = arena->push_struct_no_zero<K>();
+        *(K*)node->key = key;
+
+        node->hashed_key = hashed_key;
+        node->value = arena->push_struct_no_zero<V>();
+        *(V*)node->value = value;
+    }
 
     MapNode** buckets;
     u64 num_buckets;

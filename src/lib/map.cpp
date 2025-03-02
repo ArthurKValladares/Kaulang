@@ -31,31 +31,3 @@ void* Map::get(u64 hashed_key) {
 const void* Map::get_const(u64 hashed_key)  const {
     GET_IMPL();
 }
-
-void Map::insert(Arena* arena, const void* key, u64 key_size, u64 hashed_key, const void* object, u64 object_size) {
-    const u64 bucket = hashed_key % num_buckets;
-    MapNode** tmp;
-    MapNode*  node;
-
-    tmp = &buckets[bucket];
-    while(*tmp != nullptr) {
-        if(hashed_key == (*tmp)->hashed_key) {
-            break;
-        }
-        tmp = &(*tmp)->next;
-    }
-
-    if(*tmp != nullptr) {
-        node = *tmp;
-    } else {
-        node = (MapNode*) arena->push_struct<MapNode>();
-        node->next = nullptr;
-        *tmp = node;
-    }
-    node->key = arena->push_no_zero(key_size);
-    memcpy(node->key, key, key_size);
-
-    node->hashed_key = hashed_key;
-    node->value = arena->push_no_zero(object_size);
-    memcpy(node->value, object, object_size);
-}
