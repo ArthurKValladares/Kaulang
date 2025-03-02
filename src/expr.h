@@ -247,7 +247,6 @@ struct Expr {
     RuntimeError evaluate(KauCompiler* compiler, Arena* arena, Environment* env, Value& in_value);
 };
 
-// TODO: review these Token*'s later
 struct LiteralExpr {
     const Token* val;
 };
@@ -262,7 +261,9 @@ struct SuperExpr {
 };
 
 struct GroupingExpr {
+    Token* left_paren;
     Expr* expr;
+    Token* right_paren;
 };
 
 struct UnaryExpr {

@@ -67,9 +67,11 @@ namespace {
         return expr;
     }
 
-    Expr* new_grouping(Expr* grouping_expr) {
+    Expr* new_grouping(Token* left_paren, Expr* grouping_expr, Token* right_paren) {
         GroupingExpr* grouping = (GroupingExpr*) malloc(sizeof(GroupingExpr));
+        grouping->left_paren = left_paren;
         grouping->expr = grouping_expr;
+        grouping->right_paren = right_paren;
 
         Expr* expr = new_expr(
             Expr::Type::GROUPING,
@@ -823,9 +825,10 @@ Expr* Parser::primary(Arena* arena) {
     }
 
     if (match(TokenType::LEFT_PAREN)) {
+        Token* left_paren = previous();
         Expr* expr = expression(arena);
-        consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after expression"));
-        return new_grouping(expr);
+        Token* right_paren = consume(TokenType::RIGHT_PAREN, CREATE_STRING("Expected ')' after expression"));
+        return new_grouping(left_paren, expr, right_paren);
     }
 
     error(peek(), CREATE_STRING("Expected expression."));

@@ -382,7 +382,6 @@ void Resolver::define(Token* name) {
 }
 
 void Resolver::begin_scope(KauCompiler* compiler) {
-    // TODO: This needs to be aligned
     Map* curr = scopes.curr_ptr();
     scopes.advance();
 
