@@ -61,7 +61,6 @@ namespace {
         });
     }
 
-    // TODO: Messy, pass in as optimal param to funnction above or something like that
     Callable construct_callable_class(FnDeclarationPayload fn_declaration, Class* class_ptr) {
         String fn_name = fn_declaration.name->m_lexeme;
         String this_str = CREATE_STRING("this");
@@ -837,8 +836,6 @@ RuntimeError Expr::evaluate(KauCompiler* compiler, Arena* arena, Environment* en
 
                 Callable* super_method = super_class->get_method(super_expr->method->m_lexeme);
                 if (super_method == nullptr) {
-                    // TODO: THis is not quite right, i can report a better error.
-                    // And the name sould be better too, not just the method name but include super, i can do this later
                     return RuntimeError::undeclared_function(super_expr->method);
                 }
 
