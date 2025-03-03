@@ -259,8 +259,6 @@ RuntimeError RuntimeError::class_does_not_have_field(const Token* token) {
     };
 }
 
-// TODO: error messages will be better later, need to add a string param
-// so i can set `expected` and `found` numbers
 RuntimeError RuntimeError::wrong_number_arguments(const Token* token) {
     return RuntimeError {
         .ty = Type::WRONG_NUMBER_ARGUMENTS,
@@ -1154,84 +1152,6 @@ Value Stmt::evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool
     }
 
     return expr_val;
-}
-
-void Stmt::print() {
-    // TODO: Review some of this stuff, its not great
-    switch (ty)
-    {
-        case Type::VAR_DECL: {
-            fprintf(stdout, "VAR DECL: %.*s", (u32) s_var_decl.name->m_lexeme.len, s_var_decl.name->m_lexeme.chars);
-            if (s_var_decl.initializer != nullptr) {
-                fprintf(stdout, " = ");
-                s_var_decl.initializer->print();
-            }
-            break;
-        }
-        case Type::EXPR: {
-            fprintf(stdout, "EXPR: ");
-            s_expr.expr->print();
-            break;
-        }
-        case Type::BLOCK: {
-            fprintf(stdout, "BLOCK: ");
-            for (int i = 0; i < s_block.stmts.size(); ++i) {
-                s_block.stmts[i].print();
-            }
-            break;
-        }
-        case Type::IF: {
-            fprintf(stdout, "IF: ");
-            s_if.if_stmt->print();
-            if (s_if.else_stmt->ty != Stmt::Type::ERR) {
-                s_if.else_stmt->print();
-            }
-            break;
-        }
-        case Type::WHILE: {
-            fprintf(stdout, "WHILE: ");
-            s_while.body->print();
-            break;
-        }
-        case Type::BREAK: {
-            fprintf(stdout, "BREAK");
-            break;
-        }
-        case Type::CONTINUE: {
-            fprintf(stdout, "CONTINUE");
-            break;
-        }
-        case Type::RETURN: {
-            fprintf(stdout, "RETURN");
-            s_return.expr->print();
-            break;
-        }
-        case Type::FN_DECLARATION: {
-            fprintf(stdout, "FN DECLARATION: ");
-            fprintf(stdout, "%.*s params:", (u32) fn_declaration.name->m_lexeme.len, fn_declaration.name->m_lexeme.chars);
-            for (u64 i = 0; i < fn_declaration.params.size(); ++i) {
-                fprintf(stdout, " %.*s", (u32) fn_declaration.params[i]->m_lexeme.len,fn_declaration.params[i]->m_lexeme.chars);
-            }
-            break;
-        }
-        case Type::CLASS_DECLARATION: {
-            fprintf(stdout, "CLASS DECLARATION: ");
-            fprintf(stdout, "%.*s", (u32) s_class.name->m_lexeme.len, s_class.name->m_lexeme.chars);
-            if (s_class.superclass != nullptr) {
-                fprintf(stdout, " : ");
-                s_class.superclass->print();
-            }
-            for (u64 i = 0; i < s_class.members.size(); ++i) {
-                s_class.members[i].print();
-            }
-            break;
-        }
-        //
-        case Type::ERR: {
-            fprintf(stdout, "ERR");
-            return;
-        }
-    }
 }
 
 bool Class::contains_field(String field) {

@@ -218,7 +218,6 @@ struct Stmt {
     };
 
     Value evaluate(KauCompiler* compiler, Arena* arena, Environment* env, bool from_prompt, bool in_loop);
-    void print();
 };
 
 struct Expr {
